@@ -1,0 +1,10 @@
+Prompt generated locally with meta-llama-3-8b-instruct
+
+
+Risk & Allocation Brief
+
+The model detects a negative skew of -0.36% in the S&P 500 (SPX) over the next week, which falls within one standard deviation (3.02%) of normal variance. This projection reflects an inverted term structure, where short-term yields are negative and long-term yields are positive.
+
+At Level 3 (Normal Ops), systemic risk remains stable, with liquidity and credit conditions supporting overall market stability. However, this backdrop creates a nuance: while price risk is elevated due to the negative forecast, structural risk remains low. This implies that the potential losses from the projected decline are manageable within our normal operational framework.
+
+Given the negative expected value over the 1-week horizon, the Swarm suggests reducing active leverage while maintaining core equity exposure.

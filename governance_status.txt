@@ -1,0 +1,4 @@
+LEVEL: 3
+NAME: NORMAL OPS
+FLAGS: []
+ACTION: Standard Allocations.
