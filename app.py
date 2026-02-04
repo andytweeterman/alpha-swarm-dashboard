@@ -24,6 +24,8 @@ st.markdown("""
     div[data-testid="stExpander"] { background-color: #0E1117; border: 1px solid #333; border-radius: 5px; }
     div[data-testid="stExpander"] details { background-color: #0E1117; }
     div[data-testid="stExpander"] * { color: white !important; }
+    /* Radio Button Style */
+    div[data-testid="stRadio"] > label { color: #E0E0E0 !important; font-weight: bold; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -34,7 +36,7 @@ st.markdown("""
 def fetch_data():
     with st.spinner('Downloading Market Data from Yahoo Finance...'):
         tickers = ["SPY", "HYG", "IEF", "^VIX", "RSP", "DX-Y.NYB"]
-        start = (datetime.now() - timedelta(days=730)).strftime('%Y-%m-%d')
+        start = (datetime.now() - timedelta(days=1825)).strftime('%Y-%m-%d') # Fetch 5 years for "Long View"
         data = yf.download(tickers, start=start, progress=False)
     return data
 
@@ -56,12 +58,8 @@ def calculate_cone(price):
 
 def generate_forecast(start_date, last_price, last_std, days=30):
     future_dates = [start_date + timedelta(days=i) for i in range(1, days + 1)]
-    
-    # Swarm Mean Projection
     drift = 0.0003
     future_mean = [last_price * ((1 + drift) ** i) for i in range(1, days + 1)]
-    
-    # Uncertainty Cone
     future_upper = []
     future_lower = []
     
@@ -137,11 +135,11 @@ try:
     with h1:
         st.info("**1 WEEK (Momentum)**")
         st.markdown("🟢 **RISING**" if hist.iloc[-1] > 0 else "🔴 **WEAKENING**")
-        st.caption("Momentum Velocity") # REBRANDED
+        st.caption("Momentum Velocity")
     with h2:
         st.info("**1 MONTH (Trend)**")
         st.markdown("🟢 **BULLISH**" if ppo.iloc[-1] > 0 else "🔴 **BEARISH**")
-        st.caption(f"Swarm Trend ({ppo.iloc[-1]:.2f})") # REBRANDED
+        st.caption(f"Swarm Trend ({ppo.iloc[-1]:.2f})")
     with h3:
         st.info("**6 MONTH (Structural)**")
         st.markdown("🟢 **SAFE**" if status == "NORMAL OPS" else f"🔴 **{status}**")
@@ -150,81 +148,81 @@ try:
     st.divider()
 
     # ------------------
-    # CHART 1: HISTORICAL CONTEXT
+    # CHART CONTROLS (RADIO BUTTON)
     # ------------------
-    st.subheader("📊 Alpha Swarm Telemetry (Historical Context)")
-    
+    col_radio, col_spacer = st.columns([1, 3])
+    with col_radio:
+        view_mode = st.radio("Select View Horizon:", 
+                             ["Tactical (60-Day Zoom)", "Strategic (2-Year History)"], 
+                             horizontal=False)
+
+    st.subheader(f"📊 {view_mode}")
+
+    # PREPARE DATA BASED ON SELECTION
+    if view_mode == "Tactical (60-Day Zoom)":
+        start_filter = (datetime.now() - timedelta(days=60)).strftime('%Y-%m-%d')
+        chart_data = full_data[full_data.index >= start_filter]
+        chart_lower = lower_cone[lower_cone.index >= start_filter]
+        chart_upper = upper_cone[upper_cone.index >= start_filter]
+        show_forecast = True
+    else: # Strategic
+        start_filter = (datetime.now() - timedelta(days=730)).strftime('%Y-%m-%d')
+        chart_data = full_data[full_data.index >= start_filter]
+        chart_lower = lower_cone[lower_cone.index >= start_filter]
+        chart_upper = upper_cone[upper_cone.index >= start_filter]
+        show_forecast = False
+
+    # BUILD CHART
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True, 
                         vertical_spacing=0.03, row_heights=[0.7, 0.3])
 
-    # 1. HISTORICAL CONE
-    fig.add_trace(go.Scatter(x=full_data.index, y=lower_cone, line=dict(width=0), showlegend=False, hoverinfo='skip'), row=1, col=1)
-    fig.add_trace(go.Scatter(x=full_data.index, y=upper_cone, fill='tonexty', fillcolor='rgba(0, 100, 255, 0.1)', 
+    # 1. CONE
+    fig.add_trace(go.Scatter(x=chart_data.index, y=chart_lower, line=dict(width=0), showlegend=False, hoverinfo='skip'), row=1, col=1)
+    fig.add_trace(go.Scatter(x=chart_data.index, y=chart_upper, fill='tonexty', fillcolor='rgba(0, 100, 255, 0.1)', 
                              line=dict(width=0), name="Fair Value Cone", hoverinfo='skip'), row=1, col=1)
 
     # 2. PRICE
-    fig.add_trace(go.Candlestick(x=full_data.index, 
-                                 open=full_data['Open']['SPY'], high=full_data['High']['SPY'], 
-                                 low=full_data['Low']['SPY'], close=full_data['Close']['SPY'], 
+    fig.add_trace(go.Candlestick(x=chart_data.index, 
+                                 open=chart_data['Open']['SPY'], high=chart_data['High']['SPY'], 
+                                 low=chart_data['Low']['SPY'], close=chart_data['Close']['SPY'], 
                                  name='SPY'), row=1, col=1)
 
-    # 3. RED ZONES
-    emergency_days = gov_df[gov_df['Level_7']].index
-    for date in emergency_days:
-        fig.add_vrect(x0=date - timedelta(hours=12), x1=date + timedelta(hours=12), 
-                      fillcolor="red", opacity=0.1, layer="below", line_width=0, row=1, col=1)
+    # 3. FORECAST (Only for Tactical View)
+    if show_forecast:
+        fig.add_trace(go.Scatter(x=f_dates, y=f_lower, line=dict(width=0), showlegend=False, hoverinfo='skip'), row=1, col=1)
+        fig.add_trace(go.Scatter(x=f_dates, y=f_upper, fill='tonexty', fillcolor='rgba(200, 0, 255, 0.15)', 
+                                 line=dict(width=0), name="Proj. Uncertainty", hoverinfo='skip'), row=1, col=1)
+        fig.add_trace(go.Scatter(x=f_dates, y=f_mean, name="Swarm Forecast", 
+                                 line=dict(color='white', width=2, dash='dot')), row=1, col=1)
 
-    # 4. MOMENTUM (REBRANDED)
-    fig.add_trace(go.Scatter(x=full_data.index, y=ppo, name="Swarm Trend", line=dict(color='cyan', width=1)), row=2, col=1)
-    fig.add_trace(go.Scatter(x=full_data.index, y=sig, name="Signal", line=dict(color='orange', width=1)), row=2, col=1)
-    colors = ['#00ff00' if val >= 0 else '#ff0000' for val in hist]
-    fig.add_trace(go.Bar(x=full_data.index, y=hist, name="Velocity", marker_color=colors), row=2, col=1)
+    # 4. RED ZONES (Only for Strategic View mostly, but we can leave logic in)
+    if view_mode == "Strategic (2-Year History)":
+        emergency_days = gov_df[gov_df['Level_7']].index
+        for date in emergency_days:
+            # Only draw if in range
+            if date >= chart_data.index[0]:
+                fig.add_vrect(x0=date - timedelta(hours=12), x1=date + timedelta(hours=12), 
+                              fillcolor="red", opacity=0.1, layer="below", line_width=0, row=1, col=1)
 
-    fig.update_layout(height=500, template="plotly_dark", margin=dict(l=0, r=0, t=0, b=0), showlegend=False,
-        plot_bgcolor='#0E1117', paper_bgcolor='#0E1117', font=dict(color='white'))
+    # 5. MOMENTUM
+    subset_ppo = ppo[ppo.index >= chart_data.index[0]]
+    subset_sig = sig[sig.index >= chart_data.index[0]]
+    subset_hist = hist[hist.index >= chart_data.index[0]]
+    
+    fig.add_trace(go.Scatter(x=chart_data.index, y=subset_ppo, name="Swarm Trend", line=dict(color='cyan', width=1)), row=2, col=1)
+    fig.add_trace(go.Scatter(x=chart_data.index, y=subset_sig, name="Signal", line=dict(color='orange', width=1)), row=2, col=1)
+    colors = ['#00ff00' if val >= 0 else '#ff0000' for val in subset_hist]
+    fig.add_trace(go.Bar(x=chart_data.index, y=subset_hist, name="Velocity", marker_color=colors), row=2, col=1)
+
+    fig.update_layout(height=600, template="plotly_dark", margin=dict(l=0, r=0, t=0, b=0), showlegend=False,
+        plot_bgcolor='#0E1117', paper_bgcolor='#0E1117', font=dict(color='white'), xaxis_rangeslider_visible=False)
     
     st.plotly_chart(fig, use_container_width=True)
 
-    # ------------------
-    # CHART 2: TACTICAL ZOOM
-    # ------------------
-    st.divider()
-    st.subheader("🔭 Tactical Forecast (Zoom: Last 60 Days + Next 30 Days)")
-    
-    # Filter Data for Zoom
-    zoom_start = (datetime.now() - timedelta(days=60)).strftime('%Y-%m-%d')
-    zoom_data = full_data[full_data.index >= zoom_start]
-    zoom_upper = upper_cone[upper_cone.index >= zoom_start]
-    zoom_lower = lower_cone[lower_cone.index >= zoom_start]
-    
-    fig2 = go.Figure()
-
-    # 1. RECENT HISTORICAL CONE
-    fig2.add_trace(go.Scatter(x=zoom_data.index, y=zoom_lower, line=dict(width=0), showlegend=False, hoverinfo='skip'))
-    fig2.add_trace(go.Scatter(x=zoom_data.index, y=zoom_upper, fill='tonexty', fillcolor='rgba(0, 100, 255, 0.1)', 
-                              line=dict(width=0), name="Fair Value Cone", hoverinfo='skip'))
-
-    # 2. FUTURE CONE
-    fig2.add_trace(go.Scatter(x=f_dates, y=f_lower, line=dict(width=0), showlegend=False, hoverinfo='skip'))
-    fig2.add_trace(go.Scatter(x=f_dates, y=f_upper, fill='tonexty', fillcolor='rgba(200, 0, 255, 0.15)', 
-                              line=dict(width=0), name="Proj. Uncertainty", hoverinfo='skip'))
-
-    # 3. SWARM MEAN FORECAST
-    fig2.add_trace(go.Scatter(x=f_dates, y=f_mean, name="Swarm Forecast", 
-                              line=dict(color='white', width=2, dash='dot')))
-
-    # 4. PRICE
-    fig2.add_trace(go.Candlestick(x=zoom_data.index, 
-                                  open=zoom_data['Open']['SPY'], high=zoom_data['High']['SPY'], 
-                                  low=zoom_data['Low']['SPY'], close=zoom_data['Close']['SPY'], 
-                                  name='SPY'))
-
-    fig2.update_layout(height=450, template="plotly_dark", margin=dict(l=0, r=0, t=0, b=0), showlegend=False,
-        plot_bgcolor='#0E1117', paper_bgcolor='#0E1117', font=dict(color='white'),
-        xaxis_rangeslider_visible=False)
-    
-    st.plotly_chart(fig2, use_container_width=True)
-    st.caption("🟪 Purple Area = 30-Day 'Headlights' (Projected Volatility Cone)")
+    if show_forecast:
+        st.caption("🟪 Purple Area = 30-Day 'Headlights' (Projected Volatility Cone)")
+    else:
+        st.caption("🟥 Red Background = Structural Risk Events (Level 7)")
 
     # ------------------
     # STRATEGIST CORNER
