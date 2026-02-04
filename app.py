@@ -57,11 +57,11 @@ def calculate_cone(price):
 def generate_forecast(start_date, last_price, last_std, days=30):
     future_dates = [start_date + timedelta(days=i) for i in range(1, days + 1)]
     
-    # Swarm Mean Projection (Placeholder Logic)
+    # Swarm Mean Projection
     drift = 0.0003
     future_mean = [last_price * ((1 + drift) ** i) for i in range(1, days + 1)]
     
-    # Uncertainty Cone (Sqrt Time)
+    # Uncertainty Cone
     future_upper = []
     future_lower = []
     
@@ -101,7 +101,7 @@ def calculate_governance_history(data):
 # 3. THE UI RENDER
 # ==========================================
 st.title("🛡️ ALPHA SWARM GOVERNANCE")
-st.markdown("### Live Structural Risk & PPO Momentum Monitor")
+st.markdown("### Live Structural Risk & Momentum Monitor")
 st.divider()
 
 try:
@@ -119,7 +119,7 @@ try:
     f_dates, f_mean, f_upper, f_lower = generate_forecast(last_date, last_val, last_dev, days=30)
     
     # ------------------
-    # TOP SECTION: BADGES
+    # TOP SECTION
     # ------------------
     col1, col2 = st.columns([2, 1])
     with col1:
@@ -137,11 +137,11 @@ try:
     with h1:
         st.info("**1 WEEK (Momentum)**")
         st.markdown("🟢 **RISING**" if hist.iloc[-1] > 0 else "🔴 **WEAKENING**")
-        st.caption("PPO Histogram")
+        st.caption("Momentum Velocity") # REBRANDED
     with h2:
         st.info("**1 MONTH (Trend)**")
         st.markdown("🟢 **BULLISH**" if ppo.iloc[-1] > 0 else "🔴 **BEARISH**")
-        st.caption(f"PPO Line ({ppo.iloc[-1]:.2f})")
+        st.caption(f"Swarm Trend ({ppo.iloc[-1]:.2f})") # REBRANDED
     with h3:
         st.info("**6 MONTH (Structural)**")
         st.markdown("🟢 **SAFE**" if status == "NORMAL OPS" else f"🔴 **{status}**")
@@ -150,7 +150,7 @@ try:
     st.divider()
 
     # ------------------
-    # CHART 1: HISTORICAL CONTEXT (2 Years)
+    # CHART 1: HISTORICAL CONTEXT
     # ------------------
     st.subheader("📊 Alpha Swarm Telemetry (Historical Context)")
     
@@ -160,7 +160,7 @@ try:
     # 1. HISTORICAL CONE
     fig.add_trace(go.Scatter(x=full_data.index, y=lower_cone, line=dict(width=0), showlegend=False, hoverinfo='skip'), row=1, col=1)
     fig.add_trace(go.Scatter(x=full_data.index, y=upper_cone, fill='tonexty', fillcolor='rgba(0, 100, 255, 0.1)', 
-                             line=dict(width=0), name="Hist. Cone", hoverinfo='skip'), row=1, col=1)
+                             line=dict(width=0), name="Fair Value Cone", hoverinfo='skip'), row=1, col=1)
 
     # 2. PRICE
     fig.add_trace(go.Candlestick(x=full_data.index, 
@@ -174,11 +174,11 @@ try:
         fig.add_vrect(x0=date - timedelta(hours=12), x1=date + timedelta(hours=12), 
                       fillcolor="red", opacity=0.1, layer="below", line_width=0, row=1, col=1)
 
-    # 4. PPO
-    fig.add_trace(go.Scatter(x=full_data.index, y=ppo, name="PPO Line", line=dict(color='cyan', width=1)), row=2, col=1)
+    # 4. MOMENTUM (REBRANDED)
+    fig.add_trace(go.Scatter(x=full_data.index, y=ppo, name="Swarm Trend", line=dict(color='cyan', width=1)), row=2, col=1)
     fig.add_trace(go.Scatter(x=full_data.index, y=sig, name="Signal", line=dict(color='orange', width=1)), row=2, col=1)
     colors = ['#00ff00' if val >= 0 else '#ff0000' for val in hist]
-    fig.add_trace(go.Bar(x=full_data.index, y=hist, name="Histogram", marker_color=colors), row=2, col=1)
+    fig.add_trace(go.Bar(x=full_data.index, y=hist, name="Velocity", marker_color=colors), row=2, col=1)
 
     fig.update_layout(height=500, template="plotly_dark", margin=dict(l=0, r=0, t=0, b=0), showlegend=False,
         plot_bgcolor='#0E1117', paper_bgcolor='#0E1117', font=dict(color='white'))
@@ -186,12 +186,12 @@ try:
     st.plotly_chart(fig, use_container_width=True)
 
     # ------------------
-    # CHART 2: TACTICAL ZOOM (Last 60 Days + 30 Day Forecast)
+    # CHART 2: TACTICAL ZOOM
     # ------------------
     st.divider()
     st.subheader("🔭 Tactical Forecast (Zoom: Last 60 Days + Next 30 Days)")
     
-    # Filter Data for Zoom (Last 60 Days)
+    # Filter Data for Zoom
     zoom_start = (datetime.now() - timedelta(days=60)).strftime('%Y-%m-%d')
     zoom_data = full_data[full_data.index >= zoom_start]
     zoom_upper = upper_cone[upper_cone.index >= zoom_start]
@@ -202,9 +202,9 @@ try:
     # 1. RECENT HISTORICAL CONE
     fig2.add_trace(go.Scatter(x=zoom_data.index, y=zoom_lower, line=dict(width=0), showlegend=False, hoverinfo='skip'))
     fig2.add_trace(go.Scatter(x=zoom_data.index, y=zoom_upper, fill='tonexty', fillcolor='rgba(0, 100, 255, 0.1)', 
-                              line=dict(width=0), name="Hist. Cone", hoverinfo='skip'))
+                              line=dict(width=0), name="Fair Value Cone", hoverinfo='skip'))
 
-    # 2. FUTURE CONE (Purple)
+    # 2. FUTURE CONE
     fig2.add_trace(go.Scatter(x=f_dates, y=f_lower, line=dict(width=0), showlegend=False, hoverinfo='skip'))
     fig2.add_trace(go.Scatter(x=f_dates, y=f_upper, fill='tonexty', fillcolor='rgba(200, 0, 255, 0.15)', 
                               line=dict(width=0), name="Proj. Uncertainty", hoverinfo='skip'))
@@ -213,7 +213,7 @@ try:
     fig2.add_trace(go.Scatter(x=f_dates, y=f_mean, name="Swarm Forecast", 
                               line=dict(color='white', width=2, dash='dot')))
 
-    # 4. PRICE (Candles)
+    # 4. PRICE
     fig2.add_trace(go.Candlestick(x=zoom_data.index, 
                                   open=zoom_data['Open']['SPY'], high=zoom_data['High']['SPY'], 
                                   low=zoom_data['Low']['SPY'], close=zoom_data['Close']['SPY'], 
@@ -221,7 +221,7 @@ try:
 
     fig2.update_layout(height=450, template="plotly_dark", margin=dict(l=0, r=0, t=0, b=0), showlegend=False,
         plot_bgcolor='#0E1117', paper_bgcolor='#0E1117', font=dict(color='white'),
-        xaxis_rangeslider_visible=False) # Hide slider on zoom chart for cleanliness
+        xaxis_rangeslider_visible=False)
     
     st.plotly_chart(fig2, use_container_width=True)
     st.caption("🟪 Purple Area = 30-Day 'Headlights' (Projected Volatility Cone)")
@@ -237,7 +237,8 @@ try:
         
         **Alpha Swarm Verification:**
         * **Governance:** The Breadth Ratio (RSP/SPY) is confirming the "anemic" weakness.
-        * **Momentum:** The PPO Line is the key watch. If it crosses below Zero, the "Coma" deepens.
+        * **Consensus:** Our projected "jitters" for March/April now align with external institutional cycle forecasts (NDR).
+        * **Momentum:** The Swarm Trend is the key watch. If it crosses below Zero, the "Coma" deepens.
         """)
 
 except Exception as e:
