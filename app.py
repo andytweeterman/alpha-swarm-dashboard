@@ -224,19 +224,37 @@ try:
     else:
         st.caption("🟥 Red Background = Structural Risk Events (Level 7)")
 
-    # ------------------
-    # STRATEGIST CORNER
+ # ------------------
+    # STRATEGIST CORNER (DYNAMIC UPDATE)
     # ------------------
     st.subheader("📝 Chief Strategist's View")
-    with st.expander("Read Monthly Forecast (Feb 2026)", expanded=True):
-        st.markdown("""
-        **"The Hospital Patient"**
-        *Viewed from 30,000 feet, the market should be zooming up... However, the market seems to be discounting the spending bonanza.*
+    
+    # LOAD DYNAMIC UPDATE FROM CSV
+    try:
+        # We use a simple CSV so the Strategist can update it without touching code
+        update_df = pd.read_csv("update.csv")
+        # Convert to dictionary for easy lookup
+        update_data = dict(zip(update_df['Key'], update_df['Value']))
+        
+        up_date = update_data.get('Date', 'Current')
+        up_title = update_data.get('Title', 'Market Update')
+        up_text = update_data.get('Text', 'Monitoring market conditions...')
+        
+    except Exception:
+        # Fallback if file is missing/busy
+        up_date = "System Status"
+        up_title = "Data Feed Offline"
+        up_text = "Strategist update pending."
+
+    with st.expander(f"Read Forecast ({up_date})", expanded=True):
+        st.markdown(f"""
+        **"{up_title}"**
+        
+        *{up_text}*
         
         **Alpha Swarm Verification:**
-        * **Governance:** The Breadth Ratio (RSP/SPY) is confirming the "anemic" weakness.
-        * **Consensus:** Our projected "jitters" for March/April now align with external institutional cycle forecasts (NDR).
-        * **Momentum:** The Swarm Trend is the key watch. If it crosses below Zero, the "Coma" deepens.
+        * **Governance:** {status}
+        * **Momentum:** {'RISING' if hist.iloc[-1] > 0 else 'WEAKENING'}
         """)
 
 except Exception as e:
