@@ -7,7 +7,7 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. PAGE SETUP (UI FIXES v7.5 - Header Fix)
+# 1. PAGE SETUP (v7.6 - FINAL POLISH)
 # ==========================================
 st.set_page_config(page_title="Alpha Swarm", page_icon="🛡️", layout="wide")
 
@@ -22,32 +22,21 @@ st.markdown("""
     /* 3. METRIC COLORS */
     div[data-testid="stMetricValue"] { color: #00FF00 !important; }
     
-    /* 4. EXPANDER HEADER FIX (CRITICAL) */
-    /* Target the container */
+    /* 4. EXPANDER HEADER FIX */
     [data-testid="stExpander"] {
         background-color: #161b22 !important;
         border: 1px solid #30363d !important;
         border-radius: 6px;
     }
-    /* Target the clickable summary line specifically */
     [data-testid="stExpander"] summary {
-        background-color: #161b22 !important; /* Force Background Dark */
-        color: #ffffff !important; /* Force Text White */
+        background-color: #161b22 !important;
+        color: #ffffff !important;
     }
-    /* Target the SVG Arrow Icon */
-    [data-testid="stExpander"] summary svg {
-        fill: #ffffff !important;
-    }
-    /* Target the Text inside the summary */
     [data-testid="stExpander"] summary p, 
     [data-testid="stExpander"] summary span {
         color: #ffffff !important;
         font-weight: 600;
         background-color: transparent !important;
-    }
-    /* Hover Effects */
-    [data-testid="stExpander"] summary:hover {
-        color: #00FF00 !important;
     }
     [data-testid="stExpander"] summary:hover p {
         color: #00FF00 !important;
@@ -68,6 +57,12 @@ st.markdown("""
         font-size: 24px; font-weight: bold; padding: 15px;
         border-radius: 5px; text-align: center; margin-bottom: 20px;
         border: 1px solid #333;
+    }
+    
+    /* 7. DISABLED OPTION STYLING (For 'Ghost' Buttons) */
+    div[data-testid="stRadio"] div[role="radiogroup"] > label[disabled] {
+        opacity: 0.5;
+        cursor: not-allowed;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -191,13 +186,17 @@ try:
     st.divider()
 
     # ------------------
-    # CHART CONTROLS (RADIO BUTTON)
+    # CHART CONTROLS (RADIO BUTTONS)
     # ------------------
-    col_radio, col_spacer = st.columns([1, 3])
-    with col_radio:
+    c1, c2 = st.columns(2)
+    with c1:
         view_mode = st.radio("Select View Horizon:", 
                              ["Tactical (60-Day Zoom)", "Strategic (2-Year History)"], 
-                             horizontal=False)
+                             horizontal=True)
+    with c2:
+        # THE "GHOST" BUTTONS (Visual only)
+        st.radio("Market Scope (Premium):", ["US Market (Active)", "Global Swarm 🔒", "Sector Rotation 🔒"], 
+                 index=0, horizontal=True, disabled=True)
 
     st.subheader(f"📊 {view_mode}")
 
@@ -230,7 +229,7 @@ try:
                                  low=chart_data['Low']['SPY'], close=chart_data['Close']['SPY'], 
                                  name='SPY'), row=1, col=1)
 
-    # 3. FORECAST (Only for Tactical View)
+    # 3. FORECAST
     if show_forecast:
         fig.add_trace(go.Scatter(x=f_dates, y=f_lower, line=dict(width=0), showlegend=False, hoverinfo='skip'), row=1, col=1)
         fig.add_trace(go.Scatter(x=f_dates, y=f_upper, fill='tonexty', fillcolor='rgba(200, 0, 255, 0.15)', 
@@ -238,11 +237,10 @@ try:
         fig.add_trace(go.Scatter(x=f_dates, y=f_mean, name="Swarm Forecast", 
                                  line=dict(color='white', width=2, dash='dot')), row=1, col=1)
 
-    # 4. RED ZONES (Only for Strategic View mostly, but we can leave logic in)
+    # 4. RED ZONES
     if view_mode == "Strategic (2-Year History)":
         emergency_days = gov_df[gov_df['Level_7']].index
         for date in emergency_days:
-            # Only draw if in range
             if date >= chart_data.index[0]:
                 fig.add_vrect(x0=date - timedelta(hours=12), x1=date + timedelta(hours=12), 
                               fillcolor="red", opacity=0.1, layer="below", line_width=0, row=1, col=1)
@@ -257,8 +255,11 @@ try:
     colors = ['#00ff00' if val >= 0 else '#ff0000' for val in subset_hist]
     fig.add_trace(go.Bar(x=chart_data.index, y=subset_hist, name="Velocity", marker_color=colors), row=2, col=1)
 
+    # CLEANER LAYOUT (NO GRIDS)
     fig.update_layout(height=600, template="plotly_dark", margin=dict(l=0, r=0, t=0, b=0), showlegend=False,
         plot_bgcolor='#0E1117', paper_bgcolor='#0E1117', font=dict(color='white'), xaxis_rangeslider_visible=False)
+    fig.update_xaxes(showgrid=False)
+    fig.update_yaxes(showgrid=False)
     
     st.plotly_chart(fig, use_container_width=True)
 
@@ -268,7 +269,7 @@ try:
         st.caption("🟥 Red Background = Structural Risk Events (Level 7)")
 
     # ------------------
-    # STRATEGIST CORNER (DYNAMIC UPDATE + INDENTATION FIX v7.5)
+    # STRATEGIST CORNER
     # ------------------
     st.subheader("📝 Chief Strategist's View")
     
@@ -278,8 +279,6 @@ try:
         
         up_date = update_data.get('Date', 'Current')
         up_title = update_data.get('Title', 'Market Update')
-        
-        # AGGRESSIVE CLEANING
         raw_text = str(update_data.get('Text', 'Monitoring market conditions...'))
         raw_text = raw_text.replace("\\n", "\n")
         lines = [line.strip() for line in raw_text.split('\n')]
@@ -291,9 +290,11 @@ try:
         up_text = "Strategist update pending."
 
     with st.expander(f"Read Forecast ({up_date})", expanded=True):
-        # We use st.markdown separately to ensure no indentation issues
         st.markdown(f'**"{up_title}"**')
         st.markdown(up_text)
+
+    st.divider()
+    st.caption("Alpha Swarm v1.0 (Beta) | Institutional Risk Governance | © 2026")
 
 except Exception as e:
     st.error(f"Error loading data: {e}")
