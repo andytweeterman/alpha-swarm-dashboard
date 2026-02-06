@@ -7,7 +7,7 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. PAGE SETUP (UI FIXES v7.4 - Layout Fix)
+# 1. PAGE SETUP (UI FIXES v7.5 - Header Fix)
 # ==========================================
 st.set_page_config(page_title="Alpha Swarm", page_icon="🛡️", layout="wide")
 
@@ -22,18 +22,32 @@ st.markdown("""
     /* 3. METRIC COLORS */
     div[data-testid="stMetricValue"] { color: #00FF00 !important; }
     
-    /* 4. EXPANDER STYLING (Force Dark) */
+    /* 4. EXPANDER HEADER FIX (CRITICAL) */
+    /* Target the container */
     [data-testid="stExpander"] {
         background-color: #161b22 !important;
         border: 1px solid #30363d !important;
         border-radius: 6px;
     }
+    /* Target the clickable summary line specifically */
     [data-testid="stExpander"] summary {
-        color: #ffffff !important;
+        background-color: #161b22 !important; /* Force Background Dark */
+        color: #ffffff !important; /* Force Text White */
     }
-    [data-testid="stExpander"] summary p {
+    /* Target the SVG Arrow Icon */
+    [data-testid="stExpander"] summary svg {
+        fill: #ffffff !important;
+    }
+    /* Target the Text inside the summary */
+    [data-testid="stExpander"] summary p, 
+    [data-testid="stExpander"] summary span {
         color: #ffffff !important;
         font-weight: 600;
+        background-color: transparent !important;
+    }
+    /* Hover Effects */
+    [data-testid="stExpander"] summary:hover {
+        color: #00FF00 !important;
     }
     [data-testid="stExpander"] summary:hover p {
         color: #00FF00 !important;
@@ -254,7 +268,7 @@ try:
         st.caption("🟥 Red Background = Structural Risk Events (Level 7)")
 
     # ------------------
-    # STRATEGIST CORNER (DYNAMIC UPDATE + INDENTATION FIX v7.4)
+    # STRATEGIST CORNER (DYNAMIC UPDATE + INDENTATION FIX v7.5)
     # ------------------
     st.subheader("📝 Chief Strategist's View")
     
@@ -277,8 +291,7 @@ try:
         up_text = "Strategist update pending."
 
     with st.expander(f"Read Forecast ({up_date})", expanded=True):
-        # FIX: We now print these separately to ensure NO INDENTATION in the source string.
-        # This prevents Markdown from interpreting the text as a Code Block.
+        # We use st.markdown separately to ensure no indentation issues
         st.markdown(f'**"{up_title}"**')
         st.markdown(up_text)
 
