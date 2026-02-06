@@ -7,7 +7,7 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. PAGE SETUP (UI FIXES v7.2)
+# 1. PAGE SETUP (UI FIXES v7.3 - Clean Text)
 # ==========================================
 st.set_page_config(page_title="Alpha Swarm", page_icon="🛡️", layout="wide")
 
@@ -16,48 +16,40 @@ st.markdown("""
     /* 1. GLOBAL DARK MODE */
     .stApp { background-color: #000000; }
     
-    /* 2. TEXT VISIBILITY - Force all basic text to light grey */
+    /* 2. TEXT VISIBILITY */
     h1, h2, h3, h4, h5, h6, p, li, span, div { color: #E0E0E0 !important; }
     
-    /* 3. METRIC COLORS (Green numbers) */
+    /* 3. METRIC COLORS */
     div[data-testid="stMetricValue"] { color: #00FF00 !important; }
     
-    /* 4. EXPANDER FIX (CRITICAL) */
-    /* Forces the box background to be dark grey so white text shows up */
+    /* 4. EXPANDER STYLING (Force Dark) */
     [data-testid="stExpander"] {
-        background-color: #161b22 !important; /* GitHub Dark Grey */
+        background-color: #161b22 !important;
         border: 1px solid #30363d !important;
         border-radius: 6px;
     }
-    
-    /* Target the HEADER (Summary) */
     [data-testid="stExpander"] summary {
-        background-color: #161b22 !important;
-        color: #ffffff !important; /* Force Title White */
+        color: #ffffff !important;
     }
     [data-testid="stExpander"] summary p {
-        color: #ffffff !important; /* Force Title Text White */
+        color: #ffffff !important;
         font-weight: 600;
     }
     [data-testid="stExpander"] summary:hover p {
-        color: #00FF00 !important; /* Green on hover */
+        color: #00FF00 !important;
     }
-    
-    /* Target the BODY (Details) */
     [data-testid="stExpander"] details {
         background-color: #161b22 !important;
     }
     
     /* 5. CODE BLOCK OVERRIDE */
-    /* Prevents the 'white scrollable box' if markdown thinks it is code */
     code {
         background-color: #161b22 !important;
         color: #E0E0E0 !important;
     }
     
-    /* 6. COMPONENT STYLES */
+    /* 6. RADIO & BADGE */
     div[data-testid="stRadio"] > label { color: #E0E0E0 !important; font-weight: bold; }
-    
     .big-badge {
         font-size: 24px; font-weight: bold; padding: 15px;
         border-radius: 5px; text-align: center; margin-bottom: 20px;
@@ -262,7 +254,7 @@ try:
         st.caption("🟥 Red Background = Structural Risk Events (Level 7)")
 
     # ------------------
-    # STRATEGIST CORNER (DYNAMIC UPDATE + CLEANER)
+    # STRATEGIST CORNER (DYNAMIC UPDATE + CLEANER v7.3)
     # ------------------
     st.subheader("📝 Chief Strategist's View")
     
@@ -272,16 +264,20 @@ try:
         
         up_date = update_data.get('Date', 'Current')
         up_title = update_data.get('Title', 'Market Update')
-        # CODE FIX: .strip() removes leading spaces that cause "white boxes"
-        # We also replace literal "\n" with real newlines just in case
-        up_text = str(update_data.get('Text', 'Monitoring market conditions...')).strip().replace("\\n", "\n")
+        
+        # AGGRESSIVE CLEANING: Strip every line individually
+        raw_text = str(update_data.get('Text', 'Monitoring market conditions...'))
+        # Fix literal newline chars from CSV
+        raw_text = raw_text.replace("\\n", "\n")
+        # Ensure no line has leading spaces (which triggers code blocks)
+        lines = [line.strip() for line in raw_text.split('\n')]
+        up_text = '\n\n'.join(lines)
         
     except Exception:
         up_date = "System Status"
         up_title = "Data Feed Offline"
         up_text = "Strategist update pending."
 
-    # REMOVED the "Alpha Swarm Verification" section as requested
     with st.expander(f"Read Forecast ({up_date})", expanded=True):
         st.markdown(f"""
         **"{up_title}"**
