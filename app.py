@@ -7,7 +7,7 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. PAGE SETUP (UI FIXES v7.3 - Clean Text)
+# 1. PAGE SETUP (UI FIXES v7.4 - Layout Fix)
 # ==========================================
 st.set_page_config(page_title="Alpha Swarm", page_icon="🛡️", layout="wide")
 
@@ -48,7 +48,7 @@ st.markdown("""
         color: #E0E0E0 !important;
     }
     
-    /* 6. RADIO & BADGE */
+    /* 6. COMPONENT STYLES */
     div[data-testid="stRadio"] > label { color: #E0E0E0 !important; font-weight: bold; }
     .big-badge {
         font-size: 24px; font-weight: bold; padding: 15px;
@@ -254,7 +254,7 @@ try:
         st.caption("🟥 Red Background = Structural Risk Events (Level 7)")
 
     # ------------------
-    # STRATEGIST CORNER (DYNAMIC UPDATE + CLEANER v7.3)
+    # STRATEGIST CORNER (DYNAMIC UPDATE + INDENTATION FIX v7.4)
     # ------------------
     st.subheader("📝 Chief Strategist's View")
     
@@ -265,11 +265,9 @@ try:
         up_date = update_data.get('Date', 'Current')
         up_title = update_data.get('Title', 'Market Update')
         
-        # AGGRESSIVE CLEANING: Strip every line individually
+        # AGGRESSIVE CLEANING
         raw_text = str(update_data.get('Text', 'Monitoring market conditions...'))
-        # Fix literal newline chars from CSV
         raw_text = raw_text.replace("\\n", "\n")
-        # Ensure no line has leading spaces (which triggers code blocks)
         lines = [line.strip() for line in raw_text.split('\n')]
         up_text = '\n\n'.join(lines)
         
@@ -279,11 +277,10 @@ try:
         up_text = "Strategist update pending."
 
     with st.expander(f"Read Forecast ({up_date})", expanded=True):
-        st.markdown(f"""
-        **"{up_title}"**
-        
-        {up_text}
-        """)
+        # FIX: We now print these separately to ensure NO INDENTATION in the source string.
+        # This prevents Markdown from interpreting the text as a Code Block.
+        st.markdown(f'**"{up_title}"**')
+        st.markdown(up_text)
 
 except Exception as e:
     st.error(f"Error loading data: {e}")
