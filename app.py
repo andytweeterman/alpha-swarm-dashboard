@@ -7,25 +7,53 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. PAGE SETUP (TRUE BLACK MODE)
+# 1. PAGE SETUP (UI FIXES APPLIED)
 # ==========================================
 st.set_page_config(page_title="Alpha Swarm", page_icon="🛡️", layout="wide")
 
 st.markdown("""
     <style>
+    /* FORCE GLOBAL DARK MODE */
     .stApp { background-color: #000000; }
-    h1, h2, h3, p, div, span, li { color: #E0E0E0 !important; }
+    
+    /* TEXT COLORS - Force readability */
+    h1, h2, h3, h4, h5, h6, p, li, span { color: #E0E0E0 !important; }
     div[data-testid="stMetricValue"] { color: #00FF00 !important; }
+    
+    /* EXPANDER (STRATEGIST VIEW) FIXES */
+    /* Forces the expander background to be dark grey, not white */
+    .streamlit-expanderHeader {
+        background-color: #0E1117 !important;
+        color: #FFFFFF !important;
+        border: 1px solid #333;
+        border-radius: 5px;
+    }
+    div[data-testid="stExpander"] {
+        background-color: #0E1117 !important;
+        border: 1px solid #333;
+        color: #E0E0E0 !important;
+    }
+    div[data-testid="stExpander"] details {
+        background-color: #0E1117 !important;
+    }
+    /* Fixes the 'Read Forecast' label to be white */
+    div[data-testid="stExpander"] summary p {
+        color: #FFFFFF !important;
+        font-weight: 600;
+    }
+    div[data-testid="stExpander"] summary:hover p {
+        color: #00FF00 !important;
+    }
+    
+    /* RADIO BUTTON FIX */
+    div[data-testid="stRadio"] > label { color: #E0E0E0 !important; font-weight: bold; }
+    
+    /* BIG BADGE STYLE */
     .big-badge {
         font-size: 24px; font-weight: bold; padding: 15px;
         border-radius: 5px; text-align: center; margin-bottom: 20px;
         border: 1px solid #333;
     }
-    div[data-testid="stExpander"] { background-color: #0E1117; border: 1px solid #333; border-radius: 5px; }
-    div[data-testid="stExpander"] details { background-color: #0E1117; }
-    div[data-testid="stExpander"] * { color: white !important; }
-    /* Radio Button Style */
-    div[data-testid="stRadio"] > label { color: #E0E0E0 !important; font-weight: bold; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -36,7 +64,7 @@ st.markdown("""
 def fetch_data():
     with st.spinner('Downloading Market Data from Yahoo Finance...'):
         tickers = ["SPY", "HYG", "IEF", "^VIX", "RSP", "DX-Y.NYB"]
-        start = (datetime.now() - timedelta(days=1825)).strftime('%Y-%m-%d') # Fetch 5 years for "Long View"
+        start = (datetime.now() - timedelta(days=1825)).strftime('%Y-%m-%d')
         data = yf.download(tickers, start=start, progress=False)
     return data
 
@@ -224,24 +252,22 @@ try:
     else:
         st.caption("🟥 Red Background = Structural Risk Events (Level 7)")
 
- # ------------------
-    # STRATEGIST CORNER (DYNAMIC UPDATE)
+    # ------------------
+    # STRATEGIST CORNER (DYNAMIC UPDATE + CLEANER)
     # ------------------
     st.subheader("📝 Chief Strategist's View")
     
-    # LOAD DYNAMIC UPDATE FROM CSV
     try:
-        # We use a simple CSV so the Strategist can update it without touching code
         update_df = pd.read_csv("update.csv")
-        # Convert to dictionary for easy lookup
         update_data = dict(zip(update_df['Key'], update_df['Value']))
         
         up_date = update_data.get('Date', 'Current')
         up_title = update_data.get('Title', 'Market Update')
-        up_text = update_data.get('Text', 'Monitoring market conditions...')
+        # CODE FIX: .strip() removes leading spaces that cause "white boxes"
+        # We also replace literal "\n" with real newlines just in case
+        up_text = str(update_data.get('Text', 'Monitoring market conditions...')).strip().replace("\\n", "\n")
         
     except Exception:
-        # Fallback if file is missing/busy
         up_date = "System Status"
         up_title = "Data Feed Offline"
         up_text = "Strategist update pending."
@@ -250,8 +276,9 @@ try:
         st.markdown(f"""
         **"{up_title}"**
         
-        *{up_text}*
+        {up_text}
         
+        ---
         **Alpha Swarm Verification:**
         * **Governance:** {status}
         * **Momentum:** {'RISING' if hist.iloc[-1] > 0 else 'WEAKENING'}
