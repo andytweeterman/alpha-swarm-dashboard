@@ -192,11 +192,13 @@ try:
     with c1:
         view_mode = st.radio("Select View Horizon:", 
                              ["Tactical (60-Day Zoom)", "Strategic (2-Year History)"], 
-                             horizontal=True)
+                             horizontal=True,
+                             help="Toggle between short-term momentum (Tactical) and long-term structural trends (Strategic).")
     with c2:
         # THE "GHOST" BUTTONS (Visual only)
         st.radio("Market Scope (Premium):", ["US Market (Active)", "Global Swarm 🔒", "Sector Rotation 🔒"], 
-                 index=0, horizontal=True, disabled=True)
+                 index=0, horizontal=True, disabled=True,
+                 help="Global Swarm and Sector Rotation models are available to Institutional Tier subscribers. Contact sales@alphaswarm.com to upgrade.")
 
     st.subheader(f"📊 {view_mode}")
 
