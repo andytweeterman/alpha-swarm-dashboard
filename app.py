@@ -7,75 +7,54 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. PAGE SETUP (v12.1 - DEFAULT LIGHT MODE)
+# 1. PAGE SETUP (v13.0 - MARKETWATCH GRID)
 # ==========================================
 st.set_page_config(page_title="Alpha Swarm", page_icon="🛡️", layout="wide")
 
 # SIDEBAR SETTINGS
 with st.sidebar:
     st.header("⚙️ Settings")
-    # CHANGED: 'value' is now False to default to Light Mode
     dark_mode = st.toggle("Enable Dark Mode", value=False, help="Toggle between Institutional Dark Mode and Standard Light Mode.")
     st.divider()
-    st.caption("Alpha Swarm v12.1")
+    st.caption("Alpha Swarm v13.0")
 
 # CONDITIONAL CSS LOGIC
 if dark_mode:
-    # --- DARK MODE CSS (Institutional High Contrast) ---
+    # --- DARK MODE CSS (Institutional) ---
     st.markdown("""
     <style>
-    /* 1. GLOBAL BACKGROUND */
+    /* GLOBAL BACKGROUND */
     .stApp { background-color: #000000; }
     
-    /* 2. HEADERS & TITLES (Force Bright White) */
+    /* TEXT & HEADERS */
     h1, h2, h3, h4, h5, h6 { color: #FFFFFF !important; }
-    
-    /* 3. BODY TEXT (Force Light Grey) */
     p, li, span, div { color: #E0E0E0; }
     
-    /* 4. RADIO BUTTONS & LABELS (Force Bright) */
-    div[data-testid="stRadio"] > label { 
-        color: #FFFFFF !important; 
-        font-weight: bold;
-    }
-    div[data-testid="stRadio"] div[role="radiogroup"] label {
-        color: #E0E0E0 !important;
+    /* METRICS */
+    div[data-testid="stMetricValue"] { color: #FFFFFF !important; }
+    div[data-testid="stMetricDelta"] svg { fill: #00FF00 !important; }
+    
+    /* MARKET GRID CARDS */
+    .market-card {
+        background-color: #161b22;
+        border: 1px solid #333;
+        padding: 10px;
+        border-radius: 5px;
+        text-align: center;
     }
     
-    /* 5. CAPTIONS (Force Visible Grey) */
-    div[data-testid="stCaptionContainer"] {
-        color: #CCCCCC !important;
-    }
-    
-    /* 6. METRIC LABELS ("VIX Level") */
-    div[data-testid="stMetricLabel"] {
-        color: #CCCCCC !important;
-    }
-    div[data-testid="stMetricValue"] { color: #00FF00 !important; }
-    
-    /* 7. EXPANDER & TOOLTIPS */
-    [data-testid="stExpander"], div[data-testid="stTooltipContent"] {
-        background-color: #161b22 !important; border: 1px solid #30363d !important; border-radius: 6px;
-    }
-    [data-testid="stExpander"] summary { background-color: #161b22 !important; color: #ffffff !important; }
-    [data-testid="stExpander"] summary p, [data-testid="stExpander"] summary span { color: #ffffff !important; }
-    [data-testid="stTooltipHoverTarget"] svg { fill: #FFFFFF !important; }
-    
-    /* 8. SIDEBAR (Keep Dimmed) */
+    /* SIDEBAR */
     section[data-testid="stSidebar"] { background-color: #0e1117 !important; }
-    section[data-testid="stSidebar"] h2, 
-    section[data-testid="stSidebar"] span, 
-    section[data-testid="stSidebar"] label { color: #888888 !important; }
+    section[data-testid="stSidebar"] h2, section[data-testid="stSidebar"] span, section[data-testid="stSidebar"] label { color: #888888 !important; }
     
-    /* 9. DISABLED OPTIONS */
-    div[data-testid="stRadio"] div[role="radiogroup"] > label[disabled] { 
-        color: #666666 !important; 
-        opacity: 0.5; cursor: not-allowed; 
-    }
+    /* COMPONENTS */
+    div[data-testid="stRadio"] > label { color: #FFFFFF !important; font-weight: bold; }
+    [data-testid="stExpander"] { background-color: #161b22 !important; border: 1px solid #30363d !important; }
+    [data-testid="stExpander"] summary { color: #ffffff !important; }
     
-    /* 10. BADGE & FOOTER */
-    .big-badge { font-size: 24px; font-weight: bold; padding: 15px; border-radius: 5px; text-align: center; margin-bottom: 20px; border: 1px solid #333; color: #FFFFFF !important;}
+    /* FOOTER */
     .footer { font-size: 12px; color: #666 !important; text-align: center; margin-top: 50px; }
+    .big-badge { font-size: 24px; font-weight: bold; padding: 15px; border-radius: 5px; text-align: center; margin-bottom: 20px; border: 1px solid #333; color: #FFFFFF !important;}
     </style>
     """, unsafe_allow_html=True)
     
@@ -84,35 +63,27 @@ if dark_mode:
     chart_font_color = 'white'
     
 else:
-    # --- LIGHT MODE CSS (Clean Black/White) ---
+    # --- LIGHT MODE CSS (MarketWatch Style) ---
     st.markdown("""
     <style>
-    /* 1. FORCE DARKER TEXT */
-    .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6, 
-    .stApp p, .stApp li, .stApp span, .stApp div { 
+    /* TEXT & HEADERS */
+    .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6, p, li, span, div { 
         color: #000000 !important; 
     }
     
-    /* 2. FORCE RADIO BUTTONS BLACK */
-    div[data-testid="stRadio"] > label { 
-        color: #000000 !important; 
-        font-weight: 800 !important; 
-    }
-    div[data-testid="stRadio"] div[role="radiogroup"] label {
-        color: #000000 !important;
-        font-weight: 600 !important;
-    }
+    /* METRICS */
+    div[data-testid="stMetricValue"] { color: #000000 !important; font-weight: 700 !important; }
     
-    /* 3. CAPTIONS & METRICS BLACK */
-    div[data-testid="stCaptionContainer"] { color: #000000 !important; opacity: 1 !important; font-weight: 600 !important; }
-    div[data-testid="stMetricLabel"] { color: #000000 !important; font-weight: bold !important; }
-    
-    /* 4. DISABLED OPTIONS */
-    div[data-testid="stRadio"] div[role="radiogroup"] > label[disabled] { 
-        color: #666666 !important; opacity: 0.7; 
+    /* MARKET GRID CARDS */
+    .market-card {
+        background-color: #f0f2f6;
+        border: 1px solid #ddd;
+        padding: 10px;
+        border-radius: 5px;
+        text-align: center;
     }
-    
-    /* 5. BADGE STYLE */
+
+    /* BADGE */
     .big-badge { 
         font-size: 24px; font-weight: bold; padding: 15px; 
         border-radius: 5px; text-align: center; margin-bottom: 20px; 
@@ -131,8 +102,9 @@ else:
 # ==========================================
 @st.cache_data(ttl=3600)
 def fetch_data():
-    with st.spinner('Downloading Market Data from Yahoo Finance...'):
-        tickers = ["SPY", "HYG", "IEF", "^VIX", "RSP", "DX-Y.NYB"]
+    with st.spinner('Accessing Global Market Data...'):
+        # Added: Dow (^DJI), Nasdaq (^IXIC), Gold (GC=F), Oil (CL=F)
+        tickers = ["SPY", "^DJI", "^IXIC", "HYG", "IEF", "^VIX", "RSP", "DX-Y.NYB", "GC=F", "CL=F"]
         start = (datetime.now() - timedelta(days=1825)).strftime('%Y-%m-%d')
         data = yf.download(tickers, start=start, progress=False)
     return data
@@ -192,43 +164,113 @@ def calculate_governance_history(data):
         
     return df, status, color, reason
 
+def make_sparkline(data, color):
+    # Helper to create those mini MarketWatch charts
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=data.index, y=data, mode='lines', 
+                            line=dict(color=color, width=2), hoverinfo='skip'))
+    fig.update_layout(
+        height=50, margin=dict(l=0,r=0,t=0,b=0),
+        xaxis=dict(visible=False), yaxis=dict(visible=False),
+        plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)'
+    )
+    return fig
+
 # ==========================================
 # 3. THE UI RENDER
 # ==========================================
 st.title("🛡️ ALPHA SWARM GOVERNANCE")
-st.markdown("### Live Structural Risk & Momentum Monitor")
-st.caption(f"Market Data valid as of: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+st.markdown("### Global Market Command Center")
+st.caption(f"Data Feed Active: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 st.divider()
 
 try:
     full_data = fetch_data()
+    closes = full_data['Close']
     gov_df, status, color, reason = calculate_governance_history(full_data)
+    
+    # =============================================
+    # SECTION 1: MARKETWATCH GRID (The "Big Ask")
+    # =============================================
+    
+    # Define the 6 Assets
+    assets = [
+        {"name": "Dow Jones", "ticker": "^DJI", "color": "#00CC00"},
+        {"name": "S&P 500", "ticker": "SPY", "color": "#00CC00"},
+        {"name": "Nasdaq", "ticker": "^IXIC", "color": "#00CC00"},
+        {"name": "VIX Index", "ticker": "^VIX", "color": "#FF5500"}, # VIX is orange/red
+        {"name": "Gold", "ticker": "GC=F", "color": "#FFD700"},      # Gold color
+        {"name": "Crude Oil", "ticker": "CL=F", "color": "#888888"}  # Oil color
+    ]
+    
+    # Row 1
+    c1, c2, c3 = st.columns(3)
+    cols = [c1, c2, c3]
+    
+    for i in range(3):
+        asset = assets[i]
+        with cols[i]:
+            # Get Data
+            series = closes[asset['ticker']].dropna()
+            if not series.empty:
+                current = series.iloc[-1]
+                prev = series.iloc[-2]
+                delta = current - prev
+                pct = (delta / prev) * 100
+                
+                # Display Metric
+                st.metric(asset['name'], f"{current:,.2f}", f"{delta:+.2f} ({pct:+.2f}%)")
+                # Display Sparkline
+                spark = make_sparkline(series.tail(30), asset['color'])
+                st.plotly_chart(spark, use_container_width=True, config={'displayModeBar': False})
+    
+    st.markdown("---")
+    
+    # Row 2
+    c4, c5, c6 = st.columns(3)
+    cols2 = [c4, c5, c6]
+    
+    for i in range(3):
+        asset = assets[i+3] # Get next 3
+        with cols2[i]:
+            series = closes[asset['ticker']].dropna()
+            if not series.empty:
+                current = series.iloc[-1]
+                prev = series.iloc[-2]
+                delta = current - prev
+                pct = (delta / prev) * 100
+                
+                # Special Logic for VIX (Lower is Green, Higher is Red usually, but let's stick to standard math)
+                st.metric(asset['name'], f"{current:,.2f}", f"{delta:+.2f} ({pct:+.2f}%)")
+                spark = make_sparkline(series.tail(30), asset['color'])
+                st.plotly_chart(spark, use_container_width=True, config={'displayModeBar': False})
+
+    st.divider()
+
+    # =============================================
+    # SECTION 2: THE SWARM DEEP DIVE (SPY)
+    # =============================================
+    
+    st.subheader("🔍 Swarm Deep Dive (SPY)")
     
     spy_close = full_data['Close']['SPY']
     ppo, sig, hist = calculate_ppo(spy_close)
     sma, std, upper_cone, lower_cone = calculate_cone(spy_close)
     
-    # GENERATE FORECAST
     last_date = spy_close.index[-1]
     last_val = spy_close.iloc[-1]
     last_dev = std.iloc[-1]
     f_dates, f_mean, f_upper, f_lower = generate_forecast(last_date, last_val, last_dev, days=30)
-    
-    # =============================================
-    # SECTION 1: THE CHARTS
-    # =============================================
     
     # CHART CONTROLS
     c1, c2 = st.columns(2)
     with c1:
         view_mode = st.radio("Select View Horizon:", 
                              ["Tactical (60-Day Zoom)", "Strategic (2-Year History)"], 
-                             horizontal=True,
-                             help="Toggle between short-term momentum (Tactical) and long-term structural trends (Strategic).")
+                             horizontal=True)
     with c2:
         st.radio("Market Scope (Premium):", ["US Market (Active)", "Global Swarm 🔒", "Sector Rotation 🔒"], 
-                 index=0, horizontal=True, disabled=True,
-                 help="Global Swarm and Sector Rotation models are available to Institutional Tier subscribers.")
+                 index=0, horizontal=True, disabled=True)
 
     # PREPARE DATA
     if view_mode == "Tactical (60-Day Zoom)":
@@ -248,18 +290,15 @@ try:
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True, 
                         vertical_spacing=0.03, row_heights=[0.7, 0.3])
 
-    # 1. CONE
     fig.add_trace(go.Scatter(x=chart_data.index, y=chart_lower, line=dict(width=0), showlegend=False, hoverinfo='skip'), row=1, col=1)
     fig.add_trace(go.Scatter(x=chart_data.index, y=chart_upper, fill='tonexty', fillcolor='rgba(0, 100, 255, 0.1)', 
                              line=dict(width=0), name="Fair Value Cone", hoverinfo='skip'), row=1, col=1)
 
-    # 2. PRICE
     fig.add_trace(go.Candlestick(x=chart_data.index, 
                                  open=chart_data['Open']['SPY'], high=chart_data['High']['SPY'], 
                                  low=chart_data['Low']['SPY'], close=chart_data['Close']['SPY'], 
                                  name='SPY'), row=1, col=1)
 
-    # 3. FORECAST
     if show_forecast:
         fig.add_trace(go.Scatter(x=f_dates, y=f_lower, line=dict(width=0), showlegend=False, hoverinfo='skip'), row=1, col=1)
         fig.add_trace(go.Scatter(x=f_dates, y=f_upper, fill='tonexty', fillcolor='rgba(200, 0, 255, 0.15)', 
@@ -267,7 +306,6 @@ try:
         fig.add_trace(go.Scatter(x=f_dates, y=f_mean, name="Swarm Forecast", 
                                  line=dict(color=chart_font_color, width=2, dash='dot')), row=1, col=1)
 
-    # 4. RED ZONES
     if view_mode == "Strategic (2-Year History)":
         start_date = chart_data.index[0]
         mask = (gov_df['Level_7']) & (gov_df.index >= start_date)
@@ -276,7 +314,6 @@ try:
             fig.add_vrect(x0=date - timedelta(hours=12), x1=date + timedelta(hours=12), 
                           fillcolor="red", opacity=0.1, layer="below", line_width=0, row=1, col=1)
 
-    # 5. MOMENTUM
     subset_ppo = ppo[ppo.index >= chart_data.index[0]]
     subset_sig = sig[sig.index >= chart_data.index[0]]
     subset_hist = hist[hist.index >= chart_data.index[0]]
@@ -286,7 +323,6 @@ try:
     colors = ['#00ff00' if val >= 0 else '#ff0000' for val in subset_hist]
     fig.add_trace(go.Bar(x=chart_data.index, y=subset_hist, name="Velocity", marker_color=colors), row=2, col=1)
 
-    # LAYOUT (Dynamic Theme Applied)
     fig.update_layout(height=500, template=chart_template, margin=dict(l=0, r=0, t=0, b=0), showlegend=False,
         plot_bgcolor=chart_bg, paper_bgcolor=chart_bg, font=dict(color=chart_font_color), xaxis_rangeslider_visible=False)
     fig.update_xaxes(showgrid=False)
@@ -300,22 +336,15 @@ try:
     st.divider()
 
     # =============================================
-    # SECTION 2: GOVERNANCE & BADGES
+    # SECTION 3: GOVERNANCE & BADGES
     # =============================================
     col1, col2 = st.columns([2, 1])
     with col1:
-        if status == "EMERGENCY":
-            st.error(f"GOVERNANCE STATUS: {status}", icon="🚨")
-        elif status == "CAUTION":
-            st.warning(f"GOVERNANCE STATUS: {status}", icon="⚠️")
-        elif status == "WATCHLIST":
-            st.warning(f"GOVERNANCE STATUS: {status}", icon="👀")
-        else:
-            st.success(f"GOVERNANCE STATUS: {status}", icon="✅")
+        st.markdown(f'<div class="big-badge" style="background-color: {color}; color: white;">GOVERNANCE STATUS: {status}</div>', unsafe_allow_html=True)
         st.caption(f"Reason: {reason}")
     with col2:
         latest_vix = full_data['Close']['^VIX'].iloc[-1]
-        st.metric("VIX Level", f"{latest_vix:.2f}", delta_color="inverse")
+        st.metric("Risk (VIX)", f"{latest_vix:.2f}", delta_color="inverse")
 
     st.subheader("⏱️ Tactical Horizons")
     h1, h2, h3 = st.columns(3)
@@ -332,7 +361,7 @@ try:
     st.divider()
 
     # =============================================
-    # SECTION 3: STRATEGIST VIEW
+    # SECTION 4: STRATEGIST VIEW
     # =============================================
     st.subheader("📝 Chief Strategist's View")
     
@@ -359,7 +388,7 @@ try:
     # FOOTER
     st.markdown("""
     <div class="footer">
-    ALPHA SWARM v1.0 (BETA) | INSTITUTIONAL RISK GOVERNANCE<br>
+    ALPHA SWARM v13.0 (MARKETWATCH GRID EDITION) | INSTITUTIONAL RISK GOVERNANCE<br>
     Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.
     </div>
     """, unsafe_allow_html=True)
