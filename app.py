@@ -7,10 +7,6 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. PAGE SETUP (v7.6 - FINAL POLISH)
-from calculations import calculate_ppo, calculate_cone, generate_forecast, calculate_governance_history
-
-# ==========================================
 # 1. PAGE SETUP (v8.0 - HERO CHART LAYOUT)
 # ==========================================
 st.set_page_config(page_title="Alpha Swarm", page_icon="🛡️", layout="wide")
@@ -473,11 +469,13 @@ try:
 
     # 4. RED ZONES
     if view_mode == "Strategic (2-Year History)":
-        emergency_days = gov_df[gov_df['Level_7']].index
+        # Optimized: Filter gov_df directly using boolean indexing
+        start_date = chart_data.index[0]
+        mask = (gov_df['Level_7']) & (gov_df.index >= start_date)
+        emergency_days = gov_df.index[mask]
         for date in emergency_days:
-            if date >= chart_data.index[0]:
-                fig.add_vrect(x0=date - timedelta(hours=12), x1=date + timedelta(hours=12), 
-                              fillcolor="red", opacity=0.1, layer="below", line_width=0, row=1, col=1)
+            fig.add_vrect(x0=date - timedelta(hours=12), x1=date + timedelta(hours=12),
+                          fillcolor="red", opacity=0.1, layer="below", line_width=0, row=1, col=1)
 
     # 5. MOMENTUM
     subset_ppo = ppo[ppo.index >= chart_data.index[0]]
