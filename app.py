@@ -262,10 +262,12 @@ try:
     with c1:
         view_mode = st.radio("Select View Horizon:", 
                              ["Tactical (60-Day Zoom)", "Strategic (2-Year History)"], 
-                             horizontal=True)
+                             horizontal=True,
+                             help="Switch between a short-term tactical view (60 days) and long-term strategic history (2 years).")
     with c2:
         st.radio("Market Scope (Premium):", ["US Market (Active)", "Global Swarm 🔒", "Sector Rotation 🔒"], 
-                 index=0, horizontal=True, disabled=True)
+                 index=0, horizontal=True, disabled=True,
+                 help="Global and Sector views are available in the Institutional Plan.")
 
     # PREPARE DATA
     if view_mode == "Tactical (60-Day Zoom)":
@@ -336,7 +338,14 @@ try:
     # =============================================
     col1, col2 = st.columns([2, 1])
     with col1:
-        st.markdown(f'<div class="big-badge" style="background-color: {color}; color: white;">GOVERNANCE STATUS: {status}</div>', unsafe_allow_html=True)
+        if status == "EMERGENCY":
+            st.error(f"GOVERNANCE STATUS: {status}", icon="🚨")
+        elif status == "CAUTION":
+            st.warning(f"GOVERNANCE STATUS: {status}", icon="⚠️")
+        elif status == "WATCHLIST":
+            st.warning(f"GOVERNANCE STATUS: {status}", icon="👀")
+        else:
+            st.success(f"GOVERNANCE STATUS: {status}", icon="✅")
         st.caption(f"Reason: {reason}")
     with col2:
         latest_vix = full_data['Close']['^VIX'].iloc[-1]
