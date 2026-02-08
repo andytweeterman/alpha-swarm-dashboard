@@ -1,3 +1,5 @@
-## 2026-02-06 - Semantic Color Contrast
-**Learning:** Standard semantic colors (Warning Yellow, Caution Orange) often fail contrast ratios with white text. This is a common pattern in dashboard status indicators.
-**Action:** Default to black text for lighter semantic colors (Yellow, Orange, Cyan, Lime) or verify contrast ratios > 4.5:1.
+# PALETTE'S JOURNAL - CRITICAL LEARNINGS ONLY
+
+## 2026-06-05 - Streamlit Radio Button Context
+**Learning:** Streamlit's `st.radio` widget supports a `help` parameter that adds a question mark tooltip next to the label. This is a subtle but effective way to provide context for complex options or explain why certain features (like "Premium" tiers) are disabled, without cluttering the UI with extra text.
+**Action:** Always check for `help` parameters on Streamlit input widgets to add explanatory micro-copy, especially for disabled or complex controls.
