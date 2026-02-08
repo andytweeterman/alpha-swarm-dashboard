@@ -7,7 +7,7 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. PAGE SETUP (v7.6 - FINAL POLISH)
+# 1. PAGE SETUP (v8.0 - HERO CHART LAYOUT)
 # ==========================================
 st.set_page_config(page_title="Alpha Swarm", page_icon="🛡️", layout="wide")
 
@@ -63,6 +63,11 @@ st.markdown("""
     div[data-testid="stRadio"] div[role="radiogroup"] > label[disabled] {
         opacity: 0.5;
         cursor: not-allowed;
+    }
+    
+    /* 8. FOOTER STYLE */
+    .footer {
+        font-size: 12px; color: #666 !important; text-align: center; margin-top: 50px;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -138,6 +143,8 @@ def calculate_governance_history(data):
 # ==========================================
 st.title("🛡️ ALPHA SWARM GOVERNANCE")
 st.markdown("### Live Structural Risk & Momentum Monitor")
+# QUICK WIN 1: Data Timestamp
+st.caption(f"Market Data valid as of: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 st.divider()
 
 try:
@@ -154,53 +161,22 @@ try:
     last_dev = std.iloc[-1]
     f_dates, f_mean, f_upper, f_lower = generate_forecast(last_date, last_val, last_dev, days=30)
     
-    # ------------------
-    # TOP SECTION
-    # ------------------
-    col1, col2 = st.columns([2, 1])
-    with col1:
-        st.markdown(f'<div class="big-badge" style="background-color: {color}; color: white;">GOVERNANCE STATUS: {status}</div>', unsafe_allow_html=True)
-        st.caption(f"Reason: {reason}")
-    with col2:
-        latest_vix = full_data['Close']['^VIX'].iloc[-1]
-        st.metric("VIX Level", f"{latest_vix:.2f}", delta_color="inverse")
-
-    # ------------------
-    # HORIZON STRIP
-    # ------------------
-    st.subheader("⏱️ Tactical Horizons")
-    h1, h2, h3 = st.columns(3)
-    with h1:
-        st.info("**1 WEEK (Momentum)**")
-        st.markdown("🟢 **RISING**" if hist.iloc[-1] > 0 else "🔴 **WEAKENING**")
-        st.caption("Momentum Velocity")
-    with h2:
-        st.info("**1 MONTH (Trend)**")
-        st.markdown("🟢 **BULLISH**" if ppo.iloc[-1] > 0 else "🔴 **BEARISH**")
-        st.caption(f"Swarm Trend ({ppo.iloc[-1]:.2f})")
-    with h3:
-        st.info("**6 MONTH (Structural)**")
-        st.markdown("🟢 **SAFE**" if status == "NORMAL OPS" else f"🔴 **{status}**")
-        st.caption("Swarm Governance")
-
-    st.divider()
-
-    # ------------------
-    # CHART CONTROLS (RADIO BUTTONS)
-    # ------------------
+    # =============================================
+    # SECTION 1: THE CHARTS (MOVED UP)
+    # =============================================
+    
+    # CHART CONTROLS
     c1, c2 = st.columns(2)
     with c1:
         view_mode = st.radio("Select View Horizon:", 
                              ["Tactical (60-Day Zoom)", "Strategic (2-Year History)"], 
                              horizontal=True)
     with c2:
-        # THE "GHOST" BUTTONS (Visual only)
+        # GHOST BUTTONS
         st.radio("Market Scope (Premium):", ["US Market (Active)", "Global Swarm 🔒", "Sector Rotation 🔒"], 
                  index=0, horizontal=True, disabled=True)
 
-    st.subheader(f"📊 {view_mode}")
-
-    # PREPARE DATA BASED ON SELECTION
+    # PREPARE DATA
     if view_mode == "Tactical (60-Day Zoom)":
         start_filter = (datetime.now() - timedelta(days=60)).strftime('%Y-%m-%d')
         chart_data = full_data[full_data.index >= start_filter]
@@ -255,22 +231,47 @@ try:
     colors = ['#00ff00' if val >= 0 else '#ff0000' for val in subset_hist]
     fig.add_trace(go.Bar(x=chart_data.index, y=subset_hist, name="Velocity", marker_color=colors), row=2, col=1)
 
-    # CLEANER LAYOUT (NO GRIDS)
-    fig.update_layout(height=600, template="plotly_dark", margin=dict(l=0, r=0, t=0, b=0), showlegend=False,
+    # LAYOUT
+    fig.update_layout(height=500, template="plotly_dark", margin=dict(l=0, r=0, t=0, b=0), showlegend=False,
         plot_bgcolor='#0E1117', paper_bgcolor='#0E1117', font=dict(color='white'), xaxis_rangeslider_visible=False)
     fig.update_xaxes(showgrid=False)
     fig.update_yaxes(showgrid=False)
     
     st.plotly_chart(fig, use_container_width=True)
-
+    
     if show_forecast:
         st.caption("🟪 Purple Area = 30-Day 'Headlights' (Projected Volatility Cone)")
-    else:
-        st.caption("🟥 Red Background = Structural Risk Events (Level 7)")
 
-    # ------------------
-    # STRATEGIST CORNER
-    # ------------------
+    st.divider()
+
+    # =============================================
+    # SECTION 2: GOVERNANCE & BADGES (MOVED DOWN)
+    # =============================================
+    col1, col2 = st.columns([2, 1])
+    with col1:
+        st.markdown(f'<div class="big-badge" style="background-color: {color}; color: white;">GOVERNANCE STATUS: {status}</div>', unsafe_allow_html=True)
+        st.caption(f"Reason: {reason}")
+    with col2:
+        latest_vix = full_data['Close']['^VIX'].iloc[-1]
+        st.metric("VIX Level", f"{latest_vix:.2f}", delta_color="inverse")
+
+    st.subheader("⏱️ Tactical Horizons")
+    h1, h2, h3 = st.columns(3)
+    with h1:
+        st.info("**1 WEEK (Momentum)**")
+        st.markdown("🟢 **RISING**" if hist.iloc[-1] > 0 else "🔴 **WEAKENING**")
+    with h2:
+        st.info("**1 MONTH (Trend)**")
+        st.markdown("🟢 **BULLISH**" if ppo.iloc[-1] > 0 else "🔴 **BEARISH**")
+    with h3:
+        st.info("**6 MONTH (Structural)**")
+        st.markdown("🟢 **SAFE**" if status == "NORMAL OPS" else f"🔴 **{status}**")
+        
+    st.divider()
+
+    # =============================================
+    # SECTION 3: STRATEGIST VIEW
+    # =============================================
     st.subheader("📝 Chief Strategist's View")
     
     try:
@@ -293,8 +294,13 @@ try:
         st.markdown(f'**"{up_title}"**')
         st.markdown(up_text)
 
-    st.divider()
-    st.caption("Alpha Swarm v1.0 (Beta) | Institutional Risk Governance | © 2026")
+    # QUICK WIN 3: Professional Footer
+    st.markdown("""
+    <div class="footer">
+    ALPHA SWARM v1.0 (BETA) | INSTITUTIONAL RISK GOVERNANCE<br>
+    Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.
+    </div>
+    """, unsafe_allow_html=True)
 
 except Exception as e:
     st.error(f"Error loading data: {e}")
