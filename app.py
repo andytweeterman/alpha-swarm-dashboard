@@ -5,6 +5,9 @@ import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
+
+# ==========================================
+# 1. PAGE SETUP (v7.6 - FINAL POLISH)
 from calculations import calculate_ppo, calculate_cone, generate_forecast, calculate_governance_history
 
 # ==========================================
