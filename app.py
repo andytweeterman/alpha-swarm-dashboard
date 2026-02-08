@@ -7,16 +7,17 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. PAGE SETUP (v14.0 - FINAL CODE FREEZE)
+# 1. PAGE SETUP (v15.0 - TIEDEMAN BRANDING)
 # ==========================================
-st.set_page_config(page_title="Alpha Swarm", page_icon="🛡️", layout="wide")
+# WINDOW TITLE: The Firm Name first
+st.set_page_config(page_title="Tiedeman Research | Alpha Swarm", page_icon="🛡️", layout="wide")
 
 # SIDEBAR SETTINGS
 with st.sidebar:
-    st.header("⚙️ Settings")
+    st.header("🏛️ Tiedeman Research")
     dark_mode = st.toggle("Enable Dark Mode", value=False, help="Toggle between Institutional Dark Mode and Standard Light Mode.")
     st.divider()
-    st.caption("Alpha Swarm v14.0")
+    st.caption("Powered by Alpha Swarm v15.0")
 
 # CONDITIONAL CSS LOGIC
 if dark_mode:
@@ -179,9 +180,10 @@ def make_sparkline(data, color):
 # ==========================================
 # 3. THE UI RENDER
 # ==========================================
-st.title("🛡️ ALPHA SWARM GOVERNANCE")
-st.markdown("### Global Market Command Center")
-st.caption(f"Data Feed Active: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+# BRANDING UPDATE: Firm Name First
+st.title("🏛️ TIEDEMAN RESEARCH")
+st.markdown("### Alpha Swarm Intelligence: Global Market Command Center")
+st.caption(f"Governance Protocol Active: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 st.divider()
 
 try:
@@ -244,7 +246,7 @@ try:
     # SECTION 2: THE SWARM DEEP DIVE
     # =============================================
     
-    st.subheader("🔍 Swarm Deep Dive") # UPDATED: Removed (SPY)
+    st.subheader("🔍 Swarm Deep Dive")
     
     spy_close = full_data['Close']['SPY']
     ppo, sig, hist = calculate_ppo(spy_close)
@@ -357,7 +359,8 @@ try:
     # =============================================
     # SECTION 4: STRATEGIST VIEW
     # =============================================
-    st.subheader("📝 Chief Strategist's View")
+    # BRANDING UPDATE: Firm Name View
+    st.subheader("📝 Tiedeman Research: Chief Strategist's View")
     
     try:
         update_df = pd.read_csv("update.csv")
@@ -379,10 +382,10 @@ try:
         st.markdown(f'**"{up_title}"**')
         st.markdown(up_text)
 
-    # FOOTER
+    # BRANDING UPDATE: Footer Hierarchy
     st.markdown("""
     <div class="custom-footer">
-    ALPHA SWARM v14.0 (MARKETWATCH GRID EDITION) | INSTITUTIONAL RISK GOVERNANCE<br>
+    TIEDEMAN RESEARCH | ALPHA SWARM PROTOCOL v15.0 | INSTITUTIONAL RISK GOVERNANCE<br>
     Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.
     </div>
     """, unsafe_allow_html=True)
