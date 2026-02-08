@@ -7,10 +7,6 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. PAGE SETUP (v7.6 - FINAL POLISH)
-from calculations import calculate_ppo, calculate_cone, generate_forecast, calculate_governance_history
-
-# ==========================================
 # 1. PAGE SETUP (v8.0 - HERO CHART LAYOUT)
 # ==========================================
 st.set_page_config(page_title="Alpha Swarm", page_icon="🛡️", layout="wide")
