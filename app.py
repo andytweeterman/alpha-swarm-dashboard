@@ -7,7 +7,7 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. PAGE SETUP (v10.0 - DYNAMIC THEME SWITCH)
+# 1. PAGE SETUP (v11.0 - CONTRAST TUNING)
 # ==========================================
 st.set_page_config(page_title="Alpha Swarm", page_icon="🛡️", layout="wide")
 
@@ -20,53 +20,95 @@ with st.sidebar:
 
 # CONDITIONAL CSS LOGIC
 if dark_mode:
-    # --- DARK MODE CSS (The "Bloomberg" Look) ---
+    # --- DARK MODE CSS (Institutional) ---
     st.markdown("""
     <style>
-    /* GLOBAL DARK MODE */
+    /* 1. GLOBAL BACKGROUND */
     .stApp { background-color: #000000; }
-    h1, h2, h3, h4, h5, h6, p, li, span, div { color: #E0E0E0 !important; }
+    
+    /* 2. SIDEBAR SPECIFIC (Requested: Darker Text) */
+    section[data-testid="stSidebar"] { background-color: #0e1117 !important; }
+    section[data-testid="stSidebar"] h2, 
+    section[data-testid="stSidebar"] span, 
+    section[data-testid="stSidebar"] div,
+    section[data-testid="stSidebar"] label { 
+        color: #888888 !important; /* Dimmed Grey for low profile */
+    }
+    
+    /* 3. MAIN CONTENT TEXT (White/Light Grey) */
+    .main h1, .main h2, .main h3, .main h4, .main h5, .main h6, 
+    .main p, .main li, .main span, .main div { color: #E0E0E0 !important; }
+    
+    /* 4. METRIC COLORS */
     div[data-testid="stMetricValue"] { color: #00FF00 !important; }
     
-    /* EXPANDER HEADER FIX */
-    [data-testid="stExpander"] { background-color: #161b22 !important; border: 1px solid #30363d !important; border-radius: 6px; }
+    /* 5. EXPANDER & TOOLTIPS */
+    [data-testid="stExpander"], div[data-testid="stTooltipContent"] {
+        background-color: #161b22 !important; border: 1px solid #30363d !important; border-radius: 6px;
+    }
     [data-testid="stExpander"] summary { background-color: #161b22 !important; color: #ffffff !important; }
-    [data-testid="stExpander"] summary p, [data-testid="stExpander"] summary span { color: #ffffff !important; font-weight: 600; background-color: transparent !important; }
-    [data-testid="stExpander"] summary:hover p { color: #00FF00 !important; }
-    [data-testid="stExpander"] details { background-color: #161b22 !important; }
-    
-    /* TOOLTIPS */
-    div[data-testid="stTooltipContent"] { background-color: #161b22 !important; color: #ffffff !important; border: 1px solid #30363d !important; }
+    [data-testid="stExpander"] summary p, [data-testid="stExpander"] summary span { color: #ffffff !important; }
     [data-testid="stTooltipHoverTarget"] svg { fill: #E0E0E0 !important; }
     
-    /* COMPONENTS */
+    /* 6. COMPONENTS */
     code { background-color: #161b22 !important; color: #E0E0E0 !important; }
     div[data-testid="stRadio"] > label { color: #E0E0E0 !important; font-weight: bold; }
     div[data-testid="stRadio"] div[role="radiogroup"] > label[disabled] { opacity: 0.5; cursor: not-allowed; }
     
-    /* UNIVERSAL CLASSES */
+    /* 7. BADGE & FOOTER */
     .big-badge { font-size: 24px; font-weight: bold; padding: 15px; border-radius: 5px; text-align: center; margin-bottom: 20px; border: 1px solid #333; }
     .footer { font-size: 12px; color: #666 !important; text-align: center; margin-top: 50px; }
     </style>
     """, unsafe_allow_html=True)
     
-    # Chart Settings for DARK
     chart_template = "plotly_dark"
     chart_bg = '#0E1117'
     chart_font_color = 'white'
     
 else:
-    # --- LIGHT MODE CSS (Minimal Clean) ---
+    # --- LIGHT MODE CSS (High Contrast) ---
     st.markdown("""
     <style>
-    /* Just styling the Badge and Footer, let Streamlit handle the rest */
-    .big-badge { font-size: 24px; font-weight: bold; padding: 15px; border-radius: 5px; text-align: center; margin-bottom: 20px; border: 1px solid #ddd; }
-    .footer { font-size: 12px; color: #666 !important; text-align: center; margin-top: 50px; }
-    div[data-testid="stRadio"] div[role="radiogroup"] > label[disabled] { opacity: 0.5; cursor: not-allowed; }
+    /* 1. FORCE DARKER TEXT (Requested) */
+    .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6, 
+    .stApp p, .stApp li, .stApp span, .stApp div { 
+        color: #000000 !important; 
+    }
+    
+    /* 2. FORCE RADIO BUTTONS BLACK */
+    div[data-testid="stRadio"] > label { 
+        color: #000000 !important; 
+        font-weight: 800 !important; /* Extra Bold */
+    }
+    div[data-testid="stRadio"] div[role="radiogroup"] label {
+        color: #000000 !important;
+        font-weight: 600 !important;
+    }
+    
+    /* 3. CAPTIONS & REASONS BLACK */
+    div[data-testid="stCaptionContainer"] {
+        color: #000000 !important;
+        opacity: 1 !important; /* Remove transparency */
+        font-weight: 600 !important;
+    }
+    
+    /* 4. DISABLED OPTIONS (Visual Cue only) */
+    div[data-testid="stRadio"] div[role="radiogroup"] > label[disabled] { 
+        color: #666666 !important; /* Dark Grey for disabled */
+        opacity: 0.7; 
+    }
+    
+    /* 5. BADGE STYLE */
+    .big-badge { 
+        font-size: 24px; font-weight: bold; padding: 15px; 
+        border-radius: 5px; text-align: center; margin-bottom: 20px; 
+        border: 2px solid #000; /* Darker border */
+        color: #000 !important;
+    }
+    .footer { font-size: 12px; color: #333 !important; text-align: center; margin-top: 50px; }
     </style>
     """, unsafe_allow_html=True)
     
-    # Chart Settings for LIGHT
     chart_template = "plotly_white"
     chart_bg = '#FFFFFF'
     chart_font_color = 'black'
@@ -249,6 +291,7 @@ try:
     # =============================================
     col1, col2 = st.columns([2, 1])
     with col1:
+        # Note: If Dark Mode is OFF, we force the text to Black using the CSS class override in Logic Block
         st.markdown(f'<div class="big-badge" style="background-color: {color}; color: white;">GOVERNANCE STATUS: {status}</div>', unsafe_allow_html=True)
         st.caption(f"Reason: {reason}")
     with col2:
