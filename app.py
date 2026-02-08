@@ -60,11 +60,6 @@ st.markdown("""
     
     /* 7. COMPONENT STYLES */
     div[data-testid="stRadio"] > label { color: #E0E0E0 !important; font-weight: bold; }
-    .big-badge {
-        font-size: 24px; font-weight: bold; padding: 15px;
-        border-radius: 5px; text-align: center; margin-bottom: 20px;
-        border: 1px solid #333;
-    }
     
     /* 8. DISABLED OPTION STYLING */
     div[data-testid="stRadio"] div[role="radiogroup"] > label[disabled] {
@@ -259,7 +254,14 @@ try:
     # =============================================
     col1, col2 = st.columns([2, 1])
     with col1:
-        st.markdown(f'<div class="big-badge" style="background-color: {color}; color: white;">GOVERNANCE STATUS: {status}</div>', unsafe_allow_html=True)
+        if status == "EMERGENCY":
+            st.error(f"GOVERNANCE STATUS: {status}", icon="🚨")
+        elif status == "CAUTION":
+            st.warning(f"GOVERNANCE STATUS: {status}", icon="⚠️")
+        elif status == "WATCHLIST":
+            st.warning(f"GOVERNANCE STATUS: {status}", icon="👀")
+        else:
+            st.success(f"GOVERNANCE STATUS: {status}", icon="✅")
         st.caption(f"Reason: {reason}")
     with col2:
         latest_vix = full_data['Close']['^VIX'].iloc[-1]
