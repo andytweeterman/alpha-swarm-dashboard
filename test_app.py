@@ -1,5 +1,5 @@
 import sys
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
@@ -7,6 +7,12 @@ import pytest
 
 # Mock streamlit before importing app
 mock_st = MagicMock()
+# Ensure @st.cache_data acts as a pass-through decorator so we can test the function
+def side_effect_cache_data(**kwargs):
+    def decorator(func):
+        return func
+    return decorator
+mock_st.cache_data.side_effect = side_effect_cache_data
 sys.modules["streamlit"] = mock_st
 
 # Import app logic
@@ -34,6 +40,43 @@ def sample_data():
     df = pd.DataFrame(data, index=dates)
     df.columns = pd.MultiIndex.from_tuples(df.columns)
     return df
+
+def test_fetch_data():
+    # Setup mock data with MultiIndex columns (Price, Ticker)
+    dates = pd.date_range(end=datetime.now(), periods=10)
+    tickers = ["SPY", "HYG", "IEF", "^VIX", "RSP", "DX-Y.NYB"]
+    price_types = ['Adj Close', 'Close', 'High', 'Low', 'Open', 'Volume']
+
+    # Create a MultiIndex
+    columns = pd.MultiIndex.from_product([price_types, tickers], names=['Price', 'Ticker'])
+
+    # Create random data
+    data = np.random.randn(len(dates), len(columns))
+    mock_df = pd.DataFrame(data, index=dates, columns=columns)
+
+    with patch('app.yf.download') as mock_download:
+        mock_download.return_value = mock_df
+
+        # Call function
+        result = app.fetch_data()
+
+        # Verify
+        pd.testing.assert_frame_equal(result, mock_df)
+        mock_download.assert_called_once()
+
+        # Verify arguments
+        args, kwargs = mock_download.call_args
+        # args[0] should be the list of tickers
+        assert set(args[0]) == set(tickers)
+        assert 'start' in kwargs
+
+        # Verify start date is approximately 5 years ago
+        start_date = datetime.strptime(kwargs['start'], '%Y-%m-%d')
+        expected_date = datetime.now() - timedelta(days=1825)
+        # Allow for small difference due to execution time
+        assert abs((start_date - expected_date).days) <= 1
+
+        assert kwargs['progress'] is False
 
 def test_calculate_ppo():
     # Test with a simple linear series
