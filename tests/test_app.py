@@ -1,5 +1,5 @@
 import sys
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 import pandas as pd
 import numpy as np
 import pytest
@@ -138,3 +138,23 @@ def test_governance_precedence(mock_market_data):
     assert status == "EMERGENCY"
     assert color == "red"
     assert reason == "Structural/Policy Failure"
+
+def test_get_strategist_update_missing_file():
+    """Test fallback when update.csv is missing."""
+    with patch('pandas.read_csv', side_effect=FileNotFoundError):
+        date, title, text = app.get_strategist_update()
+        assert date == "System Status"
+        assert title == "Data Feed Offline"
+        assert text == "Strategist update pending."
+
+def test_get_strategist_update_valid_file():
+    """Test parsing of valid update.csv."""
+    mock_df = pd.DataFrame({
+        'Key': ['Date', 'Title', 'Text'],
+        'Value': ['2023-10-27', 'Weekly Update', 'Market is doing fine.\\nBuy low.']
+    })
+    with patch('pandas.read_csv', return_value=mock_df):
+        date, title, text = app.get_strategist_update()
+        assert date == '2023-10-27'
+        assert title == 'Weekly Update'
+        assert text == 'Market is doing fine.\n\nBuy low.'
