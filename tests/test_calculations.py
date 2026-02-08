@@ -4,87 +4,88 @@ import numpy as np
 import sys
 import os
 
-# Ensure the root directory is in sys.path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# Add the parent directory to sys.path to import calculations
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from calculations import calculate_ppo
+from calculations import calculate_cone
 
-def test_calculate_ppo_structure():
-    """Test that the function returns 3 pandas Series with correct types and lengths."""
-    # Create a dummy price series
-    prices = pd.Series(np.random.randn(100) + 100, index=pd.date_range("2020-01-01", periods=100))
+def test_calculate_cone_basic():
+    """Verify calculate_cone returns 4 series and correct types."""
+    data = pd.Series(np.random.randn(100), index=pd.date_range("2023-01-01", periods=100))
+    sma, std, upper, lower = calculate_cone(data)
 
-    ppo, signal, hist = calculate_ppo(prices)
+    assert isinstance(sma, pd.Series)
+    assert isinstance(std, pd.Series)
+    assert isinstance(upper, pd.Series)
+    assert isinstance(lower, pd.Series)
+    assert len(sma) == 100
+    assert len(std) == 100
+    assert len(upper) == 100
+    assert len(lower) == 100
 
-    assert isinstance(ppo, pd.Series)
-    assert isinstance(signal, pd.Series)
-    assert isinstance(hist, pd.Series)
-    assert len(ppo) == len(prices)
-    assert len(signal) == len(prices)
-    assert len(hist) == len(prices)
+def test_calculate_cone_constant_input():
+    """Test with constant input. STD should be 0, Upper=Lower=SMA=Input."""
+    data = pd.Series([10.0] * 50, index=pd.date_range("2023-01-01", periods=50))
+    sma, std, upper, lower = calculate_cone(data)
 
-def test_calculate_ppo_constant():
-    """Test that PPO converges to 0 for constant prices."""
-    # Constant price
-    prices = pd.Series([100.0] * 100)
+    # Check after window size (index 19 is the 20th element)
+    # Pandas rolling window size 20 means index 19 is the first valid result if min_periods=None
 
-    ppo, signal, hist = calculate_ppo(prices)
+    subset_sma = sma.iloc[19:]
+    subset_std = std.iloc[19:]
+    subset_upper = upper.iloc[19:]
+    subset_lower = lower.iloc[19:]
 
-    # For a constant price series, EMA12 and EMA26 should be equal to the price (after initialization or immediately if adjust=False starts at price)
-    # If EMA12 == EMA26, then PPO should be 0.
+    assert (subset_sma == 10.0).all()
+    # std should be very close to 0
+    assert (subset_std < 1e-10).all()
+    assert (subset_upper - 10.0 < 1e-10).all()
+    assert (subset_lower - 10.0 < 1e-10).all()
 
-    # Check if all values are approximately 0
-    assert (ppo.abs() < 1e-10).all()
-    assert (signal.abs() < 1e-10).all()
-    assert (hist.abs() < 1e-10).all()
+def test_calculate_cone_logic():
+    """Test calculation logic: upper = sma + 1.28*std, lower = sma - 1.28*std."""
+    data = pd.Series(np.arange(100, dtype=float), index=pd.date_range("2023-01-01", periods=100))
+    sma, std, upper, lower = calculate_cone(data)
 
-def test_calculate_ppo_uptrend():
-    """Test with a simple increasing trend."""
-    # In an uptrend, EMA12 (faster) > EMA26 (slower), so PPO should be positive.
-    prices = pd.Series(np.linspace(100, 200, 100))
+    # We ignore the first 19 values which are NaN
+    expected_upper = sma + (1.28 * std)
+    expected_lower = sma - (1.28 * std)
 
-    ppo, signal, hist = calculate_ppo(prices)
+    pd.testing.assert_series_equal(upper, expected_upper)
+    pd.testing.assert_series_equal(lower, expected_lower)
 
-    # Skip the first few periods where EMAs are initializing/crossing
-    # Though with adjust=False starting at the first value, they start equal (100).
-    # Then next value is slightly higher. EMA12 reacts faster. So PPO > 0 immediately after first step.
+def test_calculate_cone_short_series():
+    """Test series shorter than window size (20)."""
+    data = pd.Series(np.random.randn(10), index=pd.date_range("2023-01-01", periods=10))
+    sma, std, upper, lower = calculate_cone(data)
 
-    assert (ppo.iloc[1:] > 0).all()
+    assert sma.isna().all()
+    assert std.isna().all()
+    assert upper.isna().all()
+    assert lower.isna().all()
 
-def test_calculate_ppo_downtrend():
-    """Test with a simple decreasing trend."""
-    # In a downtrend, EMA12 < EMA26, so PPO should be negative.
-    prices = pd.Series(np.linspace(200, 100, 100))
+def test_calculate_cone_empty():
+    """Test empty series."""
+    data = pd.Series([], dtype=float)
+    sma, std, upper, lower = calculate_cone(data)
 
-    ppo, signal, hist = calculate_ppo(prices)
+    assert sma.empty
+    assert std.empty
+    assert upper.empty
+    assert lower.empty
 
-    assert (ppo.iloc[1:] < 0).all()
+def test_calculate_cone_nan_handling():
+    """Test input with NaNs."""
+    data = pd.Series(np.random.randn(50), index=pd.date_range("2023-01-01", periods=50))
+    data.iloc[25] = np.nan
 
-def test_calculate_ppo_empty():
-    """Test behavior with empty input."""
-    prices = pd.Series([], dtype=float)
+    sma, std, upper, lower = calculate_cone(data)
 
-    ppo, signal, hist = calculate_ppo(prices)
+    assert len(sma) == 50
 
-    assert len(ppo) == 0
-    assert len(signal) == 0
-    assert len(hist) == 0
-    assert ppo.empty
-    assert signal.empty
-    assert hist.empty
+    # The window including index 25 (e.g., index 25 itself) should result in NaN
+    assert pd.isna(sma.iloc[25])
 
-def test_calculate_ppo_nan():
-    """Test handling of NaN values."""
-    prices = pd.Series([100.0, 101.0, np.nan, 102.0, 103.0])
-
-    ppo, signal, hist = calculate_ppo(prices)
-
-    assert len(ppo) == len(prices)
-    # With adjust=False, ewm usually propagates the previous value if NaN is encountered (depending on ignore_na default)
-    # Pandas defaults ignore_na=False, which treats NaNs by just not updating the weighted average?
-    # Actually, it seems to just propagate the previous value.
-    # Let's verify that it produces a valid float or NaN, but more importantly doesn't crash.
-    assert isinstance(ppo.iloc[2], float)
-
-    # Check that subsequent calculations continue correctly
-    assert not np.isnan(ppo.iloc[4])
+    # Check if index 45 is valid (window 26..45 does not include 25)
+    if len(sma) > 45:
+        assert not pd.isna(sma.iloc[45])
