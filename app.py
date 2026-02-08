@@ -7,7 +7,7 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. PAGE SETUP (v13.0 - MARKETWATCH GRID)
+# 1. PAGE SETUP (v14.0 - FINAL CODE FREEZE)
 # ==========================================
 st.set_page_config(page_title="Alpha Swarm", page_icon="🛡️", layout="wide")
 
@@ -16,13 +16,18 @@ with st.sidebar:
     st.header("⚙️ Settings")
     dark_mode = st.toggle("Enable Dark Mode", value=False, help="Toggle between Institutional Dark Mode and Standard Light Mode.")
     st.divider()
-    st.caption("Alpha Swarm v13.0")
+    st.caption("Alpha Swarm v14.0")
 
 # CONDITIONAL CSS LOGIC
 if dark_mode:
     # --- DARK MODE CSS (Institutional) ---
     st.markdown("""
     <style>
+    /* HIDE STREAMLIT DEFAULT MENUS */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    
     /* GLOBAL BACKGROUND */
     .stApp { background-color: #000000; }
     
@@ -53,7 +58,7 @@ if dark_mode:
     [data-testid="stExpander"] summary { color: #ffffff !important; }
     
     /* FOOTER */
-    .footer { font-size: 12px; color: #666 !important; text-align: center; margin-top: 50px; }
+    .custom-footer { font-size: 12px; color: #666 !important; text-align: center; margin-top: 50px; }
     .big-badge { font-size: 24px; font-weight: bold; padding: 15px; border-radius: 5px; text-align: center; margin-bottom: 20px; border: 1px solid #333; color: #FFFFFF !important;}
     </style>
     """, unsafe_allow_html=True)
@@ -66,6 +71,11 @@ else:
     # --- LIGHT MODE CSS (MarketWatch Style) ---
     st.markdown("""
     <style>
+    /* HIDE STREAMLIT DEFAULT MENUS */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    
     /* TEXT & HEADERS */
     .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6, p, li, span, div { 
         color: #000000 !important; 
@@ -74,22 +84,13 @@ else:
     /* METRICS */
     div[data-testid="stMetricValue"] { color: #000000 !important; font-weight: 700 !important; }
     
-    /* MARKET GRID CARDS */
-    .market-card {
-        background-color: #f0f2f6;
-        border: 1px solid #ddd;
-        padding: 10px;
-        border-radius: 5px;
-        text-align: center;
-    }
-
     /* BADGE */
     .big-badge { 
         font-size: 24px; font-weight: bold; padding: 15px; 
         border-radius: 5px; text-align: center; margin-bottom: 20px; 
         border: 2px solid #000; color: #000 !important;
     }
-    .footer { font-size: 12px; color: #333 !important; text-align: center; margin-top: 50px; }
+    .custom-footer { font-size: 12px; color: #333 !important; text-align: center; margin-top: 50px; }
     </style>
     """, unsafe_allow_html=True)
     
@@ -103,7 +104,6 @@ else:
 @st.cache_data(ttl=3600)
 def fetch_data():
     with st.spinner('Accessing Global Market Data...'):
-        # Added: Dow (^DJI), Nasdaq (^IXIC), Gold (GC=F), Oil (CL=F)
         tickers = ["SPY", "^DJI", "^IXIC", "HYG", "IEF", "^VIX", "RSP", "DX-Y.NYB", "GC=F", "CL=F"]
         start = (datetime.now() - timedelta(days=1825)).strftime('%Y-%m-%d')
         data = yf.download(tickers, start=start, progress=False)
@@ -190,17 +190,16 @@ try:
     gov_df, status, color, reason = calculate_governance_history(full_data)
     
     # =============================================
-    # SECTION 1: MARKETWATCH GRID (The "Big Ask")
+    # SECTION 1: MARKETWATCH GRID
     # =============================================
     
-    # Define the 6 Assets
     assets = [
         {"name": "Dow Jones", "ticker": "^DJI", "color": "#00CC00"},
         {"name": "S&P 500", "ticker": "SPY", "color": "#00CC00"},
         {"name": "Nasdaq", "ticker": "^IXIC", "color": "#00CC00"},
-        {"name": "VIX Index", "ticker": "^VIX", "color": "#FF5500"}, # VIX is orange/red
-        {"name": "Gold", "ticker": "GC=F", "color": "#FFD700"},      # Gold color
-        {"name": "Crude Oil", "ticker": "CL=F", "color": "#888888"}  # Oil color
+        {"name": "VIX Index", "ticker": "^VIX", "color": "#FF5500"},
+        {"name": "Gold", "ticker": "GC=F", "color": "#FFD700"},
+        {"name": "Crude Oil", "ticker": "CL=F", "color": "#888888"}
     ]
     
     # Row 1
@@ -210,17 +209,13 @@ try:
     for i in range(3):
         asset = assets[i]
         with cols[i]:
-            # Get Data
             series = closes[asset['ticker']].dropna()
             if not series.empty:
                 current = series.iloc[-1]
                 prev = series.iloc[-2]
                 delta = current - prev
                 pct = (delta / prev) * 100
-                
-                # Display Metric
                 st.metric(asset['name'], f"{current:,.2f}", f"{delta:+.2f} ({pct:+.2f}%)")
-                # Display Sparkline
                 spark = make_sparkline(series.tail(30), asset['color'])
                 st.plotly_chart(spark, use_container_width=True, config={'displayModeBar': False})
     
@@ -231,7 +226,7 @@ try:
     cols2 = [c4, c5, c6]
     
     for i in range(3):
-        asset = assets[i+3] # Get next 3
+        asset = assets[i+3]
         with cols2[i]:
             series = closes[asset['ticker']].dropna()
             if not series.empty:
@@ -239,8 +234,6 @@ try:
                 prev = series.iloc[-2]
                 delta = current - prev
                 pct = (delta / prev) * 100
-                
-                # Special Logic for VIX (Lower is Green, Higher is Red usually, but let's stick to standard math)
                 st.metric(asset['name'], f"{current:,.2f}", f"{delta:+.2f} ({pct:+.2f}%)")
                 spark = make_sparkline(series.tail(30), asset['color'])
                 st.plotly_chart(spark, use_container_width=True, config={'displayModeBar': False})
@@ -248,10 +241,10 @@ try:
     st.divider()
 
     # =============================================
-    # SECTION 2: THE SWARM DEEP DIVE (SPY)
+    # SECTION 2: THE SWARM DEEP DIVE
     # =============================================
     
-    st.subheader("🔍 Swarm Deep Dive (SPY)")
+    st.subheader("🔍 Swarm Deep Dive") # UPDATED: Removed (SPY)
     
     spy_close = full_data['Close']['SPY']
     ppo, sig, hist = calculate_ppo(spy_close)
@@ -323,12 +316,13 @@ try:
     colors = ['#00ff00' if val >= 0 else '#ff0000' for val in subset_hist]
     fig.add_trace(go.Bar(x=chart_data.index, y=subset_hist, name="Velocity", marker_color=colors), row=2, col=1)
 
+    # LAYOUT (UPDATED: MODEBAR REMOVED)
     fig.update_layout(height=500, template=chart_template, margin=dict(l=0, r=0, t=0, b=0), showlegend=False,
         plot_bgcolor=chart_bg, paper_bgcolor=chart_bg, font=dict(color=chart_font_color), xaxis_rangeslider_visible=False)
     fig.update_xaxes(showgrid=False)
     fig.update_yaxes(showgrid=False)
     
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
     
     if show_forecast:
         st.caption("🟪 Purple Area = 30-Day 'Headlights' (Projected Volatility Cone)")
@@ -387,8 +381,8 @@ try:
 
     # FOOTER
     st.markdown("""
-    <div class="footer">
-    ALPHA SWARM v13.0 (MARKETWATCH GRID EDITION) | INSTITUTIONAL RISK GOVERNANCE<br>
+    <div class="custom-footer">
+    ALPHA SWARM v14.0 (MARKETWATCH GRID EDITION) | INSTITUTIONAL RISK GOVERNANCE<br>
     Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.
     </div>
     """, unsafe_allow_html=True)
