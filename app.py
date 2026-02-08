@@ -285,7 +285,7 @@ try:
         lines = [line.strip() for line in raw_text.split('\n')]
         up_text = '\n\n'.join(lines)
         
-    except Exception:
+    except (OSError, pd.errors.EmptyDataError, pd.errors.ParserError, KeyError):
         up_date = "System Status"
         up_title = "Data Feed Offline"
         up_text = "Strategist update pending."
