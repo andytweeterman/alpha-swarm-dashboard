@@ -7,7 +7,7 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. PAGE SETUP (v11.0 - CONTRAST TUNING)
+# 1. PAGE SETUP (v12.0 - DARK MODE CONTRAST FIX)
 # ==========================================
 st.set_page_config(page_title="Alpha Swarm", page_icon="🛡️", layout="wide")
 
@@ -16,47 +16,64 @@ with st.sidebar:
     st.header("⚙️ Settings")
     dark_mode = st.toggle("Enable Dark Mode", value=True, help="Toggle between Institutional Dark Mode and Standard Light Mode.")
     st.divider()
-    st.caption("Alpha Swarm v10.0")
+    st.caption("Alpha Swarm v12.0")
 
 # CONDITIONAL CSS LOGIC
 if dark_mode:
-    # --- DARK MODE CSS (Institutional) ---
+    # --- DARK MODE CSS (Institutional High Contrast) ---
     st.markdown("""
     <style>
     /* 1. GLOBAL BACKGROUND */
     .stApp { background-color: #000000; }
     
-    /* 2. SIDEBAR SPECIFIC (Requested: Darker Text) */
-    section[data-testid="stSidebar"] { background-color: #0e1117 !important; }
-    section[data-testid="stSidebar"] h2, 
-    section[data-testid="stSidebar"] span, 
-    section[data-testid="stSidebar"] div,
-    section[data-testid="stSidebar"] label { 
-        color: #888888 !important; /* Dimmed Grey for low profile */
+    /* 2. HEADERS & TITLES (Force Bright White) */
+    h1, h2, h3, h4, h5, h6 { color: #FFFFFF !important; }
+    
+    /* 3. BODY TEXT (Force Light Grey) */
+    p, li, span, div { color: #E0E0E0; }
+    
+    /* 4. RADIO BUTTONS & LABELS (Force Bright) */
+    div[data-testid="stRadio"] > label { 
+        color: #FFFFFF !important; 
+        font-weight: bold;
+    }
+    div[data-testid="stRadio"] div[role="radiogroup"] label {
+        color: #E0E0E0 !important;
     }
     
-    /* 3. MAIN CONTENT TEXT (White/Light Grey) */
-    .main h1, .main h2, .main h3, .main h4, .main h5, .main h6, 
-    .main p, .main li, .main span, .main div { color: #E0E0E0 !important; }
+    /* 5. CAPTIONS (Force Visible Grey) */
+    div[data-testid="stCaptionContainer"] {
+        color: #CCCCCC !important;
+    }
     
-    /* 4. METRIC COLORS */
+    /* 6. METRIC LABELS ("VIX Level") */
+    div[data-testid="stMetricLabel"] {
+        color: #CCCCCC !important;
+    }
     div[data-testid="stMetricValue"] { color: #00FF00 !important; }
     
-    /* 5. EXPANDER & TOOLTIPS */
+    /* 7. EXPANDER & TOOLTIPS */
     [data-testid="stExpander"], div[data-testid="stTooltipContent"] {
         background-color: #161b22 !important; border: 1px solid #30363d !important; border-radius: 6px;
     }
     [data-testid="stExpander"] summary { background-color: #161b22 !important; color: #ffffff !important; }
     [data-testid="stExpander"] summary p, [data-testid="stExpander"] summary span { color: #ffffff !important; }
-    [data-testid="stTooltipHoverTarget"] svg { fill: #E0E0E0 !important; }
+    [data-testid="stTooltipHoverTarget"] svg { fill: #FFFFFF !important; }
     
-    /* 6. COMPONENTS */
-    code { background-color: #161b22 !important; color: #E0E0E0 !important; }
-    div[data-testid="stRadio"] > label { color: #E0E0E0 !important; font-weight: bold; }
-    div[data-testid="stRadio"] div[role="radiogroup"] > label[disabled] { opacity: 0.5; cursor: not-allowed; }
+    /* 8. SIDEBAR (Keep Dimmed) */
+    section[data-testid="stSidebar"] { background-color: #0e1117 !important; }
+    section[data-testid="stSidebar"] h2, 
+    section[data-testid="stSidebar"] span, 
+    section[data-testid="stSidebar"] label { color: #888888 !important; }
     
-    /* 7. BADGE & FOOTER */
-    .big-badge { font-size: 24px; font-weight: bold; padding: 15px; border-radius: 5px; text-align: center; margin-bottom: 20px; border: 1px solid #333; }
+    /* 9. DISABLED OPTIONS */
+    div[data-testid="stRadio"] div[role="radiogroup"] > label[disabled] { 
+        color: #666666 !important; 
+        opacity: 0.5; cursor: not-allowed; 
+    }
+    
+    /* 10. BADGE & FOOTER */
+    .big-badge { font-size: 24px; font-weight: bold; padding: 15px; border-radius: 5px; text-align: center; margin-bottom: 20px; border: 1px solid #333; color: #FFFFFF !important;}
     .footer { font-size: 12px; color: #666 !important; text-align: center; margin-top: 50px; }
     </style>
     """, unsafe_allow_html=True)
@@ -66,10 +83,10 @@ if dark_mode:
     chart_font_color = 'white'
     
 else:
-    # --- LIGHT MODE CSS (High Contrast) ---
+    # --- LIGHT MODE CSS (Clean Black/White) ---
     st.markdown("""
     <style>
-    /* 1. FORCE DARKER TEXT (Requested) */
+    /* 1. FORCE DARKER TEXT */
     .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6, 
     .stApp p, .stApp li, .stApp span, .stApp div { 
         color: #000000 !important; 
@@ -78,32 +95,27 @@ else:
     /* 2. FORCE RADIO BUTTONS BLACK */
     div[data-testid="stRadio"] > label { 
         color: #000000 !important; 
-        font-weight: 800 !important; /* Extra Bold */
+        font-weight: 800 !important; 
     }
     div[data-testid="stRadio"] div[role="radiogroup"] label {
         color: #000000 !important;
         font-weight: 600 !important;
     }
     
-    /* 3. CAPTIONS & REASONS BLACK */
-    div[data-testid="stCaptionContainer"] {
-        color: #000000 !important;
-        opacity: 1 !important; /* Remove transparency */
-        font-weight: 600 !important;
-    }
+    /* 3. CAPTIONS & METRICS BLACK */
+    div[data-testid="stCaptionContainer"] { color: #000000 !important; opacity: 1 !important; font-weight: 600 !important; }
+    div[data-testid="stMetricLabel"] { color: #000000 !important; font-weight: bold !important; }
     
-    /* 4. DISABLED OPTIONS (Visual Cue only) */
+    /* 4. DISABLED OPTIONS */
     div[data-testid="stRadio"] div[role="radiogroup"] > label[disabled] { 
-        color: #666666 !important; /* Dark Grey for disabled */
-        opacity: 0.7; 
+        color: #666666 !important; opacity: 0.7; 
     }
     
     /* 5. BADGE STYLE */
     .big-badge { 
         font-size: 24px; font-weight: bold; padding: 15px; 
         border-radius: 5px; text-align: center; margin-bottom: 20px; 
-        border: 2px solid #000; /* Darker border */
-        color: #000 !important;
+        border: 2px solid #000; color: #000 !important;
     }
     .footer { font-size: 12px; color: #333 !important; text-align: center; margin-top: 50px; }
     </style>
@@ -291,7 +303,6 @@ try:
     # =============================================
     col1, col2 = st.columns([2, 1])
     with col1:
-        # Note: If Dark Mode is OFF, we force the text to Black using the CSS class override in Logic Block
         st.markdown(f'<div class="big-badge" style="background-color: {color}; color: white;">GOVERNANCE STATUS: {status}</div>', unsafe_allow_html=True)
         st.caption(f"Reason: {reason}")
     with col2:
