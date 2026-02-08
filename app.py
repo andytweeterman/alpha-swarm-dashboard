@@ -8,6 +8,10 @@ from datetime import datetime, timedelta
 
 # ==========================================
 # 1. PAGE SETUP (v7.6 - FINAL POLISH)
+from calculations import calculate_ppo, calculate_cone, generate_forecast, calculate_governance_history
+
+# ==========================================
+# 1. PAGE SETUP (v8.0 - HERO CHART LAYOUT)
 # ==========================================
 st.set_page_config(page_title="Alpha Swarm", page_icon="🛡️", layout="wide")
 
@@ -64,6 +68,11 @@ st.markdown("""
         opacity: 0.5;
         cursor: not-allowed;
     }
+
+    /* 8. FOOTER STYLE */
+    .footer {
+        font-size: 12px; color: #666 !important; text-align: center; margin-top: 50px;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -78,75 +87,20 @@ def fetch_data():
         data = yf.download(tickers, start=start, progress=False)
     return data
 
-def calculate_ppo(price):
-    ema12 = price.ewm(span=12, adjust=False).mean()
-    ema26 = price.ewm(span=26, adjust=False).mean()
-    ppo_line = ((ema12 - ema26) / ema26) * 100
-    signal_line = ppo_line.ewm(span=9, adjust=False).mean()
-    hist = ppo_line - signal_line
-    return ppo_line, signal_line, hist
 
-def calculate_cone(price):
-    window = 20
-    sma = price.rolling(window=window).mean()
-    std = price.rolling(window=window).std()
-    upper_band = sma + (1.28 * std)
-    lower_band = sma - (1.28 * std)
-    return sma, std, upper_band, lower_band
-
-def generate_forecast(start_date, last_price, last_std, days=30):
-    future_dates = [start_date + timedelta(days=i) for i in range(1, days + 1)]
-    drift = 0.0003
-    future_mean = [last_price * ((1 + drift) ** i) for i in range(1, days + 1)]
-    future_upper = []
-    future_lower = []
-
-    for i in range(1, days + 1):
-        time_factor = np.sqrt(i)
-        width = (1.28 * last_std) + (last_std * 0.1 * time_factor)
-        future_upper.append(future_mean[i-1] + width)
-        future_lower.append(future_mean[i-1] - width)
-
-    return future_dates, future_mean, future_upper, future_lower
-
-def calculate_governance_history(data):
-    closes = data['Close']
-    df = pd.DataFrame(index=closes.index)
-    df['Credit_Ratio'] = closes["HYG"] / closes["IEF"]
-    df['Credit_Delta'] = df['Credit_Ratio'].pct_change(10)
-    df['VIX'] = closes["^VIX"]
-    df['Breadth_Ratio'] = closes["RSP"] / closes["SPY"]
-    df['Breadth_Delta'] = df['Breadth_Ratio'].pct_change(20)
-    df['DXY_Delta'] = closes["DX-Y.NYB"].pct_change(5)
-
-    CREDIT_TRIG = -0.015; VIX_PANIC = 24.0; BREADTH_TRIG = -0.025; DXY_SPIKE = 0.02
-
-    df['Level_7'] = (df['Credit_Delta'] < CREDIT_TRIG) | (df['DXY_Delta'] > DXY_SPIKE)
-    df['Level_5'] = (df['VIX'] > VIX_PANIC) & (df['Breadth_Delta'] < BREADTH_TRIG)
-    df['Level_4'] = (df['Breadth_Delta'] < BREADTH_TRIG) | (df['VIX'] > VIX_PANIC)
-
-    latest = df.iloc[-1]
-    if latest['Level_7']:
-        status, bg_color, text_color, reason = "EMERGENCY", "#FF0000", "#FFFFFF", "Structural/Policy Failure"
-    elif latest['Level_5']:
-        status, bg_color, text_color, reason = "CAUTION", "#FFA500", "#000000", "Market Divergence"
-    elif latest['Level_4']:
-        status, bg_color, text_color, reason = "WATCHLIST", "#FFFF00", "#000000", "Elevated Risk Monitors"
-    else:
-        status, bg_color, text_color, reason = "NORMAL OPS", "#00CC00", "#000000", "System Integrity Nominal"
-
-    return df, status, bg_color, text_color, reason
 
 # ==========================================
 # 3. THE UI RENDER
 # ==========================================
 st.title("🛡️ ALPHA SWARM GOVERNANCE")
 st.markdown("### Live Structural Risk & Momentum Monitor")
+# QUICK WIN 1: Data Timestamp
+st.caption(f"Market Data valid as of: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 st.divider()
 
 try:
     full_data = fetch_data()
-    gov_df, status, bg_color, text_color, reason = calculate_governance_history(full_data)
+    gov_df, status, color, reason = calculate_governance_history(full_data)
 
     spy_close = full_data['Close']['SPY']
     ppo, sig, hist = calculate_ppo(spy_close)
@@ -158,53 +112,22 @@ try:
     last_dev = std.iloc[-1]
     f_dates, f_mean, f_upper, f_lower = generate_forecast(last_date, last_val, last_dev, days=30)
 
-    # ------------------
-    # TOP SECTION
-    # ------------------
-    col1, col2 = st.columns([2, 1])
-    with col1:
-        st.markdown(f'<div class="big-badge" role="status" aria-label="Governance Status: {status}" style="background-color: {bg_color}; color: {text_color};">GOVERNANCE STATUS: {status}</div>', unsafe_allow_html=True)
-        st.caption(f"Reason: {reason}")
-    with col2:
-        latest_vix = full_data['Close']['^VIX'].iloc[-1]
-        st.metric("VIX Level", f"{latest_vix:.2f}", delta_color="inverse")
+    # =============================================
+    # SECTION 1: THE CHARTS (MOVED UP)
+    # =============================================
 
-    # ------------------
-    # HORIZON STRIP
-    # ------------------
-    st.subheader("⏱️ Tactical Horizons")
-    h1, h2, h3 = st.columns(3)
-    with h1:
-        st.info("**1 WEEK (Momentum)**")
-        st.markdown("🟢 **RISING**" if hist.iloc[-1] > 0 else "🔴 **WEAKENING**")
-        st.caption("Momentum Velocity")
-    with h2:
-        st.info("**1 MONTH (Trend)**")
-        st.markdown("🟢 **BULLISH**" if ppo.iloc[-1] > 0 else "🔴 **BEARISH**")
-        st.caption(f"Swarm Trend ({ppo.iloc[-1]:.2f})")
-    with h3:
-        st.info("**6 MONTH (Structural)**")
-        st.markdown("🟢 **SAFE**" if status == "NORMAL OPS" else f"🔴 **{status}**")
-        st.caption("Swarm Governance")
-
-    st.divider()
-
-    # ------------------
-    # CHART CONTROLS (RADIO BUTTONS)
-    # ------------------
+    # CHART CONTROLS
     c1, c2 = st.columns(2)
     with c1:
         view_mode = st.radio("Select View Horizon:",
                              ["Tactical (60-Day Zoom)", "Strategic (2-Year History)"],
                              horizontal=True)
     with c2:
-        # THE "GHOST" BUTTONS (Visual only)
+        # GHOST BUTTONS
         st.radio("Market Scope (Premium):", ["US Market (Active)", "Global Swarm 🔒", "Sector Rotation 🔒"],
                  index=0, horizontal=True, disabled=True)
 
-    st.subheader(f"📊 {view_mode}")
-
-    # PREPARE DATA BASED ON SELECTION
+    # PREPARE DATA
     if view_mode == "Tactical (60-Day Zoom)":
         start_filter = (datetime.now() - timedelta(days=60)).strftime('%Y-%m-%d')
         chart_data = full_data[full_data.index >= start_filter]
@@ -259,8 +182,8 @@ try:
     colors = ['#00ff00' if val >= 0 else '#ff0000' for val in subset_hist]
     fig.add_trace(go.Bar(x=chart_data.index, y=subset_hist, name="Velocity", marker_color=colors), row=2, col=1)
 
-    # CLEANER LAYOUT (NO GRIDS)
-    fig.update_layout(height=600, template="plotly_dark", margin=dict(l=0, r=0, t=0, b=0), showlegend=False,
+    # LAYOUT
+    fig.update_layout(height=500, template="plotly_dark", margin=dict(l=0, r=0, t=0, b=0), showlegend=False,
         plot_bgcolor='#0E1117', paper_bgcolor='#0E1117', font=dict(color='white'), xaxis_rangeslider_visible=False)
     fig.update_xaxes(showgrid=False)
     fig.update_yaxes(showgrid=False)
@@ -269,12 +192,37 @@ try:
 
     if show_forecast:
         st.caption("🟪 Purple Area = 30-Day 'Headlights' (Projected Volatility Cone)")
-    else:
-        st.caption("🟥 Red Background = Structural Risk Events (Level 7)")
 
-    # ------------------
-    # STRATEGIST CORNER
-    # ------------------
+    st.divider()
+
+    # =============================================
+    # SECTION 2: GOVERNANCE & BADGES (MOVED DOWN)
+    # =============================================
+    col1, col2 = st.columns([2, 1])
+    with col1:
+        st.markdown(f'<div class="big-badge" style="background-color: {color}; color: white;">GOVERNANCE STATUS: {status}</div>', unsafe_allow_html=True)
+        st.caption(f"Reason: {reason}")
+    with col2:
+        latest_vix = full_data['Close']['^VIX'].iloc[-1]
+        st.metric("VIX Level", f"{latest_vix:.2f}", delta_color="inverse")
+
+    st.subheader("⏱️ Tactical Horizons")
+    h1, h2, h3 = st.columns(3)
+    with h1:
+        st.info("**1 WEEK (Momentum)**")
+        st.markdown("🟢 **RISING**" if hist.iloc[-1] > 0 else "🔴 **WEAKENING**")
+    with h2:
+        st.info("**1 MONTH (Trend)**")
+        st.markdown("🟢 **BULLISH**" if ppo.iloc[-1] > 0 else "🔴 **BEARISH**")
+    with h3:
+        st.info("**6 MONTH (Structural)**")
+        st.markdown("🟢 **SAFE**" if status == "NORMAL OPS" else f"🔴 **{status}**")
+
+    st.divider()
+
+    # =============================================
+    # SECTION 3: STRATEGIST VIEW
+    # =============================================
     st.subheader("📝 Chief Strategist's View")
 
     try:
@@ -297,8 +245,13 @@ try:
         st.markdown(f'**"{up_title}"**')
         st.markdown(up_text)
 
-    st.divider()
-    st.caption("Alpha Swarm v1.0 (Beta) | Institutional Risk Governance | © 2026")
+    # QUICK WIN 3: Professional Footer
+    st.markdown("""
+    <div class="footer">
+    ALPHA SWARM v1.0 (BETA) | INSTITUTIONAL RISK GOVERNANCE<br>
+    Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.
+    </div>
+    """, unsafe_allow_html=True)
 
 except Exception as e:
 import streamlit as st
