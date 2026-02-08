@@ -7,72 +7,124 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. PAGE SETUP (v9.0 - TOOLTIP FIX)
+# 1. PAGE SETUP (v12.1 - DEFAULT LIGHT MODE)
 # ==========================================
 st.set_page_config(page_title="Alpha Swarm", page_icon="🛡️", layout="wide")
 
-st.markdown("""
+# SIDEBAR SETTINGS
+with st.sidebar:
+    st.header("⚙️ Settings")
+    # CHANGED: 'value' is now False to default to Light Mode
+    dark_mode = st.toggle("Enable Dark Mode", value=False, help="Toggle between Institutional Dark Mode and Standard Light Mode.")
+    st.divider()
+    st.caption("Alpha Swarm v12.1")
+
+# CONDITIONAL CSS LOGIC
+if dark_mode:
+    # --- DARK MODE CSS (Institutional High Contrast) ---
+    st.markdown("""
     <style>
-    /* 1. GLOBAL DARK MODE */
+    /* 1. GLOBAL BACKGROUND */
     .stApp { background-color: #000000; }
     
-    /* 2. TEXT VISIBILITY */
-    h1, h2, h3, h4, h5, h6, p, li, span, div { color: #E0E0E0 !important; }
+    /* 2. HEADERS & TITLES (Force Bright White) */
+    h1, h2, h3, h4, h5, h6 { color: #FFFFFF !important; }
     
-    /* 3. METRIC COLORS */
-    div[data-testid="stMetricValue"] { color: #00FF00 !important; }
+    /* 3. BODY TEXT (Force Light Grey) */
+    p, li, span, div { color: #E0E0E0; }
     
-    /* 4. EXPANDER HEADER FIX */
-    [data-testid="stExpander"] {
-        background-color: #161b22 !important;
-        border: 1px solid #30363d !important;
-        border-radius: 6px;
+    /* 4. RADIO BUTTONS & LABELS (Force Bright) */
+    div[data-testid="stRadio"] > label { 
+        color: #FFFFFF !important; 
+        font-weight: bold;
     }
-    [data-testid="stExpander"] summary {
-        background-color: #161b22 !important;
-        color: #ffffff !important;
-    }
-    [data-testid="stExpander"] summary p, 
-    [data-testid="stExpander"] summary span {
-        color: #ffffff !important;
-        font-weight: 600;
-        background-color: transparent !important;
-    }
-    [data-testid="stExpander"] summary:hover p {
-        color: #00FF00 !important;
-    }
-    [data-testid="stExpander"] details {
-        background-color: #161b22 !important;
-    }
-    
-    /* 5. TOOLTIP FIX (The New Addition) */
-    div[data-testid="stTooltipContent"] {
-        background-color: #161b22 !important;
-        color: #ffffff !important;
-        border: 1px solid #30363d !important;
-    }
-    
-    /* 6. CODE BLOCK OVERRIDE */
-    code {
-        background-color: #161b22 !important;
+    div[data-testid="stRadio"] div[role="radiogroup"] label {
         color: #E0E0E0 !important;
     }
     
-    /* 7. COMPONENT STYLES */
-    div[data-testid="stRadio"] > label { color: #E0E0E0 !important; font-weight: bold; }
-    
-    /* 8. DISABLED OPTION STYLING */
-    div[data-testid="stRadio"] div[role="radiogroup"] > label[disabled] {
-        opacity: 0.5;
-        cursor: not-allowed;
+    /* 5. CAPTIONS (Force Visible Grey) */
+    div[data-testid="stCaptionContainer"] {
+        color: #CCCCCC !important;
     }
     
-    /* 9. FOOTER STYLE */
-    .footer {
-        font-size: 12px; color: #666 !important; text-align: center; margin-top: 50px;
+    /* 6. METRIC LABELS ("VIX Level") */
+    div[data-testid="stMetricLabel"] {
+        color: #CCCCCC !important;
     }
+    div[data-testid="stMetricValue"] { color: #00FF00 !important; }
+    
+    /* 7. EXPANDER & TOOLTIPS */
+    [data-testid="stExpander"], div[data-testid="stTooltipContent"] {
+        background-color: #161b22 !important; border: 1px solid #30363d !important; border-radius: 6px;
+    }
+    [data-testid="stExpander"] summary { background-color: #161b22 !important; color: #ffffff !important; }
+    [data-testid="stExpander"] summary p, [data-testid="stExpander"] summary span { color: #ffffff !important; }
+    [data-testid="stTooltipHoverTarget"] svg { fill: #FFFFFF !important; }
+    
+    /* 8. SIDEBAR (Keep Dimmed) */
+    section[data-testid="stSidebar"] { background-color: #0e1117 !important; }
+    section[data-testid="stSidebar"] h2, 
+    section[data-testid="stSidebar"] span, 
+    section[data-testid="stSidebar"] label { color: #888888 !important; }
+    
+    /* 9. DISABLED OPTIONS */
+    div[data-testid="stRadio"] div[role="radiogroup"] > label[disabled] { 
+        color: #666666 !important; 
+        opacity: 0.5; cursor: not-allowed; 
+    }
+    
+    /* 10. BADGE & FOOTER */
+    .big-badge { font-size: 24px; font-weight: bold; padding: 15px; border-radius: 5px; text-align: center; margin-bottom: 20px; border: 1px solid #333; color: #FFFFFF !important;}
+    .footer { font-size: 12px; color: #666 !important; text-align: center; margin-top: 50px; }
     </style>
     """, unsafe_allow_html=True)
+    
+    chart_template = "plotly_dark"
+    chart_bg = '#0E1117'
+    chart_font_color = 'white'
+    
+else:
+    # --- LIGHT MODE CSS (Clean Black/White) ---
+    st.markdown("""
+    <style>
+    /* 1. FORCE DARKER TEXT */
+    .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6, 
+    .stApp p, .stApp li, .stApp span, .stApp div { 
+        color: #000000 !important; 
+    }
+    
+    /* 2. FORCE RADIO BUTTONS BLACK */
+    div[data-testid="stRadio"] > label { 
+        color: #000000 !important; 
+        font-weight: 800 !important; 
+    }
+    div[data-testid="stRadio"] div[role="radiogroup"] label {
+        color: #000000 !important;
+        font-weight: 600 !important;
+    }
+    
+    /* 3. CAPTIONS & METRICS BLACK */
+    div[data-testid="stCaptionContainer"] { color: #000000 !important; opacity: 1 !important; font-weight: 600 !important; }
+    div[data-testid="stMetricLabel"] { color: #000000 !important; font-weight: bold !important; }
+    
+    /* 4. DISABLED OPTIONS */
+    div[data-testid="stRadio"] div[role="radiogroup"] > label[disabled] { 
+        color: #666666 !important; opacity: 0.7; 
+    }
+    
+    /* 5. BADGE STYLE */
+    .big-badge { 
+        font-size: 24px; font-weight: bold; padding: 15px; 
+        border-radius: 5px; text-align: center; margin-bottom: 20px; 
+        border: 2px solid #000; color: #000 !important;
+    }
+    .footer { font-size: 12px; color: #333 !important; text-align: center; margin-top: 50px; }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    chart_template = "plotly_white"
+    chart_bg = '#FFFFFF'
+    chart_font_color = 'black'
 
 # ==========================================
 # 2. THE ENGINE
@@ -145,7 +197,6 @@ def calculate_governance_history(data):
 # ==========================================
 st.title("🛡️ ALPHA SWARM GOVERNANCE")
 st.markdown("### Live Structural Risk & Momentum Monitor")
-# QUICK WIN 1: Data Timestamp
 st.caption(f"Market Data valid as of: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 st.divider()
 
@@ -164,7 +215,7 @@ try:
     f_dates, f_mean, f_upper, f_lower = generate_forecast(last_date, last_val, last_dev, days=30)
     
     # =============================================
-    # SECTION 1: THE CHARTS (MOVED UP)
+    # SECTION 1: THE CHARTS
     # =============================================
     
     # CHART CONTROLS
@@ -175,10 +226,9 @@ try:
                              horizontal=True,
                              help="Toggle between short-term momentum (Tactical) and long-term structural trends (Strategic).")
     with c2:
-        # GHOST BUTTONS
         st.radio("Market Scope (Premium):", ["US Market (Active)", "Global Swarm 🔒", "Sector Rotation 🔒"], 
                  index=0, horizontal=True, disabled=True,
-                 help="Global Swarm and Sector Rotation models are available to Institutional Tier subscribers. Contact sales@alphaswarm.com to upgrade.")
+                 help="Global Swarm and Sector Rotation models are available to Institutional Tier subscribers.")
 
     # PREPARE DATA
     if view_mode == "Tactical (60-Day Zoom)":
@@ -215,7 +265,7 @@ try:
         fig.add_trace(go.Scatter(x=f_dates, y=f_upper, fill='tonexty', fillcolor='rgba(200, 0, 255, 0.15)', 
                                  line=dict(width=0), name="Proj. Uncertainty", hoverinfo='skip'), row=1, col=1)
         fig.add_trace(go.Scatter(x=f_dates, y=f_mean, name="Swarm Forecast", 
-                                 line=dict(color='white', width=2, dash='dot')), row=1, col=1)
+                                 line=dict(color=chart_font_color, width=2, dash='dot')), row=1, col=1)
 
     # 4. RED ZONES
     if view_mode == "Strategic (2-Year History)":
@@ -236,9 +286,9 @@ try:
     colors = ['#00ff00' if val >= 0 else '#ff0000' for val in subset_hist]
     fig.add_trace(go.Bar(x=chart_data.index, y=subset_hist, name="Velocity", marker_color=colors), row=2, col=1)
 
-    # LAYOUT
-    fig.update_layout(height=500, template="plotly_dark", margin=dict(l=0, r=0, t=0, b=0), showlegend=False,
-        plot_bgcolor='#0E1117', paper_bgcolor='#0E1117', font=dict(color='white'), xaxis_rangeslider_visible=False)
+    # LAYOUT (Dynamic Theme Applied)
+    fig.update_layout(height=500, template=chart_template, margin=dict(l=0, r=0, t=0, b=0), showlegend=False,
+        plot_bgcolor=chart_bg, paper_bgcolor=chart_bg, font=dict(color=chart_font_color), xaxis_rangeslider_visible=False)
     fig.update_xaxes(showgrid=False)
     fig.update_yaxes(showgrid=False)
     
@@ -250,7 +300,7 @@ try:
     st.divider()
 
     # =============================================
-    # SECTION 2: GOVERNANCE & BADGES (MOVED DOWN)
+    # SECTION 2: GOVERNANCE & BADGES
     # =============================================
     col1, col2 = st.columns([2, 1])
     with col1:
@@ -306,7 +356,7 @@ try:
         st.markdown(f'**"{up_title}"**')
         st.markdown(up_text)
 
-    # QUICK WIN 3: Professional Footer
+    # FOOTER
     st.markdown("""
     <div class="footer">
     ALPHA SWARM v1.0 (BETA) | INSTITUTIONAL RISK GOVERNANCE<br>
