@@ -44,7 +44,7 @@ def mock_market_data():
         # app.py treats the return value as a DataFrame (uses .index)
         # So we must return a DataFrame with MultiIndex columns.
 
-        tickers = ["HYG", "IEF", "^VIX", "RSP", "SPY", "DX-Y.NYB"]
+        tickers = ["HYG", "IEF", "^VIX", "RSP", "SPY", "DX-Y.NYB", "^DJI", "^IXIC", "GC=F", "CL=F"]
         prices = ["Close", "Open", "High", "Low", "Adj Close", "Volume"]
 
         columns = pd.MultiIndex.from_product([prices, tickers], names=['Price', 'Ticker'])
