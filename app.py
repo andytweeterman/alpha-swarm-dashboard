@@ -7,9 +7,8 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. PAGE SETUP (v15.0 - TIEDEMAN BRANDING)
+# 1. PAGE SETUP (v15.1 - MOBILE THEME FIX)
 # ==========================================
-# WINDOW TITLE: The Firm Name first
 st.set_page_config(page_title="Tiedeman Research | Alpha Swarm", page_icon="🛡️", layout="wide")
 
 # SIDEBAR SETTINGS
@@ -17,7 +16,7 @@ with st.sidebar:
     st.header("🏛️ Tiedeman Research")
     dark_mode = st.toggle("Enable Dark Mode", value=False, help="Toggle between Institutional Dark Mode and Standard Light Mode.")
     st.divider()
-    st.caption("Powered by Alpha Swarm v15.0")
+    st.caption("Powered by Alpha Swarm v15.1")
 
 # CONDITIONAL CSS LOGIC
 if dark_mode:
@@ -30,7 +29,7 @@ if dark_mode:
     header {visibility: hidden;}
     
     /* GLOBAL BACKGROUND */
-    .stApp { background-color: #000000; }
+    .stApp { background-color: #000000 !important; }
     
     /* TEXT & HEADERS */
     h1, h2, h3, h4, h5, h6 { color: #FFFFFF !important; }
@@ -69,13 +68,18 @@ if dark_mode:
     chart_font_color = 'white'
     
 else:
-    # --- LIGHT MODE CSS (MarketWatch Style) ---
+    # --- LIGHT MODE CSS (MarketWatch Style - MOBILE FIXED) ---
     st.markdown("""
     <style>
     /* HIDE STREAMLIT DEFAULT MENUS */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
+    
+    /* FORCE WHITE BACKGROUND (Fixes Mobile Dark Mode Override) */
+    .stApp { 
+        background-color: #FFFFFF !important; 
+    }
     
     /* TEXT & HEADERS */
     .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6, p, li, span, div { 
@@ -92,6 +96,9 @@ else:
         border: 2px solid #000; color: #000 !important;
     }
     .custom-footer { font-size: 12px; color: #333 !important; text-align: center; margin-top: 50px; }
+    
+    /* SIDEBAR (Ensure Light Mode Sidebar is Light) */
+    section[data-testid="stSidebar"] { background-color: #f0f2f6 !important; }
     </style>
     """, unsafe_allow_html=True)
     
@@ -180,7 +187,6 @@ def make_sparkline(data, color):
 # ==========================================
 # 3. THE UI RENDER
 # ==========================================
-# BRANDING UPDATE: Firm Name First
 st.title("🏛️ TIEDEMAN RESEARCH")
 st.markdown("### Alpha Swarm Intelligence: Global Market Command Center")
 st.caption(f"Governance Protocol Active: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
@@ -262,12 +268,10 @@ try:
     with c1:
         view_mode = st.radio("Select View Horizon:", 
                              ["Tactical (60-Day Zoom)", "Strategic (2-Year History)"], 
-                             horizontal=True,
-                             help="Switch between a short-term tactical view (60 days) and long-term strategic history (2 years).")
+                             horizontal=True)
     with c2:
         st.radio("Market Scope (Premium):", ["US Market (Active)", "Global Swarm 🔒", "Sector Rotation 🔒"], 
-                 index=0, horizontal=True, disabled=True,
-                 help="Global and Sector views are available in the Institutional Plan.")
+                 index=0, horizontal=True, disabled=True)
 
     # PREPARE DATA
     if view_mode == "Tactical (60-Day Zoom)":
@@ -338,14 +342,7 @@ try:
     # =============================================
     col1, col2 = st.columns([2, 1])
     with col1:
-        if status == "EMERGENCY":
-            st.error(f"GOVERNANCE STATUS: {status}", icon="🚨")
-        elif status == "CAUTION":
-            st.warning(f"GOVERNANCE STATUS: {status}", icon="⚠️")
-        elif status == "WATCHLIST":
-            st.warning(f"GOVERNANCE STATUS: {status}", icon="👀")
-        else:
-            st.success(f"GOVERNANCE STATUS: {status}", icon="✅")
+        st.markdown(f'<div class="big-badge" style="background-color: {color}; color: white;">GOVERNANCE STATUS: {status}</div>', unsafe_allow_html=True)
         st.caption(f"Reason: {reason}")
     with col2:
         latest_vix = full_data['Close']['^VIX'].iloc[-1]
@@ -368,7 +365,6 @@ try:
     # =============================================
     # SECTION 4: STRATEGIST VIEW
     # =============================================
-    # BRANDING UPDATE: Firm Name View
     st.subheader("📝 Tiedeman Research: Chief Strategist's View")
     
     try:
@@ -391,10 +387,10 @@ try:
         st.markdown(f'**"{up_title}"**')
         st.markdown(up_text)
 
-    # BRANDING UPDATE: Footer Hierarchy
+    # FOOTER
     st.markdown("""
     <div class="custom-footer">
-    TIEDEMAN RESEARCH | ALPHA SWARM PROTOCOL v15.0 | INSTITUTIONAL RISK GOVERNANCE<br>
+    TIEDEMAN RESEARCH | ALPHA SWARM PROTOCOL v15.1 | INSTITUTIONAL RISK GOVERNANCE<br>
     Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.
     </div>
     """, unsafe_allow_html=True)
