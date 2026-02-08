@@ -7,7 +7,7 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. PAGE SETUP (v9.0 - TOOLTIP FIX)
+# 1. PAGE SETUP (v9.1 - TOOLTIP VISIBILITY FIX)
 # ==========================================
 st.set_page_config(page_title="Alpha Swarm", page_icon="🛡️", layout="wide")
 
@@ -45,20 +45,25 @@ st.markdown("""
         background-color: #161b22 !important;
     }
     
-    /* 5. TOOLTIP FIX (The New Addition) */
+    /* 5. TOOLTIP BOX FIX */
     div[data-testid="stTooltipContent"] {
         background-color: #161b22 !important;
         color: #ffffff !important;
         border: 1px solid #30363d !important;
     }
+
+    /* 6. TOOLTIP ICON (QUESTION MARK) FIX */
+    [data-testid="stTooltipHoverTarget"] svg {
+        fill: #E0E0E0 !important;
+    }
     
-    /* 6. CODE BLOCK OVERRIDE */
+    /* 7. CODE BLOCK OVERRIDE */
     code {
         background-color: #161b22 !important;
         color: #E0E0E0 !important;
     }
     
-    /* 7. COMPONENT STYLES */
+    /* 8. COMPONENT STYLES */
     div[data-testid="stRadio"] > label { color: #E0E0E0 !important; font-weight: bold; }
     .big-badge {
         font-size: 24px; font-weight: bold; padding: 15px;
@@ -66,13 +71,13 @@ st.markdown("""
         border: 1px solid #333;
     }
     
-    /* 8. DISABLED OPTION STYLING */
+    /* 9. DISABLED OPTION STYLING */
     div[data-testid="stRadio"] div[role="radiogroup"] > label[disabled] {
         opacity: 0.5;
         cursor: not-allowed;
     }
     
-    /* 9. FOOTER STYLE */
+    /* 10. FOOTER STYLE */
     .footer {
         font-size: 12px; color: #666 !important; text-align: center; margin-top: 50px;
     }
