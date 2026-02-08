@@ -7,16 +7,17 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. PAGE SETUP (v12.0 - DARK MODE CONTRAST FIX)
+# 1. PAGE SETUP (v12.1 - DEFAULT LIGHT MODE)
 # ==========================================
 st.set_page_config(page_title="Alpha Swarm", page_icon="🛡️", layout="wide")
 
 # SIDEBAR SETTINGS
 with st.sidebar:
     st.header("⚙️ Settings")
-    dark_mode = st.toggle("Enable Dark Mode", value=True, help="Toggle between Institutional Dark Mode and Standard Light Mode.")
+    # CHANGED: 'value' is now False to default to Light Mode
+    dark_mode = st.toggle("Enable Dark Mode", value=False, help="Toggle between Institutional Dark Mode and Standard Light Mode.")
     st.divider()
-    st.caption("Alpha Swarm v12.0")
+    st.caption("Alpha Swarm v12.1")
 
 # CONDITIONAL CSS LOGIC
 if dark_mode:
