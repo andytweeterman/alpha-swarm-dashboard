@@ -406,7 +406,7 @@ try:
         # Logic to handle both local file (backup) and live sheet
         if "INSERT_YOUR" in SHEET_URL:
             # Fallback to local file if user hasn't pasted link yet
-            update_df = pd.read_csv("update.csv")
+            update_df = pd.read_csv("data/update.csv")
         else:
             # Live Google Sheet Connection
             update_df = pd.read_csv(SHEET_URL)

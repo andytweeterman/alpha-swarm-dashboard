@@ -5,7 +5,7 @@ import sys
 import os
 
 # Add repo root to path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Mock streamlit before import
 from unittest.mock import MagicMock
@@ -20,7 +20,7 @@ sys.modules["streamlit"].set_page_config = MagicMock()
 sys.modules["streamlit"].sidebar = MagicMock()
 
 # Import functions from app.py
-from app import calculate_governance_history, calculate_ppo, calculate_cone
+from src.app import calculate_governance_history, calculate_ppo, calculate_cone
 
 def test_governance_calculation():
     # Create dummy data
