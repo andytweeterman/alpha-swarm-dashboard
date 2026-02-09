@@ -14,7 +14,19 @@ st.set_page_config(page_title="Tiedeman Research | Alpha Swarm", page_icon="🛡
 # SIDEBAR SETTINGS
 with st.sidebar:
     st.header("🏛️ Tiedeman Research")
-    dark_mode = st.toggle("Enable Dark Mode", value=False, help="Toggle between Institutional Dark Mode and Standard Light Mode.")
+
+    # Determine default theme based on system settings and time of day
+    current_hour = datetime.now().hour
+    is_night_time = (current_hour < 6) or (current_hour >= 18)
+
+    try:
+        user_theme = st.context.theme.base
+    except:
+        user_theme = "light"
+
+    default_dark = (user_theme == "dark") or is_night_time
+
+    dark_mode = st.toggle("Enable Dark Mode", value=default_dark, help="Toggle between Institutional Dark Mode and Standard Light Mode.")
     st.divider()
     st.caption("Powered by Alpha Swarm v16.0")
 
