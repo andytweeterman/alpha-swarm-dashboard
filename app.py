@@ -70,6 +70,14 @@ if dark_mode:
     div[data-testid="stRadio"] > label { color: #C6A87C !important; font-weight: bold; }
     [data-testid="stExpander"] { background-color: #161B22 !important; border: 1px solid #30363d !important; border-radius: 8px !important; }
     [data-testid="stExpander"] summary { color: #C6A87C !important; font-weight: 600 !important; }
+
+    /* TOOLTIPS */
+    div[data-testid="stTooltipContent"] {
+        background-color: #161B22 !important;
+        color: #E6E6E6 !important;
+        border: 1px solid #30363d !important;
+        border-radius: 8px !important;
+    }
     
     /* PREMIUM COMPONENTS */
     .premium-banner {
