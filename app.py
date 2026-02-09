@@ -41,11 +41,11 @@ if dark_mode:
     header {visibility: hidden;}
     
     /* GLOBAL BACKGROUND */
-    .stApp { background-color: #000000 !important; }
+    .stApp { background-color: #0E1117 !important; }
     
     /* TEXT & HEADERS */
-    h1, h2, h3, h4, h5, h6 { color: #FFFFFF !important; }
-    p, li, span, div { color: #E0E0E0; }
+    h1, h2, h3, h4, h5, h6 { color: #C6A87C !important; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+    p, li, span, div { color: #E6E6E6; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
     
     /* METRICS */
     div[data-testid="stMetricValue"] { color: #FFFFFF !important; }
@@ -53,34 +53,62 @@ if dark_mode:
     
     /* MARKET GRID CARDS */
     .market-card {
-        background-color: #161b22;
-        border: 1px solid #333;
-        padding: 10px;
-        border-radius: 5px;
+        background-color: #161B22;
+        border: 1px solid #30363d;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         text-align: center;
+        margin-bottom: 10px;
     }
     
     /* SIDEBAR */
-    section[data-testid="stSidebar"] { background-color: #0e1117 !important; }
-    section[data-testid="stSidebar"] h2, section[data-testid="stSidebar"] span, section[data-testid="stSidebar"] label { color: #888888 !important; }
+    section[data-testid="stSidebar"] { background-color: #0D1117 !important; border-right: 1px solid #30363d; }
+    section[data-testid="stSidebar"] h2, section[data-testid="stSidebar"] span, section[data-testid="stSidebar"] label { color: #C6A87C !important; }
     
     /* COMPONENTS */
-    div[data-testid="stRadio"] > label { color: #FFFFFF !important; font-weight: bold; }
-    [data-testid="stExpander"] { background-color: #161b22 !important; border: 1px solid #30363d !important; }
-    [data-testid="stExpander"] summary { color: #ffffff !important; }
+    div[data-testid="stRadio"] > label { color: #C6A87C !important; font-weight: bold; }
+    [data-testid="stExpander"] { background-color: #161B22 !important; border: 1px solid #30363d !important; border-radius: 8px !important; }
+    [data-testid="stExpander"] summary { color: #C6A87C !important; font-weight: 600 !important; }
     
+    /* PREMIUM COMPONENTS */
+    .premium-banner {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        color: white !important;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        margin: 20px 0;
+        font-weight: bold;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        border: 1px solid #4a90e2;
+    }
+
+    .strategist-box {
+        border-left: 4px solid #C6A87C;
+        padding: 15px;
+        background-color: rgba(198, 168, 124, 0.05);
+        border-radius: 0 5px 5px 0;
+        margin-top: 10px;
+    }
+
     /* FOOTER */
-    .custom-footer { font-size: 12px; color: #666 !important; text-align: center; margin-top: 50px; }
-    .big-badge { font-size: 24px; font-weight: bold; padding: 15px; border-radius: 5px; text-align: center; margin-bottom: 20px; border: 1px solid #333; color: #FFFFFF !important;}
+    .custom-footer { font-size: 12px; color: #8b949e !important; text-align: center; margin-top: 50px; border-top: 1px solid #30363d; padding-top: 20px; }
+    .big-badge {
+        font-size: 20px; font-weight: bold; padding: 10px 20px;
+        border-radius: 8px; text-align: center; margin-bottom: 20px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2); color: #FFFFFF !important;
+        text-transform: uppercase; letter-spacing: 1px;
+    }
     </style>
     """, unsafe_allow_html=True)
     
     chart_template = "plotly_dark"
     chart_bg = '#0E1117'
-    chart_font_color = 'white'
+    chart_font_color = '#C6A87C'
     
 else:
-    # --- LIGHT MODE CSS (Mobile Fixed) ---
+    # --- LIGHT MODE CSS (Boutique Financial) ---
     st.markdown("""
     <style>
     /* HIDE STREAMLIT DEFAULT MENUS */
@@ -88,33 +116,69 @@ else:
     footer {visibility: hidden;}
     header {visibility: hidden;}
     
-    /* FORCE WHITE BACKGROUND */
-    .stApp { background-color: #FFFFFF !important; }
+    /* FORCE LIGHT GREY BACKGROUND */
+    .stApp { background-color: #F0F2F6 !important; }
     
     /* TEXT & HEADERS */
-    .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6, p, li, span, div { 
-        color: #000000 !important; 
-    }
+    h1, h2, h3, h4, h5, h6 { color: #003366 !important; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+    p, li, span, div { color: #333333; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
     
     /* METRICS */
-    div[data-testid="stMetricValue"] { color: #000000 !important; font-weight: 700 !important; }
+    div[data-testid="stMetricValue"] { color: #003366 !important; font-weight: 700 !important; }
+
+    /* MARKET GRID CARDS */
+    .market-card {
+        background-color: #FFFFFF;
+        border: 1px solid #ddd;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        text-align: center;
+        margin-bottom: 10px;
+    }
+
+    /* SIDEBAR */
+    section[data-testid="stSidebar"] { background-color: #FFFFFF !important; border-right: 1px solid #ddd; }
+    section[data-testid="stSidebar"] h2 { color: #003366 !important; }
+
+    /* COMPONENTS */
+    [data-testid="stExpander"] { background-color: #FFFFFF !important; border: 1px solid #ddd !important; border-radius: 8px !important; }
+    [data-testid="stExpander"] summary { color: #003366 !important; font-weight: 600 !important; }
+
+    /* PREMIUM COMPONENTS */
+    .premium-banner {
+        background: linear-gradient(135deg, #003366 0%, #0055AA 100%);
+        color: white !important;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        margin: 20px 0;
+        font-weight: bold;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .strategist-box {
+        border-left: 4px solid #003366;
+        padding: 15px;
+        background-color: rgba(0, 51, 102, 0.05);
+        border-radius: 0 5px 5px 0;
+        margin-top: 10px;
+    }
     
     /* BADGE */
     .big-badge { 
-        font-size: 24px; font-weight: bold; padding: 15px; 
-        border-radius: 5px; text-align: center; margin-bottom: 20px; 
-        border: 2px solid #000; color: #000 !important;
+        font-size: 20px; font-weight: bold; padding: 10px 20px;
+        border-radius: 8px; text-align: center; margin-bottom: 20px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1); color: #FFFFFF !important;
+        text-transform: uppercase; letter-spacing: 1px;
     }
-    .custom-footer { font-size: 12px; color: #333 !important; text-align: center; margin-top: 50px; }
-    
-    /* SIDEBAR */
-    section[data-testid="stSidebar"] { background-color: #f0f2f6 !important; }
+    .custom-footer { font-size: 12px; color: #666 !important; text-align: center; margin-top: 50px; border-top: 1px solid #ddd; padding-top: 20px; }
     </style>
     """, unsafe_allow_html=True)
     
     chart_template = "plotly_white"
-    chart_bg = '#FFFFFF'
-    chart_font_color = 'black'
+    chart_bg = '#F0F2F6'
+    chart_font_color = '#003366'
 
 # ==========================================
 # 2. THE ENGINE
@@ -223,7 +287,16 @@ try:
             series = closes[asset['ticker']].dropna()
             if not series.empty:
                 current = series.iloc[-1]; prev = series.iloc[-2]; delta = current - prev; pct = (delta / prev) * 100
-                st.metric(asset['name'], f"{current:,.2f}", f"{delta:+.2f} ({pct:+.2f}%)")
+                delta_color = "#00CC00" if delta >= 0 else "#FF5500"
+
+                st.markdown(f"""
+                <div class="market-card">
+                    <div style="font-size: 14px; opacity: 0.8; font-weight: bold;">{asset['name']}</div>
+                    <div style="font-size: 22px; font-weight: bold; margin: 5px 0;">{current:,.2f}</div>
+                    <div style="color: {delta_color}; font-size: 14px; font-weight: 600;">{delta:+.2f} ({pct:+.2f}%)</div>
+                </div>
+                """, unsafe_allow_html=True)
+
                 st.plotly_chart(make_sparkline(series.tail(30), asset['color']), use_container_width=True, config={'displayModeBar': False})
     
     st.markdown("---")
@@ -235,7 +308,15 @@ try:
             series = closes[asset['ticker']].dropna()
             if not series.empty:
                 current = series.iloc[-1]; prev = series.iloc[-2]; delta = current - prev; pct = (delta / prev) * 100
-                st.metric(asset['name'], f"{current:,.2f}", f"{delta:+.2f} ({pct:+.2f}%)")
+                delta_color = "#00CC00" if delta >= 0 else "#FF5500"
+
+                st.markdown(f"""
+                <div class="market-card">
+                    <div style="font-size: 14px; opacity: 0.8; font-weight: bold;">{asset['name']}</div>
+                    <div style="font-size: 22px; font-weight: bold; margin: 5px 0;">{current:,.2f}</div>
+                    <div style="color: {delta_color}; font-size: 14px; font-weight: 600;">{delta:+.2f} ({pct:+.2f}%)</div>
+                </div>
+                """, unsafe_allow_html=True)
                 st.plotly_chart(make_sparkline(series.tail(30), asset['color']), use_container_width=True, config={'displayModeBar': False})
 
     st.divider()
@@ -250,7 +331,7 @@ try:
     
     c1, c2 = st.columns(2)
     with c1: view_mode = st.radio("Select View Horizon:", ["Tactical (60-Day Zoom)", "Strategic (2-Year History)"], horizontal=True)
-    with c2: st.radio("Market Scope (Premium):", ["US Market (Active)", "Global Swarm 🔒", "Sector Rotation 🔒"], index=0, horizontal=True, disabled=True)
+    with c2: st.radio("Market Scope (Premium):", ["US Market (Active)", "Global Swarm 🔒", "Sector Rotation 🔒"], index=0, horizontal=True, disabled=True, help="Institutional modules include Global Macro flows and Sector Rotation models.")
 
     if view_mode == "Tactical (60-Day Zoom)":
         start_filter = (datetime.now() - timedelta(days=60)).strftime('%Y-%m-%d'); show_forecast = True
@@ -286,12 +367,18 @@ try:
     st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
     if show_forecast: st.caption("🟪 Purple Area = 30-Day 'Headlights' (Projected Volatility Cone)")
 
+    st.markdown("""
+    <div class="premium-banner">
+    🔒 Institutional Access Required: Unlock Sector Rotation & Global Flows
+    </div>
+    """, unsafe_allow_html=True)
+
     st.divider()
 
     # --- GOVERNANCE ---
     col1, col2 = st.columns([2, 1])
     with col1:
-        st.markdown(f'<div class="big-badge" style="background-color: {color}; color: white;">GOVERNANCE STATUS: {status}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="big-badge" style="background-color: {color}; border: 2px solid {color}; box-shadow: 0 0 15px {color}; text-shadow: 1px 1px 2px black;">GOVERNANCE STATUS: {status}</div>', unsafe_allow_html=True)
         st.caption(f"Reason: {reason}")
     with col2:
         latest_vix = full_data['Close']['^VIX'].iloc[-1]
@@ -346,7 +433,9 @@ try:
     st.markdown("""
     <div class="custom-footer">
     TIEDEMAN RESEARCH | ALPHA SWARM PROTOCOL v16.0 | INSTITUTIONAL RISK GOVERNANCE<br>
-    Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.
+    Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
+    <br>
+    <strong>Institutional Access:</strong> <a href="mailto:institutional@tiedeman.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@tiedeman.com</a>
     </div>
     """, unsafe_allow_html=True)
 
