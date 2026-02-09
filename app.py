@@ -7,7 +7,7 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. PAGE SETUP (v16.0 - GOOGLE SHEETS CONNECTED)
+# 1. PAGE SETUP (v16.2 - UI POLISH & TABS)
 # ==========================================
 st.set_page_config(page_title="Tiedeman Research | Alpha Swarm", page_icon="🛡️", layout="wide")
 
@@ -15,20 +15,12 @@ st.set_page_config(page_title="Tiedeman Research | Alpha Swarm", page_icon="🛡
 with st.sidebar:
     st.header("🏛️ Tiedeman Research")
 
-    # Determine default theme based on system settings and time of day
-    current_hour = datetime.now().hour
-    is_night_time = (current_hour < 6) or (current_hour >= 18)
-
-    try:
-        user_theme = st.context.theme.base
-    except:
-        user_theme = "light"
-
-    default_dark = (user_theme == "dark") or is_night_time
-
-    dark_mode = st.toggle("Enable Dark Mode", value=default_dark, help="Toggle between Institutional Dark Mode and Standard Light Mode.")
+    # TOGGLE: Defaults to FALSE (Light Mode / High Contrast) per user request
+    dark_mode = st.toggle("Enable Dark Mode", value=False, help="Toggle between Institutional Dark Mode and Standard Light Mode.")
+    
     st.divider()
-    st.caption("Powered by Alpha Swarm v16.0")
+    st.caption("Powered by Alpha Swarm v16.2")
+    st.caption("Status: PROTOTYPE (May 2026 Target)")
 
 # CONDITIONAL CSS LOGIC
 if dark_mode:
@@ -43,14 +35,26 @@ if dark_mode:
     /* GLOBAL BACKGROUND */
     .stApp { background-color: #0E1117 !important; }
     
-    /* TEXT & HEADERS */
-    h1, h2, h3, h4, h5, h6 { color: #C6A87C !important; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
-    p, li, span, div { color: #E6E6E6; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+    /* MARKDOWN TEXT ONLY (Prevents ruining tooltips) */
+    [data-testid="stMarkdownContainer"] p, [data-testid="stMarkdownContainer"] span, [data-testid="stMarkdownContainer"] li, [data-testid="stMarkdownContainer"] h1, [data-testid="stMarkdownContainer"] h2, [data-testid="stMarkdownContainer"] h3 {
+        color: #E6E6E6 !important;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    }
+    
+    /* HEADERS SPECIFIC */
+    h1, h2, h3, h4, h5, h6 { color: #C6A87C !important; }
     
     /* METRICS */
     div[data-testid="stMetricValue"] { color: #FFFFFF !important; }
     div[data-testid="stMetricDelta"] svg { fill: #00FF00 !important; }
     
+    /* TABS */
+    button[data-baseweb="tab"] { color: #586069; font-weight: bold; }
+    button[data-baseweb="tab"][aria-selected="true"] { color: #C6A87C !important; border-top-color: #C6A87C !important; background-color: #161B22; }
+
+    /* TOOLTIPS (Question Marks) - Lighter Grey */
+    [data-testid="stTooltipIcon"] { color: #AAAAAA !important; }
+
     /* MARKET GRID CARDS */
     .market-card {
         background-color: #161B22;
@@ -66,10 +70,13 @@ if dark_mode:
     section[data-testid="stSidebar"] { background-color: #0D1117 !important; border-right: 1px solid #30363d; }
     section[data-testid="stSidebar"] h2, section[data-testid="stSidebar"] span, section[data-testid="stSidebar"] label { color: #C6A87C !important; }
     
-    /* COMPONENTS */
-    div[data-testid="stRadio"] > label { color: #C6A87C !important; font-weight: bold; }
-    [data-testid="stExpander"] { background-color: #161B22 !important; border: 1px solid #30363d !important; border-radius: 8px !important; }
-    [data-testid="stExpander"] summary { color: #C6A87C !important; font-weight: 600 !important; }
+    /* EXPANDER (READ FORECAST) - FIX WHITE ON WHITE */
+    [data-testid="stExpander"] { 
+        background-color: #161B22 !important; 
+        border: 1px solid #30363d !important; 
+        color: #E6E6E6 !important;
+    }
+    [data-testid="stExpander"] summary { color: #C6A87C !important; }
     
     /* PREMIUM COMPONENTS */
     .premium-banner {
@@ -84,16 +91,9 @@ if dark_mode:
         border: 1px solid #4a90e2;
     }
 
-    .strategist-box {
-        border-left: 4px solid #C6A87C;
-        padding: 15px;
-        background-color: rgba(198, 168, 124, 0.05);
-        border-radius: 0 5px 5px 0;
-        margin-top: 10px;
-    }
-
     /* FOOTER */
     .custom-footer { font-size: 12px; color: #8b949e !important; text-align: center; margin-top: 50px; border-top: 1px solid #30363d; padding-top: 20px; }
+    
     .big-badge {
         font-size: 20px; font-weight: bold; padding: 10px 20px;
         border-radius: 8px; text-align: center; margin-bottom: 20px;
@@ -108,7 +108,7 @@ if dark_mode:
     chart_font_color = '#C6A87C'
     
 else:
-    # --- LIGHT MODE CSS (Boutique Financial) ---
+    # --- LIGHT MODE CSS (Boutique Financial - DEFAULT) ---
     st.markdown("""
     <style>
     /* HIDE STREAMLIT DEFAULT MENUS */
@@ -119,9 +119,14 @@ else:
     /* FORCE LIGHT GREY BACKGROUND */
     .stApp { background-color: #F0F2F6 !important; }
     
-    /* TEXT & HEADERS */
-    h1, h2, h3, h4, h5, h6 { color: #003366 !important; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
-    p, li, span, div { color: #333333; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+    /* MARKDOWN TEXT ONLY */
+    [data-testid="stMarkdownContainer"] p, [data-testid="stMarkdownContainer"] span, [data-testid="stMarkdownContainer"] li, [data-testid="stMarkdownContainer"] h1, [data-testid="stMarkdownContainer"] h2, [data-testid="stMarkdownContainer"] h3 {
+        color: #333333 !important;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    }
+
+    /* HEADERS SPECIFIC */
+    h1, h2, h3, h4, h5, h6 { color: #003366 !important; }
     
     /* METRICS */
     div[data-testid="stMetricValue"] { color: #003366 !important; font-weight: 700 !important; }
@@ -137,12 +142,22 @@ else:
         margin-bottom: 10px;
     }
 
+    /* TABS */
+    button[data-baseweb="tab"] { color: #666; font-weight: bold; }
+    button[data-baseweb="tab"][aria-selected="true"] { color: #003366 !important; border-top-color: #003366 !important; background-color: #FFFFFF; }
+
     /* SIDEBAR */
     section[data-testid="stSidebar"] { background-color: #FFFFFF !important; border-right: 1px solid #ddd; }
     section[data-testid="stSidebar"] h2 { color: #003366 !important; }
 
-    /* COMPONENTS */
-    [data-testid="stExpander"] { background-color: #FFFFFF !important; border: 1px solid #ddd !important; border-radius: 8px !important; }
+    /* TOOLTIPS (Question Marks) - Light Grey */
+    [data-testid="stTooltipIcon"] { color: #888888 !important; }
+
+    /* EXPANDER (READ FORECAST) */
+    [data-testid="stExpander"] { 
+        background-color: #FFFFFF !important; 
+        border: 1px solid #ddd !important; 
+    }
     [data-testid="stExpander"] summary { color: #003366 !important; font-weight: 600 !important; }
 
     /* PREMIUM COMPONENTS */
@@ -155,14 +170,6 @@ else:
         margin: 20px 0;
         font-weight: bold;
         box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-
-    .strategist-box {
-        border-left: 4px solid #003366;
-        padding: 15px;
-        background-color: rgba(0, 51, 102, 0.05);
-        border-radius: 0 5px 5px 0;
-        margin-top: 10px;
     }
     
     /* BADGE */
@@ -269,170 +276,192 @@ try:
     full_data = fetch_data()
     closes = full_data['Close']
     gov_df, status, color, reason = calculate_governance_history(full_data)
-    
-    # --- MARKET GRID ---
-    assets = [
-        {"name": "Dow Jones", "ticker": "^DJI", "color": "#00CC00"},
-        {"name": "S&P 500", "ticker": "SPY", "color": "#00CC00"},
-        {"name": "Nasdaq", "ticker": "^IXIC", "color": "#00CC00"},
-        {"name": "VIX Index", "ticker": "^VIX", "color": "#FF5500"},
-        {"name": "Gold", "ticker": "GC=F", "color": "#FFD700"},
-        {"name": "Crude Oil", "ticker": "CL=F", "color": "#888888"}
-    ]
-    
-    c1, c2, c3 = st.columns(3)
-    for i, col in enumerate([c1, c2, c3]):
-        asset = assets[i]
-        with col:
-            series = closes[asset['ticker']].dropna()
-            if not series.empty:
-                current = series.iloc[-1]; prev = series.iloc[-2]; delta = current - prev; pct = (delta / prev) * 100
-                delta_color = "#00CC00" if delta >= 0 else "#FF5500"
 
-                st.markdown(f"""
-                <div class="market-card">
-                    <div style="font-size: 14px; opacity: 0.8; font-weight: bold;">{asset['name']}</div>
-                    <div style="font-size: 22px; font-weight: bold; margin: 5px 0;">{current:,.2f}</div>
-                    <div style="color: {delta_color}; font-size: 14px; font-weight: 600;">{delta:+.2f} ({pct:+.2f}%)</div>
-                </div>
-                """, unsafe_allow_html=True)
+    # --- TAB NAVIGATION (The Boutique Touch) ---
+    tab1, tab2, tab3 = st.tabs(["🚀 Market Swarm", "🛡️ Risk Governance", "📝 Strategist View"])
 
-                st.plotly_chart(make_sparkline(series.tail(30), asset['color']), use_container_width=True, config={'displayModeBar': False})
-    
-    st.markdown("---")
-    
-    c4, c5, c6 = st.columns(3)
-    for i, col in enumerate([c4, c5, c6]):
-        asset = assets[i+3]
-        with col:
-            series = closes[asset['ticker']].dropna()
-            if not series.empty:
-                current = series.iloc[-1]; prev = series.iloc[-2]; delta = current - prev; pct = (delta / prev) * 100
-                delta_color = "#00CC00" if delta >= 0 else "#FF5500"
-
-                st.markdown(f"""
-                <div class="market-card">
-                    <div style="font-size: 14px; opacity: 0.8; font-weight: bold;">{asset['name']}</div>
-                    <div style="font-size: 22px; font-weight: bold; margin: 5px 0;">{current:,.2f}</div>
-                    <div style="color: {delta_color}; font-size: 14px; font-weight: 600;">{delta:+.2f} ({pct:+.2f}%)</div>
-                </div>
-                """, unsafe_allow_html=True)
-                st.plotly_chart(make_sparkline(series.tail(30), asset['color']), use_container_width=True, config={'displayModeBar': False})
-
-    st.divider()
-
-    # --- SWARM DEEP DIVE ---
-    st.subheader("🔍 Swarm Deep Dive")
-    spy_close = full_data['Close']['SPY']
-    ppo, sig, hist = calculate_ppo(spy_close)
-    sma, std, upper_cone, lower_cone = calculate_cone(spy_close)
-    last_date = spy_close.index[-1]; last_val = spy_close.iloc[-1]; last_dev = std.iloc[-1]
-    f_dates, f_mean, f_upper, f_lower = generate_forecast(last_date, last_val, last_dev, days=30)
-    
-    c1, c2 = st.columns(2)
-    with c1: view_mode = st.radio("Select View Horizon:", ["Tactical (60-Day Zoom)", "Strategic (2-Year History)"], horizontal=True)
-    with c2: st.radio("Market Scope (Premium):", ["US Market (Active)", "Global Swarm 🔒", "Sector Rotation 🔒"], index=0, horizontal=True, disabled=True, help="Institutional modules include Global Macro flows and Sector Rotation models.")
-
-    if view_mode == "Tactical (60-Day Zoom)":
-        start_filter = (datetime.now() - timedelta(days=60)).strftime('%Y-%m-%d'); show_forecast = True
-    else:
-        start_filter = (datetime.now() - timedelta(days=730)).strftime('%Y-%m-%d'); show_forecast = False
+    # ---------------------------
+    # TAB 1: MARKET SWARM
+    # ---------------------------
+    with tab1:
+        st.subheader("Global Asset Grid")
         
-    chart_data = full_data[full_data.index >= start_filter]
-    chart_lower = lower_cone[lower_cone.index >= start_filter]
-    chart_upper = upper_cone[upper_cone.index >= start_filter]
-
-    fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.03, row_heights=[0.7, 0.3])
-    fig.add_trace(go.Scatter(x=chart_data.index, y=chart_lower, line=dict(width=0), showlegend=False, hoverinfo='skip'), row=1, col=1)
-    fig.add_trace(go.Scatter(x=chart_data.index, y=chart_upper, fill='tonexty', fillcolor='rgba(0, 100, 255, 0.1)', line=dict(width=0), name="Fair Value Cone", hoverinfo='skip'), row=1, col=1)
-    fig.add_trace(go.Candlestick(x=chart_data.index, open=chart_data['Open']['SPY'], high=chart_data['High']['SPY'], low=chart_data['Low']['SPY'], close=chart_data['Close']['SPY'], name='SPY'), row=1, col=1)
-
-    if show_forecast:
-        fig.add_trace(go.Scatter(x=f_dates, y=f_lower, line=dict(width=0), showlegend=False, hoverinfo='skip'), row=1, col=1)
-        fig.add_trace(go.Scatter(x=f_dates, y=f_upper, fill='tonexty', fillcolor='rgba(200, 0, 255, 0.15)', line=dict(width=0), name="Proj. Uncertainty", hoverinfo='skip'), row=1, col=1)
-        fig.add_trace(go.Scatter(x=f_dates, y=f_mean, name="Swarm Forecast", line=dict(color=chart_font_color, width=2, dash='dot')), row=1, col=1)
-
-    if view_mode == "Strategic (2-Year History)":
-        start_date = chart_data.index[0]; mask = (gov_df['Level_7']) & (gov_df.index >= start_date); emergency_days = gov_df.index[mask]
-        for date in emergency_days: fig.add_vrect(x0=date - timedelta(hours=12), x1=date + timedelta(hours=12), fillcolor="red", opacity=0.1, layer="below", line_width=0, row=1, col=1)
-
-    subset_ppo = ppo[ppo.index >= chart_data.index[0]]; subset_sig = sig[sig.index >= chart_data.index[0]]; subset_hist = hist[hist.index >= chart_data.index[0]]
-    fig.add_trace(go.Scatter(x=chart_data.index, y=subset_ppo, name="Swarm Trend", line=dict(color='cyan', width=1)), row=2, col=1)
-    fig.add_trace(go.Scatter(x=chart_data.index, y=subset_sig, name="Signal", line=dict(color='orange', width=1)), row=2, col=1)
-    colors = ['#00ff00' if val >= 0 else '#ff0000' for val in subset_hist]
-    fig.add_trace(go.Bar(x=chart_data.index, y=subset_hist, name="Velocity", marker_color=colors), row=2, col=1)
-
-    fig.update_layout(height=500, template=chart_template, margin=dict(l=0, r=0, t=0, b=0), showlegend=False, plot_bgcolor=chart_bg, paper_bgcolor=chart_bg, font=dict(color=chart_font_color), xaxis_rangeslider_visible=False)
-    fig.update_xaxes(showgrid=False); fig.update_yaxes(showgrid=False)
-    st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
-    if show_forecast: st.caption("🟪 Purple Area = 30-Day 'Headlights' (Projected Volatility Cone)")
-
-    st.markdown("""
-    <div class="premium-banner">
-    🔒 Institutional Access Required: Unlock Sector Rotation & Global Flows
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.divider()
-
-    # --- GOVERNANCE ---
-    col1, col2 = st.columns([2, 1])
-    with col1:
-        st.markdown(f'<div class="big-badge" style="background-color: {color}; border: 2px solid {color}; box-shadow: 0 0 15px {color}; text-shadow: 1px 1px 2px black;">GOVERNANCE STATUS: {status}</div>', unsafe_allow_html=True)
-        st.caption(f"Reason: {reason}")
-    with col2:
-        latest_vix = full_data['Close']['^VIX'].iloc[-1]
-        st.metric("Risk (VIX)", f"{latest_vix:.2f}", delta_color="inverse")
-
-    st.subheader("⏱️ Tactical Horizons")
-    h1, h2, h3 = st.columns(3)
-    with h1: st.info("**1 WEEK (Momentum)**"); st.markdown("🟢 **RISING**" if hist.iloc[-1] > 0 else "🔴 **WEAKENING**")
-    with h2: st.info("**1 MONTH (Trend)**"); st.markdown("🟢 **BULLISH**" if ppo.iloc[-1] > 0 else "🔴 **BEARISH**")
-    with h3: st.info("**6 MONTH (Structural)**"); st.markdown("🟢 **SAFE**" if status == "NORMAL OPS" else f"🔴 **{status}**")
+        assets = [
+            {"name": "Dow Jones", "ticker": "^DJI", "color": "#00CC00"},
+            {"name": "S&P 500", "ticker": "SPY", "color": "#00CC00"},
+            {"name": "Nasdaq", "ticker": "^IXIC", "color": "#00CC00"},
+            {"name": "VIX Index", "ticker": "^VIX", "color": "#FF5500"},
+            {"name": "Gold", "ticker": "GC=F", "color": "#FFD700"},
+            {"name": "Crude Oil", "ticker": "CL=F", "color": "#888888"}
+        ]
         
-    st.divider()
+        c1, c2, c3 = st.columns(3)
+        for i, col in enumerate([c1, c2, c3]):
+            asset = assets[i]
+            with col:
+                series = closes[asset['ticker']].dropna()
+                if not series.empty:
+                    current = series.iloc[-1]; prev = series.iloc[-2]; delta = current - prev; pct = (delta / prev) * 100
+                    delta_color = "#00CC00" if delta >= 0 else "#FF5500"
 
-    # =============================================
-    # SECTION 4: STRATEGIST VIEW (LIVE FROM SHEETS)
-    # =============================================
-    st.subheader("📝 Tiedeman Research: Chief Strategist's View")
-    
-    try:
-        # ------------------------------------------------------------------
-        # PASTE YOUR GOOGLE SHEET "PUBLISH TO WEB" CSV LINK BELOW
-        # ------------------------------------------------------------------
-        SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT4ik-SBHr_ER_SyMHgwVAds3UaxRtPTA426qU_26TuHkHlyb5h6zl8_H9E-_Kw5FUO3W1mBU8CKiZP/pub?gid=0&single=true&output=csv" 
+                    st.markdown(f"""
+                    <div class="market-card">
+                        <div style="font-size: 14px; opacity: 0.8; font-weight: bold;">{asset['name']}</div>
+                        <div style="font-size: 22px; font-weight: bold; margin: 5px 0;">{current:,.2f}</div>
+                        <div style="color: {delta_color}; font-size: 14px; font-weight: 600;">{delta:+.2f} ({pct:+.2f}%)</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    st.plotly_chart(make_sparkline(series.tail(30), asset['color']), use_container_width=True, config={'displayModeBar': False})
         
-        # Logic to handle both local file (backup) and live sheet
-        if "INSERT_YOUR" in SHEET_URL:
-            # Fallback to local file if user hasn't pasted link yet
-            update_df = pd.read_csv("data/update.csv")
+        st.markdown("---")
+        
+        c4, c5, c6 = st.columns(3)
+        for i, col in enumerate([c4, c5, c6]):
+            asset = assets[i+3]
+            with col:
+                series = closes[asset['ticker']].dropna()
+                if not series.empty:
+                    current = series.iloc[-1]; prev = series.iloc[-2]; delta = current - prev; pct = (delta / prev) * 100
+                    delta_color = "#00CC00" if delta >= 0 else "#FF5500"
+
+                    st.markdown(f"""
+                    <div class="market-card">
+                        <div style="font-size: 14px; opacity: 0.8; font-weight: bold;">{asset['name']}</div>
+                        <div style="font-size: 22px; font-weight: bold; margin: 5px 0;">{current:,.2f}</div>
+                        <div style="color: {delta_color}; font-size: 14px; font-weight: 600;">{delta:+.2f} ({pct:+.2f}%)</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    st.plotly_chart(make_sparkline(series.tail(30), asset['color']), use_container_width=True, config={'displayModeBar': False})
+
+        st.divider()
+
+        # --- SWARM DEEP DIVE ---
+        st.subheader("🔍 Swarm Deep Dive")
+        spy_close = full_data['Close']['SPY']
+        ppo, sig, hist = calculate_ppo(spy_close)
+        sma, std, upper_cone, lower_cone = calculate_cone(spy_close)
+        last_date = spy_close.index[-1]; last_val = spy_close.iloc[-1]; last_dev = std.iloc[-1]
+        f_dates, f_mean, f_upper, f_lower = generate_forecast(last_date, last_val, last_dev, days=30)
+        
+        c1, c2 = st.columns(2)
+        with c1: view_mode = st.radio("Select View Horizon:", ["Tactical (60-Day Zoom)", "Strategic (2-Year History)"], horizontal=True)
+        with c2: st.radio("Market Scope (Premium):", ["US Market (Active)", "Global Swarm 🔒", "Sector Rotation 🔒"], index=0, horizontal=True, disabled=True, help="Institutional modules include Global Macro flows and Sector Rotation models.")
+
+        if view_mode == "Tactical (60-Day Zoom)":
+            start_filter = (datetime.now() - timedelta(days=60)).strftime('%Y-%m-%d'); show_forecast = True
         else:
-            # Live Google Sheet Connection
-            update_df = pd.read_csv(SHEET_URL)
+            start_filter = (datetime.now() - timedelta(days=730)).strftime('%Y-%m-%d'); show_forecast = False
             
-        update_data = dict(zip(update_df['Key'], update_df['Value']))
-        
-        up_date = update_data.get('Date', 'Current')
-        up_title = update_data.get('Title', 'Market Update')
-        raw_text = str(update_data.get('Text', 'Monitoring market conditions...'))
-        raw_text = raw_text.replace("\\n", "\n")
-        lines = [line.strip() for line in raw_text.split('\n')]
-        up_text = '\n\n'.join(lines)
-        
-    except Exception:
-        up_date = "System Status"
-        up_title = "Data Feed Offline"
-        up_text = "Strategist update pending connection."
+        chart_data = full_data[full_data.index >= start_filter]
+        chart_lower = lower_cone[lower_cone.index >= start_filter]
+        chart_upper = upper_cone[upper_cone.index >= start_filter]
 
-    with st.expander(f"Read Forecast ({up_date})", expanded=True):
-        st.markdown(f'**"{up_title}"**')
-        st.markdown(up_text)
+        fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.03, row_heights=[0.7, 0.3])
+        fig.add_trace(go.Scatter(x=chart_data.index, y=chart_lower, line=dict(width=0), showlegend=False, hoverinfo='skip'), row=1, col=1)
+        fig.add_trace(go.Scatter(x=chart_data.index, y=chart_upper, fill='tonexty', fillcolor='rgba(0, 100, 255, 0.1)', line=dict(width=0), name="Fair Value Cone", hoverinfo='skip'), row=1, col=1)
+        fig.add_trace(go.Candlestick(x=chart_data.index, open=chart_data['Open']['SPY'], high=chart_data['High']['SPY'], low=chart_data['Low']['SPY'], close=chart_data['Close']['SPY'], name='SPY'), row=1, col=1)
+
+        if show_forecast:
+            fig.add_trace(go.Scatter(x=f_dates, y=f_lower, line=dict(width=0), showlegend=False, hoverinfo='skip'), row=1, col=1)
+            fig.add_trace(go.Scatter(x=f_dates, y=f_upper, fill='tonexty', fillcolor='rgba(200, 0, 255, 0.15)', line=dict(width=0), name="Proj. Uncertainty", hoverinfo='skip'), row=1, col=1)
+            fig.add_trace(go.Scatter(x=f_dates, y=f_mean, name="Swarm Forecast", line=dict(color=chart_font_color, width=2, dash='dot')), row=1, col=1)
+
+        if view_mode == "Strategic (2-Year History)":
+            start_date = chart_data.index[0]; mask = (gov_df['Level_7']) & (gov_df.index >= start_date); emergency_days = gov_df.index[mask]
+            for date in emergency_days: fig.add_vrect(x0=date - timedelta(hours=12), x1=date + timedelta(hours=12), fillcolor="red", opacity=0.1, layer="below", line_width=0, row=1, col=1)
+
+        subset_ppo = ppo[ppo.index >= chart_data.index[0]]; subset_sig = sig[sig.index >= chart_data.index[0]]; subset_hist = hist[hist.index >= chart_data.index[0]]
+        fig.add_trace(go.Scatter(x=chart_data.index, y=subset_ppo, name="Swarm Trend", line=dict(color='cyan', width=1)), row=2, col=1)
+        fig.add_trace(go.Scatter(x=chart_data.index, y=subset_sig, name="Signal", line=dict(color='orange', width=1)), row=2, col=1)
+        colors = ['#00ff00' if val >= 0 else '#ff0000' for val in subset_hist]
+        fig.add_trace(go.Bar(x=chart_data.index, y=subset_hist, name="Velocity", marker_color=colors), row=2, col=1)
+
+        fig.update_layout(height=500, template=chart_template, margin=dict(l=0, r=0, t=0, b=0), showlegend=False, plot_bgcolor=chart_bg, paper_bgcolor=chart_bg, font=dict(color=chart_font_color), xaxis_rangeslider_visible=False)
+        fig.update_xaxes(showgrid=False); fig.update_yaxes(showgrid=False)
+        st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+        if show_forecast: st.caption("🟪 Purple Area = 30-Day 'Headlights' (Projected Volatility Cone)")
+        
+        st.markdown("""
+        <div class="premium-banner">
+        🔒 Institutional Access Required: Unlock Sector Rotation & Global Flows
+        </div>
+        """, unsafe_allow_html=True)
+
+    # ---------------------------
+    # TAB 2: GOVERNANCE
+    # ---------------------------
+    with tab2:
+        st.subheader("🛡️ Risk Governance & Compliance")
+        
+        col1, col2 = st.columns([2, 1])
+        with col1:
+            st.markdown(f'<div class="big-badge" style="background-color: {color}; border: 2px solid {color}; box-shadow: 0 0 15px {color}; text-shadow: 1px 1px 2px black;">GOVERNANCE STATUS: {status}</div>', unsafe_allow_html=True)
+            st.caption(f"Reason: {reason}")
+        with col2:
+            latest_vix = full_data['Close']['^VIX'].iloc[-1]
+            st.metric("Risk (VIX)", f"{latest_vix:.2f}", delta_color="inverse")
+
+        st.subheader("⏱️ Tactical Horizons")
+        h1, h2, h3 = st.columns(3)
+        with h1: st.info("**1 WEEK (Momentum)**"); st.markdown("🟢 **RISING**" if hist.iloc[-1] > 0 else "🔴 **WEAKENING**")
+        with h2: st.info("**1 MONTH (Trend)**"); st.markdown("🟢 **BULLISH**" if ppo.iloc[-1] > 0 else "🔴 **BEARISH**")
+        with h3: st.info("**6 MONTH (Structural)**"); st.markdown("🟢 **SAFE**" if status == "NORMAL OPS" else f"🔴 **{status}**")
+
+        st.divider()
+        st.markdown("#### System Logic (Alpha Swarm Protocol)")
+        st.code("""
+        IF (Credit Spreads Widen > 1.5%) OR (DXY Spike > 2%):
+             TRIGGER = LEVEL 7 (EMERGENCY)
+        ELIF (VIX > 24) AND (Market Breadth Collapsing):
+             TRIGGER = LEVEL 5 (CAUTION)
+        ELSE:
+             STATUS = NORMAL OPS
+        """, language="python")
+
+    # ---------------------------
+    # TAB 3: STRATEGIST VIEW
+    # ---------------------------
+    with tab3:
+        st.subheader("📝 Tiedeman Research: Chief Strategist's View")
+        
+        try:
+            # ------------------------------------------------------------------
+            # PASTE YOUR GOOGLE SHEET "PUBLISH TO WEB" CSV LINK BELOW
+            # ------------------------------------------------------------------
+            SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT4ik-SBHr_ER_SyMHgwVAds3UaxRtPTA426qU_26TuHkHlyb5h6zl8_H9E-_Kw5FUO3W1mBU8CKiZP/pub?gid=0&single=true&output=csv" 
+            
+            # Logic to handle both local file (backup) and live sheet
+            if "INSERT_YOUR" in SHEET_URL:
+                # Fallback to local file if user hasn't pasted link yet
+                update_df = pd.read_csv("data/update.csv")
+            else:
+                # Live Google Sheet Connection
+                update_df = pd.read_csv(SHEET_URL)
+                
+            update_data = dict(zip(update_df['Key'], update_df['Value']))
+            
+            up_date = update_data.get('Date', 'Current')
+            up_title = update_data.get('Title', 'Market Update')
+            raw_text = str(update_data.get('Text', 'Monitoring market conditions...'))
+            raw_text = raw_text.replace("\\n", "\n")
+            lines = [line.strip() for line in raw_text.split('\n')]
+            up_text = '\n\n'.join(lines)
+            
+        except Exception:
+            up_date = "System Status"
+            up_title = "Data Feed Offline"
+            up_text = "Strategist update pending connection."
+
+        with st.expander(f"Read Forecast ({up_date})", expanded=True):
+            st.markdown(f'**"{up_title}"**')
+            st.markdown(up_text)
+            
+        st.info("💡 **Analyst Note:** This commentary is pulled live from the Chief Strategist's desk via the Alpha Swarm CMS.")
 
     # FOOTER
     st.markdown("""
     <div class="custom-footer">
-    TIEDEMAN RESEARCH | ALPHA SWARM PROTOCOL v16.0 | INSTITUTIONAL RISK GOVERNANCE<br>
+    TIEDEMAN RESEARCH | ALPHA SWARM PROTOCOL v16.2 | INSTITUTIONAL RISK GOVERNANCE<br>
     Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
     <br>
     <strong>Institutional Access:</strong> <a href="mailto:institutional@tiedeman.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@tiedeman.com</a>
