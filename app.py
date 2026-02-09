@@ -54,8 +54,18 @@ if dark_mode:
     
     /* COMPONENTS */
     div[data-testid="stRadio"] > label { color: #FFFFFF !important; font-weight: bold; }
-    [data-testid="stExpander"] { background-color: #161b22 !important; border: 1px solid #30363d !important; }
-    [data-testid="stExpander"] summary { color: #ffffff !important; }
+
+    /* EXPANDER HEADER STYLE */
+    [data-testid="stExpander"] {
+        background-color: #161b22 !important;
+        border: 1px solid #30363d !important;
+        border-radius: 6px;
+    }
+    [data-testid="stExpander"] summary {
+        color: #ffffff !important;
+        background-color: #161b22 !important;
+        border-radius: 6px;
+    }
     
     /* FOOTER */
     .custom-footer { font-size: 12px; color: #666 !important; text-align: center; margin-top: 50px; }
@@ -342,7 +352,15 @@ try:
     # =============================================
     col1, col2 = st.columns([2, 1])
     with col1:
-        st.markdown(f'<div class="big-badge" style="background-color: {color}; color: white;">GOVERNANCE STATUS: {status}</div>', unsafe_allow_html=True)
+        if status == "EMERGENCY":
+            st.error(f"GOVERNANCE STATUS: {status}", icon="🚨")
+        elif status == "CAUTION":
+            st.warning(f"GOVERNANCE STATUS: {status}", icon="⚠️")
+        elif status == "WATCHLIST":
+            st.warning(f"GOVERNANCE STATUS: {status}", icon="👀")
+        else:
+            st.success(f"GOVERNANCE STATUS: {status}", icon="✅")
+
         st.caption(f"Reason: {reason}")
     with col2:
         latest_vix = full_data['Close']['^VIX'].iloc[-1]
