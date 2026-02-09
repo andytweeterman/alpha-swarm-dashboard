@@ -1,0 +1,19 @@
+--- [ALPHA SWARM: BAD DATE AUDIT v4 (SMART LOOKUP)] ---
+Downloading data...
+
+=====================================================================================
+DATE         | EVENT                | MORNING SIGNAL       | RESULT
+=====================================================================================
+2007-08-08   | Credit Freeze (BNP)  | Error: 'charmap' codec can't encode character '\u2705' in position 61: character maps to <undefined>
+2008-09-15   | Lehman Bankruptcy    | Error: 'charmap' codec can't encode character '\u2705' in position 61: character maps to <undefined>
+2008-10-01   | 2008 Crash Peak      | Error: 'charmap' codec can't encode character '\u2705' in position 61: character maps to <undefined>
+2010-05-06   | Flash Crash          | Error: 'charmap' codec can't encode character '\u2705' in position 61: character maps to <undefined>
+2011-08-03   | US Debt Downgrade    | Error: 'charmap' codec can't encode character '\u2705' in position 61: character maps to <undefined>
+2018-12-12   | Trade War / Rates    | Error: 'charmap' codec can't encode character '\u274c' in position 61: character maps to <undefined>
+2020-02-19   | COVID Start          | Error: 'charmap' codec can't encode character '\u274c' in position 61: character maps to <undefined>
+2020-03-11   | COVID Panic          | Error: 'charmap' codec can't encode character '\u2705' in position 61: character maps to <undefined>
+2022-06-08   | Inflation Shock      | Error: 'charmap' codec can't encode character '\u2705' in position 61: character maps to <undefined>
+2025-04-09   | Tariff Flop          | Error: 'charmap' codec can't encode character '\u2705' in position 61: character maps to <undefined>
+=====================================================================================
+FINAL SCORE: 8/10
+=====================================================================================
