@@ -20,7 +20,7 @@ sys.modules["streamlit"].set_page_config = MagicMock()
 sys.modules["streamlit"].sidebar = MagicMock()
 
 # Import functions from app.py
-from src.app import calculate_governance_history, calculate_ppo, calculate_cone
+from app import calculate_governance_history, calculate_ppo, calculate_cone
 
 def test_governance_calculation():
     # Create dummy data
@@ -42,7 +42,7 @@ def test_governance_calculation():
     gov_df, status, color, reason = calculate_governance_history(full_data)
 
     assert status in ["EMERGENCY", "CAUTION", "WATCHLIST", "NORMAL OPS"]
-    assert color in ["red", "orange", "yellow", "#00CC00"]
+    assert color in ["#f93e3e", "#ffaa00", "#f1c40f", "#00d26a"]
     assert reason in ["Structural/Policy Failure", "Market Divergence", "Elevated Risk Monitors", "System Integrity Nominal"]
 
 def test_ppo_calculation():
