@@ -7,7 +7,7 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. PAGE SETUP (v16.2 - UI POLISH & TABS)
+# 1. PAGE SETUP (v16.3 - LIVE MONITOR FEED)
 # ==========================================
 st.set_page_config(page_title="Tiedeman Research | Alpha Swarm", page_icon="🛡️", layout="wide")
 
@@ -15,11 +15,11 @@ st.set_page_config(page_title="Tiedeman Research | Alpha Swarm", page_icon="🛡
 with st.sidebar:
     st.header("🏛️ Tiedeman Research")
 
-    # TOGGLE: Defaults to FALSE (Light Mode / High Contrast) per user request
+    # TOGGLE: Defaults to FALSE (Light Mode / High Contrast)
     dark_mode = st.toggle("Enable Dark Mode", value=False, help="Toggle between Institutional Dark Mode and Standard Light Mode.")
     
     st.divider()
-    st.caption("Powered by Alpha Swarm v16.2")
+    st.caption("Powered by Alpha Swarm v16.3")
     st.caption("Status: PROTOTYPE (May 2026 Target)")
 
 # CONDITIONAL CSS LOGIC
@@ -35,7 +35,7 @@ if dark_mode:
     /* GLOBAL BACKGROUND */
     .stApp { background-color: #0E1117 !important; }
     
-    /* MARKDOWN TEXT ONLY (Prevents ruining tooltips) */
+    /* MARKDOWN TEXT ONLY */
     [data-testid="stMarkdownContainer"] p, [data-testid="stMarkdownContainer"] span, [data-testid="stMarkdownContainer"] li, [data-testid="stMarkdownContainer"] h1, [data-testid="stMarkdownContainer"] h2, [data-testid="stMarkdownContainer"] h3 {
         color: #E6E6E6 !important;
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -52,7 +52,7 @@ if dark_mode:
     button[data-baseweb="tab"] { color: #586069; font-weight: bold; }
     button[data-baseweb="tab"][aria-selected="true"] { color: #C6A87C !important; border-top-color: #C6A87C !important; background-color: #161B22; }
 
-    /* TOOLTIPS (Question Marks) - Lighter Grey */
+    /* TOOLTIPS (Question Marks) - Light Grey */
     [data-testid="stTooltipIcon"] { color: #AAAAAA !important; }
 
     /* MARKET GRID CARDS */
@@ -276,7 +276,10 @@ try:
     full_data = fetch_data()
     closes = full_data['Close']
     gov_df, status, color, reason = calculate_governance_history(full_data)
-
+    
+    # Pre-calculate active logic for monitor feed
+    latest_monitor = gov_df.iloc[-1]
+    
     # --- TAB NAVIGATION (The Boutique Touch) ---
     tab1, tab2, tab3 = st.tabs(["🚀 Market Swarm", "🛡️ Risk Governance", "📝 Strategist View"])
 
@@ -408,15 +411,37 @@ try:
         with h3: st.info("**6 MONTH (Structural)**"); st.markdown("🟢 **SAFE**" if status == "NORMAL OPS" else f"🔴 **{status}**")
 
         st.divider()
-        st.markdown("#### System Logic (Alpha Swarm Protocol)")
-        st.code("""
-        IF (Credit Spreads Widen > 1.5%) OR (DXY Spike > 2%):
-             TRIGGER = LEVEL 7 (EMERGENCY)
-        ELIF (VIX > 24) AND (Market Breadth Collapsing):
-             TRIGGER = LEVEL 5 (CAUTION)
-        ELSE:
-             STATUS = NORMAL OPS
-        """, language="python")
+        st.subheader("📡 Active Monitor Feed (Live Logic)")
+        
+        # Replace the raw Code Block with a "Live Monitor Dashboard"
+        m1, m2, m3 = st.columns(3)
+        
+        # Monitor 1: Credit Spreads (HYG vs IEF)
+        # Logic: If HYG falls faster than IEF, Credit Spreads are widening (Bad)
+        credit_val = latest_monitor['Credit_Delta']
+        credit_status = "STRESS" if credit_val < -0.015 else "NOMINAL"
+        m1.metric("Credit Spreads (HYG/IEF)", f"{credit_val:.2%}", 
+                 delta="STABLE" if credit_status=="NOMINAL" else "WIDENING", 
+                 delta_color="normal" if credit_status=="NOMINAL" else "inverse",
+                 help="Tracks High Yield bonds vs Treasuries. Widening spreads indicate banking stress.")
+
+        # Monitor 2: US Dollar (DXY)
+        # Logic: Fast spike in DXY kills earnings
+        dxy_val = latest_monitor['DXY_Delta']
+        dxy_status = "SPIKE" if dxy_val > 0.02 else "STABLE"
+        m2.metric("US Dollar (DXY)", f"{dxy_val:.2%}", 
+                 delta="STABLE" if dxy_status=="STABLE" else "SPIKING", 
+                 delta_color="inverse",
+                 help="Tracks value of USD. Rapid spikes (>2%) hurt multinational earnings.")
+
+        # Monitor 3: Market Breadth (RSP vs SPY)
+        # Logic: If Equal Weight (RSP) lags Cap Weight (SPY), the rally is thinning (Bad)
+        breadth_val = latest_monitor['Breadth_Delta']
+        breadth_status = "NARROWING" if breadth_val < -0.025 else "HEALTHY"
+        m3.metric("Market Breadth (RSP/SPY)", f"{breadth_val:.2%}", 
+                 delta=breadth_status, 
+                 delta_color="normal" if breadth_status=="HEALTHY" else "inverse",
+                 help="Compares Equal Weight S&P to Cap Weight. Narrowing breadth warns of a top.")
 
     # ---------------------------
     # TAB 3: STRATEGIST VIEW
@@ -461,7 +486,7 @@ try:
     # FOOTER
     st.markdown("""
     <div class="custom-footer">
-    TIEDEMAN RESEARCH | ALPHA SWARM PROTOCOL v16.2 | INSTITUTIONAL RISK GOVERNANCE<br>
+    TIEDEMAN RESEARCH | ALPHA SWARM PROTOCOL v16.3 | INSTITUTIONAL RISK GOVERNANCE<br>
     Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
     <br>
     <strong>Institutional Access:</strong> <a href="mailto:institutional@tiedeman.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@tiedeman.com</a>
