@@ -5,7 +5,8 @@ import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
-import os  # Added for file checking
+import os
+import base64  # REQUIRED for embedding local images in HTML
 
 # ==========================================
 # 1. PAGE SETUP
@@ -81,7 +82,7 @@ div[data-testid="stRadio"] div[role="radiogroup"] p {{ color: var(--text-seconda
 /* --- HEADER CONTAINER (The Steel Bar) --- */
 .header-bar {{
     background: linear-gradient(145deg, #1a1f26, #2d343f);
-    height: 60px; /* Slim Height */
+    height: 60px; /* Slim Height matches Menu Button */
     display: flex;
     align-items: center;
     padding-left: 15px;
@@ -89,6 +90,7 @@ div[data-testid="stRadio"] div[role="radiogroup"] p {{ color: var(--text-seconda
     border-right: none;
     border-radius: 8px 0 0 8px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    overflow: hidden; /* Ensures image stays inside */
 }}
 
 /* MENU BUTTON STYLING */
@@ -169,6 +171,14 @@ def fetch_market_data():
         start = (datetime.now() - timedelta(days=1825)).strftime('%Y-%m-%d')
         data = yf.download(tickers, start=start, progress=False)
         return data
+    except Exception:
+        return None
+
+# --- NEW: Helper to load local image as base64 ---
+def get_base64_image(image_path):
+    try:
+        with open(image_path, "rb") as img_file:
+            return base64.b64encode(img_file.read()).decode()
     except Exception:
         return None
 
@@ -257,36 +267,19 @@ except Exception as e:
 c_title, c_menu = st.columns([0.90, 0.10], gap="small")
 
 with c_title:
-    # We wrap the image in a div that matches the menu background color (#1a1f26)
-    # This creates the "extended bar" effect.
-    if os.path.exists("banner.png"):
+    # --- LOGIC TO EMBED IMAGE INTO HTML BAR ---
+    img_b64 = get_base64_image("banner.png")
+    
+    if img_b64:
+        # If image found, embed it directly in the header-bar div
         st.markdown(f"""
         <div class="header-bar">
-            <img src="app/static/banner.png" style="height: 40px; width: auto;"> 
-            </div>
-        """, unsafe_allow_html=True)
-        # BACKUP: If the HTML above doesn't render the local image correctly in your specific env:
-        # st.image("banner.png", width=280) 
-    else:
-        # Fallback Text Header
-        st.markdown(f"""
-        <div class="header-bar">
-            <span class="steel-text" style="font-size: 20px !important;">MacroEffects</span>
+            <img src="data:image/png;base64,{img_b64}" style="height: 45px; width: auto; max-width: 100%; object-fit: contain;">
         </div>
         """, unsafe_allow_html=True)
-
-# NOTE ON IMAGES IN HTML: 
-# Accessing local images inside st.markdown HTML is restricted by Streamlit's security.
-# To make this work seamlessly with the visual design:
-# We will use st.image inside the column but style the column itself to look like the bar.
-
-# RE-DOING HEADER FOR ROBUSTNESS:
-with c_title:
-    # Use standard Streamlit image to ensure it loads, but keep it small.
-    if os.path.exists("banner.png"):
-        st.image("banner.png", width=280) # Slimmer width
     else:
-         st.markdown(f"""
+        # Fallback Text Header if file missing
+        st.markdown(f"""
         <div class="header-bar">
             <span class="steel-text" style="font-size: 20px !important;">MacroEffects</span>
         </div>
@@ -477,7 +470,7 @@ else:
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v49.0 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v50.0 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
