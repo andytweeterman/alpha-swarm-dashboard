@@ -23,16 +23,16 @@ status = "SYSTEM BOOT"
 color = "#888888"
 
 # ==========================================
-# 2. THEME ENGINE (IRONCLAD)
+# 2. THEME ENGINE
 # ==========================================
 if st.session_state["dark_mode"]:
     # DARK MODE
     BG_COLOR = "#0e1117"
     CARD_BG = "rgba(22, 27, 34, 0.7)"
-    TEXT_PRIMARY = "#FFFFFF" # Values (White)
-    TEXT_SECONDARY = "#B0B8C1" # Labels (Light Grey) <-- TARGET COLOR
+    TEXT_PRIMARY = "#FFFFFF"
+    TEXT_SECONDARY = "#E0E0E0" # Light Grey for Dark Mode Labels
     CHART_TEMPLATE = "plotly_dark"
-    CHART_FONT = "#B0B8C1"
+    CHART_FONT = "#E6E6E6"
 else:
     # LIGHT MODE
     BG_COLOR = "#ffffff"
@@ -45,7 +45,7 @@ else:
 ACCENT_GOLD = "#C6A87C"
 
 # ==========================================
-# 3. CSS STYLING
+# 3. CSS STYLING (THE JULES OVERRIDES)
 # ==========================================
 st.markdown(f"""
 <style>
@@ -61,47 +61,68 @@ st.markdown(f"""
 
 .stApp {{ background-color: var(--bg-color) !important; font-family: 'Inter', sans-serif; }}
 
-/* ----------------------------------------------------
-   IRONCLAD OVERRIDES
----------------------------------------------------- */
+/* --- TEXT ENFORCERS --- */
 
-/* 1. METRIC LABELS: FORCE ALL CHILDREN TO SECONDARY COLOR */
-/* This catches the p, div, and label tags inside the metric label */
-div[data-testid="stMetricLabel"] * {{
-    color: {TEXT_SECONDARY} !important;
-}}
-div[data-testid="stMetricLabel"] {{
-    color: {TEXT_SECONDARY} !important;
-}}
-
-/* 2. METRIC VALUES: FORCE PRIMARY COLOR */
-div[data-testid="stMetricValue"] * {{
-    color: {TEXT_PRIMARY} !important;
-}}
-
-/* 3. TOOLTIP ICONS: FORCE SECONDARY COLOR */
-[data-testid="stTooltipIcon"] {{
-    color: {TEXT_SECONDARY} !important;
-    opacity: 0.9 !important;
-}}
-[data-testid="stTooltipIcon"] svg {{
-    fill: {TEXT_SECONDARY} !important;
-}}
-
-/* 4. GLOBAL TEXT DEFAULT */
+/* 1. Global Paragraphs */
 .stMarkdown p, .stMarkdown span, .stMarkdown li {{
-    color: {TEXT_SECONDARY} !important; /* Default text is Grey */
+    color: var(--text-primary) !important;
 }}
 
-/* 5. HEADERS (H1-H6) */
-h1, h2, h3, h4, h5, h6 {{
-    color: {TEXT_SECONDARY} !important;
+/* 2. Headers (H3) */
+h3 {{
+    color: var(--text-secondary) !important;
     font-weight: 600 !important;
 }}
 
-/* ----------------------------------------------------
-   HEADER & TAGLINE
----------------------------------------------------- */
+/* 3. METRIC LABELS (Risk VIX, Credit Spreads) - FORCED TO SECONDARY COLOR */
+/* We target specific children to override Streamlit's defaults */
+div[data-testid="stMetricLabel"] {{
+    color: var(--text-secondary) !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+}}
+div[data-testid="stMetricLabel"] p {{
+    color: var(--text-secondary) !important;
+}}
+div[data-testid="stMetricLabel"] div {{
+    color: var(--text-secondary) !important;
+}}
+
+/* 4. METRIC VALUES */
+div[data-testid="stMetricValue"] {{
+    color: var(--text-primary) !important;
+}}
+
+/* 5. TOOLTIP ICONS */
+[data-testid="stTooltipIcon"] {{
+    color: var(--text-secondary) !important;
+    opacity: 0.9 !important;
+}}
+[data-testid="stTooltipIcon"] svg {{
+    fill: var(--text-secondary) !important;
+}}
+
+/* 6. RADIO BUTTON LABELS */
+div[data-testid="stRadio"] > label {{
+    color: var(--text-secondary) !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+}}
+div[data-testid="stRadio"] div[role="radiogroup"] p {{
+    color: var(--text-secondary) !important;
+}}
+
+/* 7. EXPANDER HEADER */
+[data-testid="stExpander"] {{
+    background-color: transparent !important; 
+    border: 1px solid var(--card-border) !important;
+}}
+.streamlit-expanderHeader p {{
+    color: var(--text-primary) !important;
+    font-weight: 600;
+}}
+
+/* --- HEADER & TAGLINE --- */
 .steel-header-container {{
     background: linear-gradient(145deg, #1a1f26, #2d343f);
     padding: 0px 20px;
@@ -129,8 +150,6 @@ h1, h2, h3, h4, h5, h6 {{
     font-size: 26px !important;
 }}
 
-/* TAGLINE IS NOW INLINE HTML - SEE BELOW */
-
 /* MENU BUTTON */
 [data-testid="stPopover"] button {{
     border: 1px solid #4a4f58;
@@ -156,7 +175,7 @@ button[data-baseweb="tab"] {{
     background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.05) 100%) !important;
     border: 1px solid rgba(128,128,128,0.2) !important;
     border-radius: 6px 6px 0 0 !important;
-    color: {TEXT_SECONDARY} !important;
+    color: var(--text-secondary) !important;
     font-family: 'Inter', sans-serif;
     font-weight: 600;
     font-size: 14px;
@@ -208,22 +227,9 @@ button[data-baseweb="tab"][aria-selected="true"] p {{
 }}
 
 .market-card {{ background: var(--card-bg); border: 1px solid rgba(128,128,128,0.2); border-radius: 6px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; margin-bottom: 10px; }}
-.market-ticker {{ color: {TEXT_SECONDARY}; font-size: 11px; margin-bottom: 2px; }}
-.market-price {{ color: {TEXT_PRIMARY}; font-family: 'Fira Code', monospace; font-size: 22px; font-weight: 700; margin: 2px 0; }}
+.market-ticker {{ color: var(--text-secondary); font-size: 11px; margin-bottom: 2px; }}
+.market-price {{ color: var(--text-primary); font-family: 'Fira Code', monospace; font-size: 22px; font-weight: 700; margin: 2px 0; }}
 .market-delta {{ font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 600; }}
-
-/* EXPANDER */
-[data-testid="stExpander"] {{
-    background-color: transparent !important; 
-    border: 1px solid rgba(128,128,128,0.2) !important;
-}}
-.streamlit-expanderHeader p {{
-    color: {TEXT_SECONDARY} !important;
-    font-weight: 600;
-}}
-.streamlit-expanderContent p {{
-    color: {TEXT_SECONDARY} !important;
-}}
 
 /* REMOVE DEFAULT UI */
 #MainMenu {{visibility: hidden;}}
@@ -237,7 +243,7 @@ div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
 .custom-footer {{
     font-family: 'Fira Code', monospace;
     font-size: 10px;
-    color: {TEXT_SECONDARY} !important;
+    color: var(--text-secondary) !important;
     text-align: center;
     margin-top: 50px;
     border-top: 1px solid #30363d;
@@ -345,11 +351,11 @@ except Exception as e:
 c_title, c_menu = st.columns([0.85, 0.15])
 
 with c_title:
-    # --- TAGLINE COLOR FIXED HERE (Inline Style) ---
+    # INLINE STYLE: Force Silver Color on Tagline
     st.markdown(f"""
     <div class="steel-header-container">
         <span class="steel-text">MacroEffects</span>
-        <span class="tagline-text" style="color: #C0C0C0 !important; opacity: 1 !important; font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin: 0; line-height: 1.1;">AI INFERENCE FOCUSED ON STOCK MARKETS</span>
+        <span class="tagline-text" style="color: #C0C0C0 !important; font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin: 0; line-height: 1.1;">AI INFERENCE FOCUSED ON STOCK MARKETS</span>
     </div>
     """, unsafe_allow_html=True)
 
@@ -369,7 +375,7 @@ with c_menu:
 # SUBHEADER WITH SMALL PILL
 st.markdown(f"""
 <div style="margin-bottom: 20px; margin-top: 15px;">
-    <span style="font-family: 'Inter'; font-weight: 600; font-size: 16px; color: {TEXT_SECONDARY};">Macro-Economic Intelligence: Global Market Command Center</span>
+    <span style="font-family: 'Inter'; font-weight: 600; font-size: 16px; color: var(--text-secondary);">Macro-Economic Intelligence: Global Market Command Center</span>
     <div class="gov-pill" style="background: linear-gradient(135deg, {color}, {color}88); border: 1px solid {color};">{status}</div>
     <div class="premium-pill">PREMIUM</div>
 </div>
@@ -538,7 +544,7 @@ else:
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v45.0 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v46.0 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
