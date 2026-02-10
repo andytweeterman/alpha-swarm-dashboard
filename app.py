@@ -23,7 +23,7 @@ status = "SYSTEM BOOT"
 color = "#888888"
 
 # ==========================================
-# 2. THEME ENGINE (FORCE OVERRIDES)
+# 2. THEME ENGINE (FINAL CONTRAST TUNING)
 # ==========================================
 current_theme = {
     "bg_color": "#0e1117" if st.session_state["dark_mode"] else "#ffffff",
@@ -31,10 +31,10 @@ current_theme = {
     "card_border": "1px solid rgba(255, 255, 255, 0.08)" if st.session_state["dark_mode"] else "1px solid rgba(49, 51, 63, 0.1)",
     
     # COLORS
-    # Dark Mode: Primary = White, Secondary = Light Grey (#D3D3D3)
+    # Dark Mode: Primary = White, Secondary = Bright Platinum (#E0E0E0) <--- CHANGED FOR VISIBILITY
     # Light Mode: Primary = Black, Secondary = Dark Grey
     "text_primary": "#FFFFFF" if st.session_state["dark_mode"] else "#000000", 
-    "text_secondary": "#D3D3D3" if st.session_state["dark_mode"] else "#666666", 
+    "text_secondary": "#E0E0E0" if st.session_state["dark_mode"] else "#666666", 
     
     "accent_gold": "#C6A87C",
     "chart_template": "plotly_dark" if st.session_state["dark_mode"] else "plotly_white",
@@ -42,7 +42,7 @@ current_theme = {
 }
 
 # ==========================================
-# 3. CSS STYLING (NUCLEAR OPTION)
+# 3. CSS STYLING
 # ==========================================
 st.markdown(f"""
 <style>
@@ -82,8 +82,7 @@ div[data-testid="stRadio"] div[role="radiogroup"] p {{
     color: var(--text-secondary) !important;
 }}
 
-/* 4. METRIC LABELS (NUCLEAR FIX) */
-/* Target every possible container for the label */
+/* 4. METRIC LABELS (Risk VIX, Credit Spreads) - FORCED TO SECONDARY COLOR */
 div[data-testid="stMetricLabel"] {{
     color: var(--text-secondary) !important; 
     font-size: 14px !important;
@@ -92,10 +91,6 @@ div[data-testid="stMetricLabel"] {{
 div[data-testid="stMetricLabel"] p {{
     color: var(--text-secondary) !important;
 }}
-div[data-testid="stMetricLabel"] div {{
-    color: var(--text-secondary) !important;
-}}
-
 div[data-testid="stMetricValue"] {{
     color: var(--text-primary) !important;
 }}
@@ -109,7 +104,7 @@ div[data-testid="stMetricValue"] {{
     fill: var(--text-secondary) !important;
 }}
 
-/* 6. Expander Header */
+/* 6. Expander Header (Strategist) */
 [data-testid="stExpander"] {{
     background-color: transparent !important; 
     border: 1px solid var(--card-border) !important;
@@ -147,7 +142,16 @@ div[data-testid="stMetricValue"] {{
     font-size: 26px !important;
 }}
 
-/* TAGLINE IS NOW HANDLED INLINE IN HTML TO FORCE COLOR */
+/* TAGLINE TEXT (INLINE STYLE HANDLES COLOR NOW) */
+.tagline-text {{
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin: 0;
+    line-height: 1.1;
+}}
 
 /* MENU BUTTON */
 [data-testid="stPopover"] button {{
@@ -209,7 +213,7 @@ button[data-baseweb="tab"][aria-selected="true"] p {{
     margin-bottom: 15px;
 }}
 
-/* SMALL GOVERNANCE PILL */
+/* GOVERNANCE PILL */
 .gov-pill {{
     display: inline-block;
     padding: 4px 12px;
@@ -366,7 +370,7 @@ except Exception as e:
 c_title, c_menu = st.columns([0.85, 0.15])
 
 with c_title:
-    # NUCLEAR OPTION: Inline Style for Tagline Color
+    # INLINE STYLE FOR TAGLINE COLOR (Prevents Theme Override)
     st.markdown(f"""
     <div class="steel-header-container">
         <span class="steel-text">MacroEffects</span>
@@ -559,7 +563,7 @@ else:
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v39.0 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v40.0 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
