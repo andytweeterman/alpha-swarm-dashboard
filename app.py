@@ -7,7 +7,7 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. PAGE SETUP (v17.0 - MACROEFFECTS GLOW UP)
+# 1. PAGE SETUP (v18.0 - BRUSHED STEEL & GOLD)
 # ==========================================
 st.set_page_config(page_title="MacroEffects | Global Command", page_icon="M", layout="wide")
 
@@ -15,7 +15,7 @@ st.set_page_config(page_title="MacroEffects | Global Command", page_icon="M", la
 with st.sidebar:
     st.header("M | MacroEffects")
     st.divider()
-    st.caption("Powered by Alpha Swarm v17.0")
+    st.caption("Powered by Alpha Swarm v18.0")
     st.caption("Status: INSTITUTIONAL ACCESS")
     st.divider()
     dark_mode = st.toggle("Dark Mode", value=False)
@@ -57,10 +57,10 @@ theme_config = {
 }
 current_theme = theme_config[dark_mode]
 
-# --- INSTITUTIONAL API DATA HOSE CSS ---
+# --- INSTITUTIONAL VISUAL ARCHITECTURE ---
 st.markdown(f"""
 <style>
-/* FONT IMPORTS (Fallbacks to system fonts) */
+/* FONT IMPORTS */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Fira+Code:wght@300;500;700&display=swap');
 
 /* GLOBAL VARIABLES */
@@ -71,51 +71,58 @@ st.markdown(f"""
     --text-primary: {current_theme['text_primary']};
     --text-secondary: {current_theme['text_secondary']};
     --accent-gold: {current_theme['accent_gold']};
-    --accent-blue: {current_theme['accent_blue']};
-    --glass-shadow: {current_theme['glass_shadow']};
-    --glass-bg: {current_theme['glass_bg']};
     --steel-gradient: {current_theme['steel_gradient']};
 }}
 
-/* TIGHTEN SPACING (Dad's Request) */
+/* TIGHTEN SPACING */
 .block-container {{
     padding-top: 1rem !important;
     padding-bottom: 2rem !important;
 }}
 
-/* HIDE DEFAULT STREAMLIT ELEMENTS */
+/* HIDE DEFAULT ELEMENTS */
 #MainMenu {{visibility: visible;}}
 footer {{visibility: hidden;}}
 header {{visibility: visible;}}
 
-/* MACROEFFECTS BANNER (Blue/White Slim) */
-.glass-header {{
-    background: linear-gradient(90deg, #002244 0%, #004488 100%); /* Institutional Blue */
-    border-radius: 4px;
-    padding: 10px 20px; /* Slimmer padding */
-    border-bottom: 3px solid var(--accent-gold);
-    margin-bottom: 10px;
+/* --- THE STEEL HEADER ARCHITECTURE (Title & Subheaders) --- */
+.steel-header {{
+    background: linear-gradient(145deg, #1a1f26, #2d343f);
+    padding: 15px 25px;
+    border-radius: 8px;
+    border: 1px solid #4a4f58;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    margin-bottom: 15px;
     display: flex;
     align-items: center;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    justify-content: space-between;
 }}
 
-.glass-header h1 {{
+/* BRUSHED STEEL TEXT EFFECT */
+.steel-text {{
+    background: linear-gradient(180deg, #FFFFFF 0%, #A0A0A0 50%, #E0E0E0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
     margin: 0;
-    padding: 0;
-    border: none;
-    font-size: 24px !important;
-    color: white !important;
-    -webkit-text-fill-color: white !important; /* Override gradient text for Logo */
-    background: none !important;
-    letter-spacing: 2px;
 }}
 
-.menu-token {{
-    font-size: 24px;
-    color: white;
-    margin-right: 15px;
-    cursor: pointer;
+/* Title Size */
+.steel-header h1 {{
+    font-size: 32px !important; 
+    margin: 0 !important;
+    padding: 0 !important;
+    background: linear-gradient(180deg, #FFFFFF 0%, #A0A0A0 50%, #E0E0E0 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}}
+
+/* Subheader Size */
+.steel-subheader {{
+    font-size: 18px !important;
 }}
 
 /* APP BACKGROUND */
@@ -124,184 +131,87 @@ header {{visibility: visible;}}
     font-family: 'Inter', sans-serif;
 }}
 
-/* TYPOGRAPHY OVERRIDES */
-h1, h2, h3, h4, h5, h6 {{
-    color: var(--text-primary) !important;
-    font-family: 'Inter', sans-serif;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-    text-transform: uppercase;
-}}
-
-/* Gradient Text for Sub-headers Only */
-h2, h3 {{
-    background: var(--steel-gradient) !important;
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-}}
-
-p, span, li, label {{
-    color: var(--text-secondary) !important;
-    font-family: 'Inter', sans-serif;
-    font-size: 14px; /* Slightly smaller base font */
-}}
-
-/* SIDEBAR STYLING */
-section[data-testid="stSidebar"] {{
-    background-color: {current_theme['sidebar_bg']} !important;
-    border-right: 1px solid {current_theme['sidebar_border']};
-}}
-
-section[data-testid="stSidebar"] h2 {{
-    color: var(--accent-gold) !important;
-    -webkit-text-fill-color: var(--accent-gold) !important;
-    font-size: 1.2rem !important;
-}}
-
-/* METRICS & DATA (Monospace for Numbers) */
-div[data-testid="stMetricValue"] {{
-    font-family: 'Fira Code', monospace !important;
-    font-size: 24px !important; /* Smaller than 28px */
-    color: {current_theme['text_primary']} !important;
-    font-weight: 700;
-}}
-
-div[data-testid="stMetricLabel"] {{
-    font-family: 'Inter', sans-serif;
-    color: var(--text-secondary) !important;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}}
-
-/* MARKET CARDS (Glassmorphism) */
-.market-card {{
-    background: var(--card-bg);
-    border: var(--card-border);
-    border-radius: 4px;
-    padding: 12px; /* Tighter padding */
-    box-shadow: var(--glass-shadow);
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    text-align: center;
-    transition: transform 0.2s ease, border-color 0.2s ease;
-    margin-bottom: 10px;
-}}
-
-.market-card:hover {{
-    border-color: var(--accent-blue);
-    transform: translateY(-2px);
-}}
-
-.market-ticker {{
-    color: var(--text-secondary);
-    font-family: 'Fira Code', monospace;
-    font-size: 10px;
-    letter-spacing: 1px;
-    margin-bottom: 2px;
-}}
-
-.market-price {{
-    color: {current_theme['text_primary']};
-    font-family: 'Fira Code', monospace;
-    font-size: 20px; /* Reduced from 24px */
-    font-weight: 700;
-    margin: 2px 0;
-}}
-
-.market-delta {{
-    font-family: 'Fira Code', monospace;
-    font-size: 12px;
-    font-weight: 500;
-}}
-
-/* TABS */
+/* TAB STYLING (Gradient Shading, No Icons) */
 button[data-baseweb="tab"] {{
-    background-color: var(--glass-bg) !important;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.05) 100%) !important;
+    border: 1px solid rgba(128,128,128,0.2) !important;
+    border-radius: 6px 6px 0 0 !important;
+    color: var(--text-secondary) !important;
     font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
     text-transform: uppercase;
-    font-size: 11px; /* Smaller font */
-    letter-spacing: 1px;
-    border-radius: 4px !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    margin-right: 5px;
-    padding: 5px 12px;
-    margin-top: 5px;
-}}
-
-button[data-baseweb="tab"] div p {{
-    background: var(--steel-gradient) !important;
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-    font-weight: 700;
+    padding: 10px 20px;
+    margin-right: 4px;
 }}
 
 button[data-baseweb="tab"][aria-selected="true"] {{
-    border: 1px solid var(--accent-blue) !important;
+    background: linear-gradient(180deg, #2d343f 0%, #1a1f26 100%) !important;
+    color: white !important;
+    border-top: 2px solid var(--accent-gold) !important;
 }}
 
-/* EXPANDER */
-[data-testid="stExpander"] {{
-    background-color: rgba(255,255,255,0.02) !important;
-    border: 1px solid #30363d !important;
-    border-radius: 4px;
-}}
+/* GOLD PLAQUE (For Premium Radio) */
+/* Targeted CSS for the Radio Button Container in the Swarm Deep Dive */
+div[data-testid="stColumn"]:nth-of-type(2) div[data-testid="stRadio"] {
+    background: linear-gradient(135deg, #bf953f 0%, #fcf6ba 25%, #b38728 50%, #fbf5b7 75%, #aa771c 100%);
+    padding: 15px;
+    border-radius: 8px;
+    border: 2px solid #8a6e2f;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
 
-[data-testid="stExpander"] summary {{
-    color: var(--text-primary) !important;
+/* Force Text in Gold Plaque to be Dark/Bold for Readability */
+div[data-testid="stColumn"]:nth-of-type(2) div[data-testid="stRadio"] label p {
+    color: #3b2c00 !important;
+    font-weight: 800 !important;
+    text-shadow: 0px 1px 0px rgba(255,255,255,0.4);
+}
+
+/* MINI GOVERNANCE BADGE */
+.mini-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
     font-family: 'Fira Code', monospace;
-    font-size: 13px;
-}}
+    font-size: 12px;
+    font-weight: bold;
+    color: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    margin-left: 10px;
+    vertical-align: middle;
+}
 
-/* ALERTS & BADGES */
-.big-badge {{
-    font-family: 'Inter', sans-serif;
-    font-size: 16px; /* Reduced from 18px */
-    font-weight: 800;
-    padding: 10px 15px;
-    border-radius: 4px;
+/* MARKET CARDS */
+.market-card {
+    background: var(--card-bg);
+    border: var(--card-border);
+    border-radius: 6px;
+    padding: 15px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     text-align: center;
     margin-bottom: 10px;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    position: relative;
-    overflow: hidden;
-}}
+}
+.market-ticker { color: var(--text-secondary); font-size: 11px; margin-bottom: 2px; }
+.market-price { color: {current_theme['text_primary']}; font-family: 'Fira Code', monospace; font-size: 22px; font-weight: 700; margin: 2px 0; }
+.market-delta { font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 600; }
 
-/* Shine Effect for Badge */
-.big-badge::after {{
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-    animation: shine 3s infinite;
-}}
-
-@keyframes shine {{
-    100% {{ left: 100%; }}
-}}
-
-.premium-banner {{
-    background: linear-gradient(90deg, #090c10 0%, #161b22 100%);
-    border: 1px solid #30363d;
-    border-left: 4px solid var(--accent-gold);
-    color: var(--text-primary) !important;
-    padding: 10px;
+/* BIG BADGE (Tab 2) */
+.big-badge {
+    font-family: 'Inter', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    padding: 15px 25px;
     border-radius: 4px;
     text-align: center;
-    margin: 15px 0;
-    font-family: 'Fira Code', monospace;
-    font-size: 11px;
+    margin-bottom: 20px;
     text-transform: uppercase;
-}}
+    letter-spacing: 2px;
+    color: white;
+}
 
 /* FOOTER */
-.custom-footer {{
+.custom-footer {
     font-family: 'Fira Code', monospace;
     font-size: 10px;
     color: #484f58 !important;
@@ -310,7 +220,7 @@ button[data-baseweb="tab"][aria-selected="true"] {{
     border-top: 1px solid #30363d;
     padding-top: 20px;
     text-transform: uppercase;
-}}
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -319,7 +229,7 @@ chart_bg = 'rgba(0,0,0,0)'
 chart_font_color = current_theme['chart_font_color']
 
 # ==========================================
-# 2. THE ENGINE
+# 2. DATA ENGINE (Called Early for Header Badge)
 # ==========================================
 @st.cache_data(ttl=3600)
 def fetch_data():
@@ -328,6 +238,30 @@ def fetch_data():
         start = (datetime.now() - timedelta(days=1825)).strftime('%Y-%m-%d')
         data = yf.download(tickers, start=start, progress=False)
     return data
+
+def calculate_governance_history(data):
+    closes = data['Close']
+    df = pd.DataFrame(index=closes.index)
+    df['Credit_Ratio'] = closes["HYG"] / closes["IEF"]
+    df['Credit_Delta'] = df['Credit_Ratio'].pct_change(10)
+    df['VIX'] = closes["^VIX"]
+    df['Breadth_Ratio'] = closes["RSP"] / closes["SPY"]
+    df['Breadth_Delta'] = df['Breadth_Ratio'].pct_change(20)
+    df['DXY_Delta'] = closes["DX-Y.NYB"].pct_change(5)
+    
+    CREDIT_TRIG = -0.015; VIX_PANIC = 24.0; BREADTH_TRIG = -0.025; DXY_SPIKE = 0.02
+    
+    df['Level_7'] = (df['Credit_Delta'] < CREDIT_TRIG) | (df['DXY_Delta'] > DXY_SPIKE)
+    df['Level_5'] = (df['VIX'] > VIX_PANIC) & (df['Breadth_Delta'] < BREADTH_TRIG)
+    df['Level_4'] = (df['Breadth_Delta'] < BREADTH_TRIG) | (df['VIX'] > VIX_PANIC)
+    
+    latest = df.iloc[-1]
+    if latest['Level_7']: status, color, reason = "EMERGENCY", "#f93e3e", "Structural/Policy Failure"
+    elif latest['Level_5']: status, color, reason = "CAUTION", "#ffaa00", "Market Divergence"
+    elif latest['Level_4']: status, color, reason = "WATCHLIST", "#f1c40f", "Elevated Risk Monitors"
+    else: status, color, reason = "NORMAL OPS", "#00d26a", "System Integrity Nominal"
+        
+    return df, status, color, reason
 
 def calculate_ppo(price):
     ema12 = price.ewm(span=12, adjust=False).mean()
@@ -360,72 +294,61 @@ def generate_forecast(start_date, last_price, last_std, days=30):
         
     return future_dates, future_mean, future_upper, future_lower
 
-def calculate_governance_history(data):
-    closes = data['Close']
-    df = pd.DataFrame(index=closes.index)
-    df['Credit_Ratio'] = closes["HYG"] / closes["IEF"]
-    df['Credit_Delta'] = df['Credit_Ratio'].pct_change(10)
-    df['VIX'] = closes["^VIX"]
-    df['Breadth_Ratio'] = closes["RSP"] / closes["SPY"]
-    df['Breadth_Delta'] = df['Breadth_Ratio'].pct_change(20)
-    df['DXY_Delta'] = closes["DX-Y.NYB"].pct_change(5)
-    
-    CREDIT_TRIG = -0.015; VIX_PANIC = 24.0; BREADTH_TRIG = -0.025; DXY_SPIKE = 0.02
-    
-    df['Level_7'] = (df['Credit_Delta'] < CREDIT_TRIG) | (df['DXY_Delta'] > DXY_SPIKE)
-    df['Level_5'] = (df['VIX'] > VIX_PANIC) & (df['Breadth_Delta'] < BREADTH_TRIG)
-    df['Level_4'] = (df['Breadth_Delta'] < BREADTH_TRIG) | (df['VIX'] > VIX_PANIC)
-    
-    latest = df.iloc[-1]
-    if latest['Level_7']: status, color, reason = "EMERGENCY", "#f93e3e", "Structural/Policy Failure"
-    elif latest['Level_5']: status, color, reason = "CAUTION", "#ffaa00", "Market Divergence"
-    elif latest['Level_4']: status, color, reason = "WATCHLIST", "#f1c40f", "Elevated Risk Monitors"
-    else: status, color, reason = "NORMAL OPS", "#00d26a", "System Integrity Nominal"
-        
-    return df, status, color, reason
-
 def make_sparkline(data, color):
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=data.index, y=data, mode='lines', 
                             line=dict(color=color, width=2), hoverinfo='skip'))
     fig.update_layout(
-        height=40, margin=dict(l=0,r=0,t=0,b=0), # Reduced height for tightness
+        height=40, margin=dict(l=0,r=0,t=0,b=0),
         xaxis=dict(visible=False), yaxis=dict(visible=False),
         plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)'
     )
     return fig
 
 # ==========================================
-# 3. THE UI RENDER
+# 3. DATA FETCHING & STATUS PRE-CALC
 # ==========================================
-# CUSTOM HEADER (Blue Banner + Menu Token)
-st.markdown("""
-<div class="glass-header">
-    <span class="menu-token">☰</span>
-    <h1>MacroEffects</h1>
-</div>
-""", unsafe_allow_html=True)
-
-st.markdown("### Macro-Economic Intelligence: Global Market Command Center")
-st.caption(f"Governance Protocol Active: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-st.divider()
-
 try:
     full_data = fetch_data()
     closes = full_data['Close']
     gov_df, status, color, reason = calculate_governance_history(full_data)
-    
-    # Pre-calculate active logic for monitor feed
     latest_monitor = gov_df.iloc[-1]
-    
-    # --- TAB NAVIGATION (The Boutique Touch) ---
-    tab1, tab2, tab3 = st.tabs(["🚀 Market Swarm", "🛡️ Risk Governance", "📝 Strategist View"])
+except Exception as e:
+    status, color, reason = "OFFLINE", "#888888", "Data connection failed"
+    full_data = None
+
+# ==========================================
+# 4. THE UI RENDER
+# ==========================================
+# MAIN TITLE BAR (Steel Gradient)
+st.markdown(f"""
+<div class="steel-header">
+    <h1>MacroEffects</h1>
+    <div style="text-align: right;">
+        <span style="font-size: 24px; color: #C6A87C;">☰</span>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# SUBHEADER WITH MINI-BADGE
+st.markdown(f"""
+<div style="margin-bottom: 20px;">
+    <span style="font-family: 'Inter'; font-weight: 600; font-size: 16px; color: var(--text-secondary);">Macro-Economic Intelligence: Global Market Command Center</span>
+    <div class="mini-badge" style="background-color: {color};">{status}</div>
+</div>
+""", unsafe_allow_html=True)
+
+st.divider()
+
+if full_data is not None:
+    # --- TAB NAVIGATION (Gradient Backgrounds) ---
+    tab1, tab2, tab3 = st.tabs(["Market Swarm", "Risk Governance", "Strategist View"])
 
     # ---------------------------
     # TAB 1: MARKET SWARM
     # ---------------------------
     with tab1:
-        st.subheader("Global Asset Grid")
+        st.markdown('<div class="steel-header"><span class="steel-text steel-subheader">Global Asset Grid</span></div>', unsafe_allow_html=True)
         
         assets = [
             {"name": "Dow Jones", "ticker": "^DJI", "color": "#00CC00"},
@@ -476,8 +399,9 @@ try:
 
         st.divider()
 
-        # --- SWARM DEEP DIVE ---
-        st.subheader("🔍 Swarm Deep Dive")
+        # --- SWARM DEEP DIVE (Steel Header) ---
+        st.markdown('<div class="steel-header"><span class="steel-text steel-subheader">Swarm Deep Dive</span></div>', unsafe_allow_html=True)
+        
         spy_close = full_data['Close']['SPY']
         ppo, sig, hist = calculate_ppo(spy_close)
         sma, std, upper_cone, lower_cone = calculate_cone(spy_close)
@@ -485,8 +409,11 @@ try:
         f_dates, f_mean, f_upper, f_lower = generate_forecast(last_date, last_val, last_dev, days=30)
         
         c1, c2 = st.columns(2)
-        with c1: view_mode = st.radio("Select View Horizon:", ["Tactical (60-Day Zoom)", "Strategic (2-Year History)"], horizontal=True)
-        with c2: st.radio("Market Scope (Premium):", ["US Market (Active)", "Global Swarm 🔒", "Sector Rotation 🔒"], index=0, horizontal=True, disabled=True, help="Institutional modules include Global Macro flows and Sector Rotation models.")
+        with c1: 
+            view_mode = st.radio("Select View Horizon:", ["Tactical (60-Day Zoom)", "Strategic (2-Year History)"], horizontal=True)
+        with c2: 
+            # THE GOLD PLAQUE EFFECT
+            st.radio("Market Scope (Premium):", ["US Market (Active)", "Global Swarm 🔒", "Sector Rotation 🔒"], index=0, horizontal=True, disabled=True)
 
         if view_mode == "Tactical (60-Day Zoom)":
             start_filter = (datetime.now() - timedelta(days=60)).strftime('%Y-%m-%d'); show_forecast = True
@@ -532,7 +459,7 @@ try:
     # TAB 2: GOVERNANCE
     # ---------------------------
     with tab2:
-        st.subheader("🛡️ Risk Governance & Compliance")
+        st.markdown('<div class="steel-header"><span class="steel-text steel-subheader">Risk Governance & Compliance</span></div>', unsafe_allow_html=True)
         
         col1, col2 = st.columns([2, 1])
         with col1:
@@ -551,10 +478,8 @@ try:
         st.divider()
         st.subheader("📡 Active Monitor Feed (Live Logic)")
         
-        # Replace the raw Code Block with a "Live Monitor Dashboard"
         m1, m2, m3 = st.columns(3)
         
-        # Monitor 1: Credit Spreads (HYG vs IEF)
         credit_val = latest_monitor['Credit_Delta']
         credit_status = "STRESS" if credit_val < -0.015 else "NOMINAL"
         m1.metric("Credit Spreads", f"{credit_val:.2%}", 
@@ -562,7 +487,6 @@ try:
                  delta_color="normal" if credit_status=="NOMINAL" else "inverse",
                  help="Tracks High Yield bonds vs Treasuries.")
 
-        # Monitor 2: US Dollar (DXY)
         dxy_val = latest_monitor['DXY_Delta']
         dxy_status = "SPIKE" if dxy_val > 0.02 else "STABLE"
         m2.metric("US Dollar", f"{dxy_val:.2%}", 
@@ -570,7 +494,6 @@ try:
                  delta_color="inverse",
                  help="Tracks value of USD.")
 
-        # Monitor 3: Market Breadth (RSP vs SPY)
         breadth_val = latest_monitor['Breadth_Delta']
         breadth_status = "NARROWING" if breadth_val < -0.025 else "HEALTHY"
         m3.metric("Market Breadth", f"{breadth_val:.2%}", 
@@ -582,20 +505,14 @@ try:
     # TAB 3: STRATEGIST VIEW
     # ---------------------------
     with tab3:
-        st.subheader("📝 MacroEffects: Chief Strategist's View")
+        st.markdown('<div class="steel-header"><span class="steel-text steel-subheader">MacroEffects: Chief Strategist\'s View</span></div>', unsafe_allow_html=True)
         
         try:
-            # ------------------------------------------------------------------
-            # PASTE YOUR GOOGLE SHEET "PUBLISH TO WEB" CSV LINK BELOW
-            # ------------------------------------------------------------------
             SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT4ik-SBHr_ER_SyMHgwVAds3UaxRtPTA426qU_26TuHkHlyb5h6zl8_H9E-_Kw5FUO3W1mBU8CKiZP/pub?gid=0&single=true&output=csv" 
             
-            # Logic to handle both local file (backup) and live sheet
             if "INSERT_YOUR" in SHEET_URL:
-                # Fallback to local file if user hasn't pasted link yet
                 update_df = pd.read_csv("data/update.csv")
             else:
-                # Live Google Sheet Connection
                 update_df = pd.read_csv(SHEET_URL)
                 
             update_data = dict(zip(update_df['Key'], update_df['Value']))
@@ -618,15 +535,15 @@ try:
             
         st.info("💡 **Analyst Note:** This commentary is pulled live from the Chief Strategist's desk via the Alpha Swarm CMS.")
 
-    # FOOTER
-    st.markdown("""
-    <div class="custom-footer">
-    MACROEFFECTS | ALPHA SWARM PROTOCOL v17.0 | INSTITUTIONAL RISK GOVERNANCE<br>
-    Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
-    <br>
-    <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
-    </div>
-    """, unsafe_allow_html=True)
+else:
+    st.error("Data connection offline. Please check network.")
 
-except Exception as e:
-    st.error(f"Error loading data: {e}")
+# FOOTER
+st.markdown("""
+<div class="custom-footer">
+MACROEFFECTS | ALPHA SWARM PROTOCOL v18.0 | INSTITUTIONAL RISK GOVERNANCE<br>
+Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
+<br>
+<strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
+</div>
+""", unsafe_allow_html=True)
