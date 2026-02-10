@@ -14,178 +14,224 @@ st.set_page_config(page_title="Tiedeman Research | Alpha Swarm", page_icon="🛡
 # SIDEBAR SETTINGS
 with st.sidebar:
     st.header("🏛️ Tiedeman Research")
-
-    # TOGGLE: Defaults to FALSE (Light Mode / High Contrast)
-    dark_mode = st.toggle("Enable Dark Mode", value=False, help="Toggle between Institutional Dark Mode and Standard Light Mode.")
-    
     st.divider()
-    st.caption("Powered by Alpha Swarm v16.3")
-    st.caption("Status: PROTOTYPE (May 2026 Target)")
+    st.caption("Powered by Alpha Swarm v17.0")
+    st.caption("Status: INSTITUTIONAL ACCESS")
 
-# CONDITIONAL CSS LOGIC
-if dark_mode:
-    # --- DARK MODE CSS (Institutional) ---
-    st.markdown("""
-    <style>
-    /* HIDE STREAMLIT DEFAULT MENUS */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    
-    /* GLOBAL BACKGROUND */
-    .stApp { background-color: #0E1117 !important; }
-    
-    /* MARKDOWN TEXT ONLY */
-    [data-testid="stMarkdownContainer"] p, [data-testid="stMarkdownContainer"] span, [data-testid="stMarkdownContainer"] li, [data-testid="stMarkdownContainer"] h1, [data-testid="stMarkdownContainer"] h2, [data-testid="stMarkdownContainer"] h3 {
-        color: #E6E6E6 !important;
-        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    }
-    
-    /* HEADERS SPECIFIC */
-    h1, h2, h3, h4, h5, h6 { color: #C6A87C !important; }
-    
-    /* METRICS */
-    div[data-testid="stMetricValue"] { color: #FFFFFF !important; }
-    div[data-testid="stMetricDelta"] svg { fill: #00FF00 !important; }
-    
-    /* TABS */
-    button[data-baseweb="tab"] { color: #586069; font-weight: bold; }
-    button[data-baseweb="tab"][aria-selected="true"] { color: #C6A87C !important; border-top-color: #C6A87C !important; background-color: #161B22; }
+# --- INSTITUTIONAL API DATA HOSE CSS ---
+st.markdown("""
+<style>
+/* FONT IMPORTS (Fallbacks to system fonts) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Fira+Code:wght@300;500;700&display=swap');
 
-    /* TOOLTIPS (Question Marks) - Light Grey */
-    [data-testid="stTooltipIcon"] { color: #AAAAAA !important; }
+/* GLOBAL VARIABLES */
+:root {
+    --bg-color: #0e1117;
+    --card-bg: rgba(22, 27, 34, 0.7);
+    --card-border: 1px solid rgba(255, 255, 255, 0.08);
+    --text-primary: #e6e6e6;
+    --text-secondary: #8b949e;
+    --accent-gold: #C6A87C;
+    --accent-blue: #00f2ff;
+    --success: #00d26a;
+    --danger: #f93e3e;
+    --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+}
 
-    /* MARKET GRID CARDS */
-    .market-card {
-        background-color: #161B22;
-        border: 1px solid #30363d;
-        padding: 15px;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-        text-align: center;
-        margin-bottom: 10px;
-    }
-    
-    /* SIDEBAR */
-    section[data-testid="stSidebar"] { background-color: #0D1117 !important; border-right: 1px solid #30363d; }
-    section[data-testid="stSidebar"] h2, section[data-testid="stSidebar"] span, section[data-testid="stSidebar"] label { color: #C6A87C !important; }
-    
-    /* EXPANDER (READ FORECAST) - FIX WHITE ON WHITE */
-    [data-testid="stExpander"] { 
-        background-color: #161B22 !important; 
-        border: 1px solid #30363d !important; 
-        color: #E6E6E6 !important;
-    }
-    [data-testid="stExpander"] summary { color: #C6A87C !important; }
-    
-    /* PREMIUM COMPONENTS */
-    .premium-banner {
-        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-        color: white !important;
-        padding: 20px;
-        border-radius: 10px;
-        text-align: center;
-        margin: 20px 0;
-        font-weight: bold;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-        border: 1px solid #4a90e2;
-    }
+/* HIDE DEFAULT STREAMLIT ELEMENTS */
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
 
-    /* FOOTER */
-    .custom-footer { font-size: 12px; color: #8b949e !important; text-align: center; margin-top: 50px; border-top: 1px solid #30363d; padding-top: 20px; }
-    
-    .big-badge {
-        font-size: 20px; font-weight: bold; padding: 10px 20px;
-        border-radius: 8px; text-align: center; margin-bottom: 20px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2); color: #FFFFFF !important;
-        text-transform: uppercase; letter-spacing: 1px;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-    
-    chart_template = "plotly_dark"
-    chart_bg = '#0E1117'
-    chart_font_color = '#C6A87C'
-    
-else:
-    # --- LIGHT MODE CSS (Boutique Financial - DEFAULT) ---
-    st.markdown("""
-    <style>
-    /* HIDE STREAMLIT DEFAULT MENUS */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    
-    /* FORCE LIGHT GREY BACKGROUND */
-    .stApp { background-color: #F0F2F6 !important; }
-    
-    /* MARKDOWN TEXT ONLY */
-    [data-testid="stMarkdownContainer"] p, [data-testid="stMarkdownContainer"] span, [data-testid="stMarkdownContainer"] li, [data-testid="stMarkdownContainer"] h1, [data-testid="stMarkdownContainer"] h2, [data-testid="stMarkdownContainer"] h3 {
-        color: #333333 !important;
-        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    }
+/* APP BACKGROUND */
+.stApp {
+    background-color: var(--bg-color) !important;
+    font-family: 'Inter', sans-serif;
+}
 
-    /* HEADERS SPECIFIC */
-    h1, h2, h3, h4, h5, h6 { color: #003366 !important; }
-    
-    /* METRICS */
-    div[data-testid="stMetricValue"] { color: #003366 !important; font-weight: 700 !important; }
+/* TYPOGRAPHY OVERRIDES */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-primary) !important;
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    text-transform: uppercase;
+}
 
-    /* MARKET GRID CARDS */
-    .market-card {
-        background-color: #FFFFFF;
-        border: 1px solid #ddd;
-        padding: 15px;
-        border-radius: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        text-align: center;
-        margin-bottom: 10px;
-    }
+h1 {
+    background: linear-gradient(90deg, #FFFFFF 0%, #888888 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    border-bottom: 1px solid var(--accent-blue);
+    padding-bottom: 10px;
+    display: inline-block;
+}
 
-    /* TABS */
-    button[data-baseweb="tab"] { color: #666; font-weight: bold; }
-    button[data-baseweb="tab"][aria-selected="true"] { color: #003366 !important; border-top-color: #003366 !important; background-color: #FFFFFF; }
+p, span, li, label {
+    color: var(--text-secondary) !important;
+    font-family: 'Inter', sans-serif;
+}
 
-    /* SIDEBAR */
-    section[data-testid="stSidebar"] { background-color: #FFFFFF !important; border-right: 1px solid #ddd; }
-    section[data-testid="stSidebar"] h2 { color: #003366 !important; }
+/* SIDEBAR STYLING */
+section[data-testid="stSidebar"] {
+    background-color: #090c10 !important;
+    border-right: 1px solid #30363d;
+}
 
-    /* TOOLTIPS (Question Marks) - Light Grey */
-    [data-testid="stTooltipIcon"] { color: #888888 !important; }
+section[data-testid="stSidebar"] h2 {
+    color: var(--accent-gold) !important;
+    -webkit-text-fill-color: var(--accent-gold) !important;
+    font-size: 1.2rem !important;
+}
 
-    /* EXPANDER (READ FORECAST) */
-    [data-testid="stExpander"] { 
-        background-color: #FFFFFF !important; 
-        border: 1px solid #ddd !important; 
-    }
-    [data-testid="stExpander"] summary { color: #003366 !important; font-weight: 600 !important; }
+/* METRICS & DATA (Monospace for Numbers) */
+div[data-testid="stMetricValue"] {
+    font-family: 'Fira Code', monospace !important;
+    font-size: 28px !important;
+    color: #FFFFFF !important;
+    font-weight: 700;
+}
 
-    /* PREMIUM COMPONENTS */
-    .premium-banner {
-        background: linear-gradient(135deg, #003366 0%, #0055AA 100%);
-        color: white !important;
-        padding: 20px;
-        border-radius: 10px;
-        text-align: center;
-        margin: 20px 0;
-        font-weight: bold;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-    
-    /* BADGE */
-    .big-badge { 
-        font-size: 20px; font-weight: bold; padding: 10px 20px;
-        border-radius: 8px; text-align: center; margin-bottom: 20px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1); color: #FFFFFF !important;
-        text-transform: uppercase; letter-spacing: 1px;
-    }
-    .custom-footer { font-size: 12px; color: #666 !important; text-align: center; margin-top: 50px; border-top: 1px solid #ddd; padding-top: 20px; }
-    </style>
-    """, unsafe_allow_html=True)
-    
-    chart_template = "plotly_white"
-    chart_bg = '#F0F2F6'
-    chart_font_color = '#003366'
+div[data-testid="stMetricLabel"] {
+    font-family: 'Inter', sans-serif;
+    color: var(--text-secondary) !important;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* MARKET CARDS (Glassmorphism) */
+.market-card {
+    background: var(--card-bg);
+    border: var(--card-border);
+    border-radius: 4px; /* Sharper corners for "Tech" feel */
+    padding: 20px;
+    box-shadow: var(--glass-shadow);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    text-align: center;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+    margin-bottom: 15px;
+}
+
+.market-card:hover {
+    border-color: var(--accent-blue);
+    transform: translateY(-2px);
+}
+
+.market-ticker {
+    color: var(--text-secondary);
+    font-family: 'Fira Code', monospace;
+    font-size: 12px;
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+}
+
+.market-price {
+    color: #FFFFFF;
+    font-family: 'Fira Code', monospace;
+    font-size: 24px;
+    font-weight: 700;
+    margin: 5px 0;
+}
+
+.market-delta {
+    font-family: 'Fira Code', monospace;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* TABS */
+button[data-baseweb="tab"] {
+    background-color: transparent !important;
+    color: var(--text-secondary) !important;
+    font-family: 'Inter', sans-serif;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 1px;
+    border-radius: 0 !important;
+    border-bottom: 2px solid transparent;
+}
+
+button[data-baseweb="tab"][aria-selected="true"] {
+    color: var(--accent-blue) !important;
+    border-bottom: 2px solid var(--accent-blue) !important;
+}
+
+/* EXPANDER */
+[data-testid="stExpander"] {
+    background-color: rgba(255,255,255,0.02) !important;
+    border: 1px solid #30363d !important;
+    border-radius: 4px;
+}
+
+[data-testid="stExpander"] summary {
+    color: var(--text-primary) !important;
+    font-family: 'Fira Code', monospace;
+}
+
+/* ALERTS & BADGES */
+.big-badge {
+    font-family: 'Inter', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    padding: 15px 25px;
+    border-radius: 4px;
+    text-align: center;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Shine Effect for Badge */
+.big-badge::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    animation: shine 3s infinite;
+}
+
+@keyframes shine {
+    100% { left: 100%; }
+}
+
+.premium-banner {
+    background: linear-gradient(90deg, #090c10 0%, #161b22 100%);
+    border: 1px solid #30363d;
+    border-left: 4px solid var(--accent-gold);
+    color: var(--text-primary) !important;
+    padding: 15px;
+    border-radius: 4px;
+    text-align: center;
+    margin: 20px 0;
+    font-family: 'Fira Code', monospace;
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+/* FOOTER */
+.custom-footer {
+    font-family: 'Fira Code', monospace;
+    font-size: 10px;
+    color: #484f58 !important;
+    text-align: center;
+    margin-top: 80px;
+    border-top: 1px solid #30363d;
+    padding-top: 30px;
+    text-transform: uppercase;
+}
+</style>
+""", unsafe_allow_html=True)
+
+chart_template = "plotly_dark"
+chart_bg = 'rgba(0,0,0,0)'
+chart_font_color = '#e6e6e6'
 
 # ==========================================
 # 2. THE ENGINE
@@ -246,10 +292,10 @@ def calculate_governance_history(data):
     df['Level_4'] = (df['Breadth_Delta'] < BREADTH_TRIG) | (df['VIX'] > VIX_PANIC)
     
     latest = df.iloc[-1]
-    if latest['Level_7']: status, color, reason = "EMERGENCY", "red", "Structural/Policy Failure"
-    elif latest['Level_5']: status, color, reason = "CAUTION", "orange", "Market Divergence"
-    elif latest['Level_4']: status, color, reason = "WATCHLIST", "yellow", "Elevated Risk Monitors"
-    else: status, color, reason = "NORMAL OPS", "#00CC00", "System Integrity Nominal"
+    if latest['Level_7']: status, color, reason = "EMERGENCY", "#f93e3e", "Structural/Policy Failure"
+    elif latest['Level_5']: status, color, reason = "CAUTION", "#ffaa00", "Market Divergence"
+    elif latest['Level_4']: status, color, reason = "WATCHLIST", "#f1c40f", "Elevated Risk Monitors"
+    else: status, color, reason = "NORMAL OPS", "#00d26a", "System Integrity Nominal"
         
     return df, status, color, reason
 
@@ -305,13 +351,13 @@ try:
                 series = closes[asset['ticker']].dropna()
                 if not series.empty:
                     current = series.iloc[-1]; prev = series.iloc[-2]; delta = current - prev; pct = (delta / prev) * 100
-                    delta_color = "#00CC00" if delta >= 0 else "#FF5500"
+                    delta_color = "#00d26a" if delta >= 0 else "#f93e3e"
 
                     st.markdown(f"""
                     <div class="market-card">
-                        <div style="font-size: 14px; opacity: 0.8; font-weight: bold;">{asset['name']}</div>
-                        <div style="font-size: 22px; font-weight: bold; margin: 5px 0;">{current:,.2f}</div>
-                        <div style="color: {delta_color}; font-size: 14px; font-weight: 600;">{delta:+.2f} ({pct:+.2f}%)</div>
+                        <div class="market-ticker">{asset['name']}</div>
+                        <div class="market-price">{current:,.2f}</div>
+                        <div class="market-delta" style="color: {delta_color};">{delta:+.2f} ({pct:+.2f}%)</div>
                     </div>
                     """, unsafe_allow_html=True)
                     st.plotly_chart(make_sparkline(series.tail(30), asset['color']), use_container_width=True, config={'displayModeBar': False})
@@ -325,13 +371,13 @@ try:
                 series = closes[asset['ticker']].dropna()
                 if not series.empty:
                     current = series.iloc[-1]; prev = series.iloc[-2]; delta = current - prev; pct = (delta / prev) * 100
-                    delta_color = "#00CC00" if delta >= 0 else "#FF5500"
+                    delta_color = "#00d26a" if delta >= 0 else "#f93e3e"
 
                     st.markdown(f"""
                     <div class="market-card">
-                        <div style="font-size: 14px; opacity: 0.8; font-weight: bold;">{asset['name']}</div>
-                        <div style="font-size: 22px; font-weight: bold; margin: 5px 0;">{current:,.2f}</div>
-                        <div style="color: {delta_color}; font-size: 14px; font-weight: 600;">{delta:+.2f} ({pct:+.2f}%)</div>
+                        <div class="market-ticker">{asset['name']}</div>
+                        <div class="market-price">{current:,.2f}</div>
+                        <div class="market-delta" style="color: {delta_color};">{delta:+.2f} ({pct:+.2f}%)</div>
                     </div>
                     """, unsafe_allow_html=True)
                     st.plotly_chart(make_sparkline(series.tail(30), asset['color']), use_container_width=True, config={'displayModeBar': False})
@@ -398,7 +444,7 @@ try:
         
         col1, col2 = st.columns([2, 1])
         with col1:
-            st.markdown(f'<div class="big-badge" style="background-color: {color}; border: 2px solid {color}; box-shadow: 0 0 15px {color}; text-shadow: 1px 1px 2px black;">GOVERNANCE STATUS: {status}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="big-badge" style="background: linear-gradient(135deg, {color}cc, {color}); border: 1px solid {color}; box-shadow: 0 0 20px {color}66;">GOVERNANCE STATUS: {status}</div>', unsafe_allow_html=True)
             st.caption(f"Reason: {reason}")
         with col2:
             latest_vix = full_data['Close']['^VIX'].iloc[-1]
