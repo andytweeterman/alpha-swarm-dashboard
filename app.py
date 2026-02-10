@@ -91,6 +91,10 @@ div[data-testid="stMetricLabel"] {{
 div[data-testid="stMetricLabel"] p {{
     color: var(--text-secondary) !important;
 }}
+div[data-testid="stMetricLabel"] div {{
+    color: var(--text-secondary) !important;
+}}
+
 div[data-testid="stMetricValue"] {{
     color: var(--text-primary) !important;
 }}
@@ -563,7 +567,7 @@ else:
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v40.0 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v41.0 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
