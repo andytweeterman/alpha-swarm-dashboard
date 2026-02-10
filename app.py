@@ -74,9 +74,30 @@ st.markdown(f"""
 }}
 
 /* HIDE DEFAULT STREAMLIT ELEMENTS */
-#MainMenu {{visibility: hidden;}}
+#MainMenu {{visibility: visible;}}
 footer {{visibility: hidden;}}
-header {{visibility: hidden;}}
+header {{visibility: visible;}}
+
+/* GLASS HEADER */
+.glass-header {{
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 10px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 20px;
+}}
+
+/* SETTINGS BUTTON */
+header button {{
+    background-color: rgba(0, 0, 0, 0.5) !important;
+    border: 1px solid var(--accent-gold) !important;
+    border-radius: 50% !important;
+    color: var(--accent-gold) !important;
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+}}
 
 /* APP BACKGROUND */
 .stApp {{
@@ -178,19 +199,29 @@ div[data-testid="stMetricLabel"] {{
 
 /* TABS */
 button[data-baseweb="tab"] {{
-    background-color: transparent !important;
-    color: var(--text-secondary) !important;
+    background-color: rgba(0, 0, 0, 0.5) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     font-family: 'Inter', sans-serif;
     text-transform: uppercase;
     font-size: 12px;
     letter-spacing: 1px;
-    border-radius: 0 !important;
-    border-bottom: 2px solid transparent;
+    border-radius: 8px !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    margin-right: 8px;
+    padding: 8px 16px;
+    margin-top: 10px;
+}}
+
+button[data-baseweb="tab"] div p {{
+    background: linear-gradient(90deg, #FFFFFF 0%, #888888 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
 }}
 
 button[data-baseweb="tab"][aria-selected="true"] {{
-    color: var(--accent-blue) !important;
-    border-bottom: 2px solid var(--accent-blue) !important;
+    border: 1px solid var(--accent-blue) !important;
 }}
 
 /* EXPANDER */
@@ -348,7 +379,7 @@ def make_sparkline(data, color):
 # ==========================================
 # 3. THE UI RENDER
 # ==========================================
-st.title("🏛️ TIEDEMAN RESEARCH")
+st.markdown('<div class="glass-header"><h1><span>🏛️ TIEDEMAN RESEARCH</span></h1></div>', unsafe_allow_html=True)
 st.markdown("### Alpha Swarm Intelligence: Global Market Command Center")
 st.caption(f"Governance Protocol Active: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 st.divider()

@@ -9,23 +9,40 @@ def verify_ui():
             print("Navigating to app...")
             page.goto("http://localhost:8501")
 
-            # Wait for the main title to ensure the app has loaded
-            # Streamlit often loads an initial skeleton, so waiting for specific text is good.
-            # Using a timeout of 10s.
-            print("Waiting for content...")
-            page.wait_for_selector("text=TIEDEMAN RESEARCH", timeout=20000)
+            print("Waiting for .glass-header...")
+            page.wait_for_selector(".glass-header", timeout=20000)
 
-            # Wait a bit more for charts to render (Plotly can be slow)
-            time.sleep(5)
+            print("Glass Header found. Checking styles...")
+            header = page.locator(".glass-header").first
+            bg = header.evaluate("el => window.getComputedStyle(el).backgroundColor")
+            print(f"Header Background: {bg}")
+            if "rgba(0, 0, 0, 0.5)" not in bg and "0.5" not in bg:
+                print("Warning: Header background might not be correct.")
+
+            print("Checking Tabs...")
+            # Wait for tabs
+            page.wait_for_selector('button[data-baseweb="tab"]', timeout=10000)
+            tab = page.locator('button[data-baseweb="tab"]').first
+            tab_bg = tab.evaluate("el => window.getComputedStyle(el).backgroundColor")
+            print(f"Tab Background: {tab_bg}")
+
+            print("Checking Settings Button...")
+            # Usually the menu button is in header
+            menu_btn = page.locator('header button').first
+            if menu_btn.count() > 0:
+                print("Settings button found.")
+                btn_bg = menu_btn.evaluate("el => window.getComputedStyle(el).backgroundColor")
+                print(f"Button Background: {btn_bg}")
+            else:
+                print("Settings button NOT found.")
 
             print("Taking screenshot...")
-            page.screenshot(path="verification_screenshot.png", full_page=True)
-            print("Screenshot saved to verification_screenshot.png")
+            page.screenshot(path="verification_screenshot_v2.png", full_page=True)
+            print("Screenshot saved to verification_screenshot_v2.png")
 
         except Exception as e:
             print(f"Error: {e}")
-            # Take a screenshot anyway to see what happened (maybe an error message)
-            page.screenshot(path="verification_error.png")
+            page.screenshot(path="verification_error_v2.png")
         finally:
             browser.close()
 
