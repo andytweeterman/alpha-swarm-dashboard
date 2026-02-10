@@ -238,6 +238,28 @@ def calc_governance(data):
     elif latest['Level_4']: return df, "WATCHLIST", "#f1c40f", "Elevated Risk Monitors"
     else: return df, "NORMAL OPS", "#00d26a", "System Integrity Nominal"
 
+def load_strategist_data():
+    """Ingests the Strategist's Forecast CSV (^GSPC.csv)"""
+    try:
+        # Look for the file in the current directory
+        # You can rename your uploaded file to '^GSPC.csv' to make this work automatically
+        possible_files = [f for f in os.listdir() if "GSPC" in f and f.endswith(".csv")]
+        if not possible_files:
+            return None
+        
+        filename = possible_files[0] # Pick the first match
+        df = pd.read_csv(filename)
+        
+        # Ensure we have the right columns
+        required_cols = ['Date', 'Tstk_Adj', 'FP1', 'FP3', 'FP6']
+        if not all(col in df.columns for col in required_cols):
+            return None
+            
+        df['Date'] = pd.to_datetime(df['Date'])
+        return df
+    except Exception as e:
+        return None
+
 def calc_ppo(price):
     ema12 = price.ewm(span=12, adjust=False).mean()
     ema26 = price.ewm(span=26, adjust=False).mean()
@@ -257,7 +279,6 @@ def calc_cone(price):
 def generate_forecast(start_date, last_price, last_std, days=30):
     future_dates = [start_date + timedelta(days=i) for i in range(1, days + 1)]
     drift = 0.0003
-    future_mean = [last_price * ((1 + drift) ** i) for i in range(1, days + 1)]
     future_mean = [last_price * ((1 + drift) ** i) for i in range(1, days + 1)]
     future_upper = []
     future_lower = []
@@ -284,6 +305,7 @@ def render_sparkline(data, line_color):
 try:
     with st.spinner("Connecting to Global Swarm..."):
         full_data = fetch_market_data()
+        strat_data = load_strategist_data()
         
     if full_data is not None and not full_data.empty:
         closes = full_data['Close']
@@ -357,7 +379,7 @@ if full_data is not None and closes is not None:
 
     # --- TAB 1: MARKETS ---
     with tab1:
-        st.markdown('<div class="steel-sub-header"><span class="steel-text-gradient" style="font-size: 20px !important;">Global Asset Grid</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="steel-sub-header"><span class="steel-text-main" style="font-size: 20px !important;">Global Asset Grid</span></div>', unsafe_allow_html=True)
         assets = [
             {"name": "Dow Jones", "ticker": "^DJI", "color": "#00CC00"},
             {"name": "S&P 500", "ticker": "SPY", "color": "#00CC00"},
@@ -393,7 +415,7 @@ if full_data is not None and closes is not None:
         st.divider()
         
         # DEEP DIVE
-        st.markdown('<div class="steel-sub-header"><span class="steel-text-gradient" style="font-size: 20px !important;">Swarm Deep Dive</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="steel-sub-header"><span class="steel-text-main" style="font-size: 20px !important;">Swarm Deep Dive</span></div>', unsafe_allow_html=True)
         if 'SPY' in closes:
             spy_close = closes['SPY']
             ppo, sig, hist = calc_ppo(spy_close)
@@ -417,10 +439,29 @@ if full_data is not None and closes is not None:
             fig.add_trace(go.Scatter(x=chart_data.index, y=chart_upper, fill='tonexty', fillcolor='rgba(0, 100, 255, 0.1)', line=dict(width=0), name="Fair Value Cone", hoverinfo='skip'), row=1, col=1)
             fig.add_trace(go.Candlestick(x=chart_data.index, open=chart_data['Open']['SPY'], high=chart_data['High']['SPY'], low=chart_data['Low']['SPY'], close=chart_data['Close']['SPY'], name='SPY'), row=1, col=1)
 
-            if show_forecast:
+            # --- STRATEGIST FORECAST INJECTION (ADDED BACK from v47) ---
+            if strat_data is not None and show_forecast:
+                # Use the last row of the strategist file
+                latest = strat_data.iloc[-1]
+                last_price = latest['Tstk_Adj']
+                
+                # Create future dates (1m, 2m, 3m, etc.)
+                base_date = latest['Date']
+                dates_fut = [base_date + timedelta(days=30*i) for i in range(1, 7)]
+                
+                # Calculate Price Targets: Last_Price * (1 + Forecast_Percent)
+                prices_fut = [last_price * (1 + latest[f'FP{i}']) for i in range(1, 7)]
+                
+                # Plot the "Mean Forecast" line (Using FP3 trend as baseline)
+                fig.add_trace(go.Scatter(x=dates_fut, y=prices_fut, name="Strategist Forecast", 
+                                         line=dict(color=ACCENT_GOLD, width=3, dash='dot'),
+                                         mode='lines+markers'), row=1, col=1)
+            # --- FALLBACK TO SYNTHETIC CONE IF NO CSV ---
+            elif show_forecast:
                 fig.add_trace(go.Scatter(x=f_dates, y=f_lower, line=dict(width=0), showlegend=False, hoverinfo='skip'), row=1, col=1)
                 fig.add_trace(go.Scatter(x=f_dates, y=f_upper, fill='tonexty', fillcolor='rgba(200, 0, 255, 0.15)', line=dict(width=0), name="Proj. Uncertainty", hoverinfo='skip'), row=1, col=1)
                 fig.add_trace(go.Scatter(x=f_dates, y=f_mean, name="Swarm Forecast", line=dict(color=CHART_FONT, width=2, dash='dot')), row=1, col=1)
+            # -------------------------------------
 
             subset_ppo = ppo[ppo.index >= chart_data.index[0]]; subset_sig = sig[sig.index >= chart_data.index[0]]; subset_hist = hist[hist.index >= chart_data.index[0]]
             fig.add_trace(go.Scatter(x=chart_data.index, y=subset_ppo, name="Swarm Trend", line=dict(color='cyan', width=1)), row=2, col=1)
@@ -445,7 +486,7 @@ if full_data is not None and closes is not None:
 
     # --- TAB 2: RISK ---
     with tab2:
-        st.markdown('<div class="steel-sub-header"><span class="steel-text-gradient" style="font-size: 20px !important;">Risk Governance & Compliance</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="steel-sub-header"><span class="steel-text-main" style="font-size: 20px !important;">Risk Governance & Compliance</span></div>', unsafe_allow_html=True)
         col1, col2 = st.columns([2, 1])
         with col1:
             st.markdown(f'<div class="gov-pill" style="background: linear-gradient(135deg, {color}, {color}88); border: 1px solid {color};">{status}</div>', unsafe_allow_html=True)
@@ -482,7 +523,7 @@ if full_data is not None and closes is not None:
 
     # --- TAB 3: STRATEGIST ---
     with tab3:
-        st.markdown('<div class="steel-sub-header"><span class="steel-text-gradient" style="font-size: 20px !important;">MacroEffects: Chief Strategist\'s View</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="steel-sub-header"><span class="steel-text-main" style="font-size: 20px !important;">MacroEffects: Chief Strategist\'s View</span></div>', unsafe_allow_html=True)
         
         try:
             SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT4ik-SBHr_ER_SyMHgwVAds3UaxRtPTA426qU_26TuHkHlyb5h6zl8_H9E-_Kw5FUO3W1mBU8CKiZP/pub?gid=0&single=true&output=csv" 
@@ -512,7 +553,7 @@ else:
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v55.0 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v55.1 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
