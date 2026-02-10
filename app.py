@@ -15,7 +15,7 @@ st.set_page_config(page_title="MacroEffects | Global Command", page_icon="M", la
 if "dark_mode" not in st.session_state:
     st.session_state["dark_mode"] = False
 
-# SAFE DEFAULTS (Prevents "Not Defined" Crashes)
+# SAFE DEFAULTS
 full_data = None
 closes = None
 latest_monitor = None
@@ -23,22 +23,21 @@ status = "SYSTEM BOOT"
 color = "#888888"
 
 # ==========================================
-# 2. THEME ENGINE
+# 2. THEME ENGINE (HIGH CONTRAST)
 # ==========================================
-# Defined at top level so it is always available
 current_theme = {
     "bg_color": "#0e1117" if st.session_state["dark_mode"] else "#ffffff",
     "card_bg": "rgba(22, 27, 34, 0.7)" if st.session_state["dark_mode"] else "rgba(255, 255, 255, 0.9)",
     "card_border": "1px solid rgba(255, 255, 255, 0.08)" if st.session_state["dark_mode"] else "1px solid rgba(49, 51, 63, 0.1)",
-    "text_primary": "#f0f2f6" if st.session_state["dark_mode"] else "#31333F",
-    "text_secondary": "#b0b8c1" if st.session_state["dark_mode"] else "#555555",
+    "text_primary": "#F0F2F6" if st.session_state["dark_mode"] else "#31333F", # Bright White for Dark Mode
+    "text_secondary": "#B0B8C1" if st.session_state["dark_mode"] else "#555555", # Light Grey for Dark Mode
     "accent_gold": "#C6A87C",
     "chart_template": "plotly_dark" if st.session_state["dark_mode"] else "plotly_white",
-    "chart_font": "#e6e6e6" if st.session_state["dark_mode"] else "#31333F"
+    "chart_font": "#E6E6E6" if st.session_state["dark_mode"] else "#31333F"
 }
 
 # ==========================================
-# 3. CSS STYLING
+# 3. CSS STYLING (TEXT ENFORCER)
 # ==========================================
 st.markdown(f"""
 <style>
@@ -55,6 +54,37 @@ st.markdown(f"""
 
 .stApp {{ background-color: var(--bg-color) !important; font-family: 'Inter', sans-serif; }}
 
+/* --- TEXT READABILITY ENFORCERS --- */
+
+/* 1. Force Paragraphs and Spans to use Primary Color */
+.stMarkdown p, .stMarkdown span, .stMarkdown li {{
+    color: var(--text-primary) !important;
+}}
+
+/* 2. Force Radio Button Labels */
+div[role="radiogroup"] label p {{
+    color: var(--text-primary) !important;
+    font-weight: 600 !important;
+}}
+
+/* 3. Force Metrics (Value and Label) */
+div[data-testid="stMetricValue"] {{
+    color: var(--text-primary) !important;
+}}
+div[data-testid="stMetricLabel"] {{
+    color: var(--text-secondary) !important;
+}}
+
+/* 4. Force Expander Text */
+.streamlit-expanderContent p {{
+    color: var(--text-primary) !important;
+}}
+
+/* 5. Force Headers */
+h1, h2, h3, h4, h5, h6 {{
+    color: var(--text-primary) !important;
+}}
+
 /* REMOVE DEFAULT UI */
 #MainMenu {{visibility: hidden;}}
 footer {{visibility: hidden;}}
@@ -65,7 +95,7 @@ header {{visibility: hidden;}}
 div[data-testid="column"] {{ padding: 0px !important; }}
 div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
 
-/* HEADER CONTAINER (Centered Content) */
+/* HEADER CONTAINER */
 .steel-header-container {{
     background: linear-gradient(145deg, #1a1f26, #2d343f);
     padding: 0px 20px;
@@ -77,7 +107,7 @@ div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
     height: 80px; 
     display: flex;
     flex-direction: column;
-    justify-content: center; /* Vertical Center */
+    justify-content: center;
 }}
 
 .steel-text {{
@@ -123,7 +153,7 @@ div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
 }}
 [data-testid="stPopover"] button:hover {{ border-color: #C6A87C; color: #FFFFFF; }}
 
-/* TABS (Mobile Responsive) */
+/* TABS */
 button[data-baseweb="tab"] {{
     background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.05) 100%) !important;
     border: 1px solid rgba(128,128,128,0.2) !important;
@@ -138,7 +168,6 @@ button[data-baseweb="tab"] {{
     flex-grow: 1;
 }}
 
-/* MOBILE TWEAK: Shrink Tabs on Small Screens */
 @media (max-width: 640px) {{
     button[data-baseweb="tab"] {{
         font-size: 11px !important;
@@ -178,7 +207,7 @@ button[data-baseweb="tab"][aria-selected="true"] p {{
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 4. HELPER FUNCTIONS (RENAMED TO FORCE CACHE REFRESH)
+# 4. HELPER FUNCTIONS
 # ==========================================
 @st.cache_data(ttl=3600)
 def fetch_market_data():
@@ -241,7 +270,6 @@ def generate_forecast(start_date, last_price, last_std, days=30):
         future_lower.append(future_mean[i-1] - width)
     return future_dates, future_mean, future_upper, future_lower
 
-# UPDATED: Hardcoded background to prevent variable errors
 def render_sparkline(data, line_color):
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=data.index, y=data, mode='lines', line=dict(color=line_color, width=2), hoverinfo='skip'))
@@ -468,7 +496,7 @@ else:
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v28.0 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v29.0 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
