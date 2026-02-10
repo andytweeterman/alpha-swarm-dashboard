@@ -7,7 +7,7 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. PAGE SETUP (v18.1 - SYNTAX HOTFIX)
+# 1. PAGE SETUP (v18.2 - UI POLISH)
 # ==========================================
 st.set_page_config(page_title="MacroEffects | Global Command", page_icon="M", layout="wide")
 
@@ -15,7 +15,7 @@ st.set_page_config(page_title="MacroEffects | Global Command", page_icon="M", la
 with st.sidebar:
     st.header("M | MacroEffects")
     st.divider()
-    st.caption("Powered by Alpha Swarm v18.1")
+    st.caption("Powered by Alpha Swarm v18.2")
     st.caption("Status: INSTITUTIONAL ACCESS")
     st.divider()
     dark_mode = st.toggle("Dark Mode", value=False)
@@ -114,7 +114,7 @@ header {visibility: visible;}
 /* --- THE STEEL HEADER ARCHITECTURE --- */
 .steel-header {
     background: linear-gradient(145deg, #1a1f26, #2d343f);
-    padding: 15px 25px;
+    padding: 10px 20px;
     border-radius: 8px;
     border: 1px solid #4a4f58;
     box-shadow: 0 4px 6px rgba(0,0,0,0.3);
@@ -124,7 +124,7 @@ header {visibility: visible;}
     justify-content: space-between;
 }
 
-/* BRUSHED STEEL TEXT EFFECT */
+/* BRUSHED STEEL TEXT EFFECT (Unified for Title and Subheaders) */
 .steel-text {
     background: linear-gradient(180deg, #FFFFFF 0%, #A0A0A0 50%, #E0E0E0 100%);
     -webkit-background-clip: text;
@@ -134,21 +134,7 @@ header {visibility: visible;}
     text-transform: uppercase;
     letter-spacing: 1.5px;
     margin: 0;
-}
-
-/* Title Size */
-.steel-header h1 {
-    font-size: 32px !important; 
-    margin: 0 !important;
-    padding: 0 !important;
-    background: linear-gradient(180deg, #FFFFFF 0%, #A0A0A0 50%, #E0E0E0 100%) !important;
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-}
-
-/* Subheader Size */
-.steel-subheader {
-    font-size: 18px !important;
+    font-size: 20px !important; /* UNIFIED FONT SIZE */
 }
 
 /* TYPOGRAPHY */
@@ -180,9 +166,10 @@ button[data-baseweb="tab"] {
     margin-right: 4px;
 }
 
+/* SELECTED TAB (Fixed Readability) */
 button[data-baseweb="tab"][aria-selected="true"] {
     background: linear-gradient(180deg, #2d343f 0%, #1a1f26 100%) !important;
-    color: white !important;
+    color: #FFFFFF !important; /* Bright White Text */
     border-top: 2px solid var(--accent-gold) !important;
 }
 
@@ -207,12 +194,28 @@ div[data-testid="stColumn"]:nth-of-type(2) div[data-testid="stRadio"] label p {
     padding: 4px 12px;
     border-radius: 12px;
     font-family: 'Fira Code', monospace;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: bold;
     color: white;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     margin-left: 10px;
     vertical-align: middle;
+}
+
+/* PREMIUM BADGE */
+.premium-pill {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 800;
+    color: #3b2c00;
+    background: linear-gradient(135deg, #bf953f 0%, #fcf6ba 100%);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    margin-left: 5px;
+    vertical-align: middle;
+    letter-spacing: 1px;
 }
 
 /* MARKET CARDS */
@@ -364,21 +367,19 @@ except Exception as e:
 # ==========================================
 # 4. THE UI RENDER
 # ==========================================
-# MAIN TITLE BAR (Steel Gradient)
+# MAIN TITLE BAR (Steel Gradient - UNIFIED FONT)
 st.markdown(f"""
 <div class="steel-header">
-    <h1>MacroEffects</h1>
-    <div style="text-align: right;">
-        <span style="font-size: 24px; color: #C6A87C;">☰</span>
-    </div>
+    <span class="steel-text">MacroEffects</span>
 </div>
 """, unsafe_allow_html=True)
 
-# SUBHEADER WITH MINI-BADGE
+# SUBHEADER WITH STATUS MARKERS
 st.markdown(f"""
 <div style="margin-bottom: 20px;">
     <span style="font-family: 'Inter'; font-weight: 600; font-size: 16px; color: var(--text-secondary);">Macro-Economic Intelligence: Global Market Command Center</span>
     <div class="mini-badge" style="background-color: {color};">{status}</div>
+    <div class="premium-pill">PREMIUM</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -392,7 +393,7 @@ if full_data is not None:
     # TAB 1: MARKET SWARM
     # ---------------------------
     with tab1:
-        st.markdown('<div class="steel-header"><span class="steel-text steel-subheader">Global Asset Grid</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="steel-header"><span class="steel-text">Global Asset Grid</span></div>', unsafe_allow_html=True)
         
         assets = [
             {"name": "Dow Jones", "ticker": "^DJI", "color": "#00CC00"},
@@ -444,7 +445,7 @@ if full_data is not None:
         st.divider()
 
         # --- SWARM DEEP DIVE (Steel Header) ---
-        st.markdown('<div class="steel-header"><span class="steel-text steel-subheader">Swarm Deep Dive</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="steel-header"><span class="steel-text">Swarm Deep Dive</span></div>', unsafe_allow_html=True)
         
         spy_close = full_data['Close']['SPY']
         ppo, sig, hist = calculate_ppo(spy_close)
@@ -503,7 +504,7 @@ if full_data is not None:
     # TAB 2: GOVERNANCE
     # ---------------------------
     with tab2:
-        st.markdown('<div class="steel-header"><span class="steel-text steel-subheader">Risk Governance & Compliance</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="steel-header"><span class="steel-text">Risk Governance & Compliance</span></div>', unsafe_allow_html=True)
         
         col1, col2 = st.columns([2, 1])
         with col1:
@@ -549,7 +550,7 @@ if full_data is not None:
     # TAB 3: STRATEGIST VIEW
     # ---------------------------
     with tab3:
-        st.markdown('<div class="steel-header"><span class="steel-text steel-subheader">MacroEffects: Chief Strategist\'s View</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="steel-header"><span class="steel-text">MacroEffects: Chief Strategist\'s View</span></div>', unsafe_allow_html=True)
         
         try:
             SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT4ik-SBHr_ER_SyMHgwVAds3UaxRtPTA426qU_26TuHkHlyb5h6zl8_H9E-_Kw5FUO3W1mBU8CKiZP/pub?gid=0&single=true&output=csv" 
@@ -585,7 +586,7 @@ else:
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v18.1 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v18.2 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
