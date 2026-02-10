@@ -258,6 +258,7 @@ def generate_forecast(start_date, last_price, last_std, days=30):
     future_dates = [start_date + timedelta(days=i) for i in range(1, days + 1)]
     drift = 0.0003
     future_mean = [last_price * ((1 + drift) ** i) for i in range(1, days + 1)]
+    future_mean = [last_price * ((1 + drift) ** i) for i in range(1, days + 1)]
     future_upper = []
     future_lower = []
     for i in range(1, days + 1):
@@ -301,30 +302,30 @@ except Exception as e:
 c_title, c_menu = st.columns([0.90, 0.10], gap="small")
 
 with c_title:
-    # --- COMBINED GRAPHIC & TEXT HEADER ---
     img_b64 = get_base64_image("shield.png")
     
+    # NOTE: We construct the HTML string first and use .strip() to ensure no indentation errors.
     if img_b64:
-        st.markdown(f"""
+        header_html = f"""
 <div class="header-bar">
-    <img src="data:image/png;base64,{img_b64}" style="height: 50px; width: auto; flex-shrink: 0; object-fit: contain;">
-    
-    <div class="header-text-col">
-        <span class="steel-text-main">MacroEffects</span>
-        <span class="steel-text-sub">AI Inference & Risk Intelligence</span>
-    </div>
+<img src="data:image/png;base64,{img_b64}" style="height: 50px; width: auto; flex-shrink: 0; object-fit: contain;">
+<div class="header-text-col">
+<span class="steel-text-main">MacroEffects</span>
+<span class="steel-text-sub">AI Inference & Risk Intelligence</span>
 </div>
-""", unsafe_allow_html=True)
+</div>
+""".strip()
     else:
-        # Fallback Text if image missing
-        st.markdown(f"""
+        header_html = f"""
 <div class="header-bar">
-    <div class="header-text-col">
-        <span class="steel-text-main">MacroEffects</span>
-        <span class="steel-text-sub">AI Inference & Risk Intelligence</span>
-    </div>
+<div class="header-text-col">
+<span class="steel-text-main">MacroEffects</span>
+<span class="steel-text-sub">AI Inference & Risk Intelligence</span>
 </div>
-""", unsafe_allow_html=True)
+</div>
+""".strip()
+    
+    st.markdown(header_html, unsafe_allow_html=True)
 
 with c_menu:
     with st.popover("☰", use_container_width=True):
@@ -511,7 +512,7 @@ else:
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v54.0 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v55.0 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
