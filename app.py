@@ -23,7 +23,7 @@ status = "SYSTEM BOOT"
 color = "#888888"
 
 # ==========================================
-# 2. THEME ENGINE (PRECISION TUNED)
+# 2. THEME ENGINE
 # ==========================================
 current_theme = {
     "bg_color": "#0e1117" if st.session_state["dark_mode"] else "#ffffff",
@@ -31,8 +31,8 @@ current_theme = {
     "card_border": "1px solid rgba(255, 255, 255, 0.08)" if st.session_state["dark_mode"] else "1px solid rgba(49, 51, 63, 0.1)",
     
     # COLORS
-    # Primary: White (Dark Mode) / Black (Light Mode)
-    # Secondary: Light Grey (Dark Mode) / Dark Grey (Light Mode)
+    # Dark Mode: Primary=White, Secondary=Light Grey (#B0B8C1 - Fixed for visibility)
+    # Light Mode: Primary=Black, Secondary=Dark Grey
     "text_primary": "#FFFFFF" if st.session_state["dark_mode"] else "#000000", 
     "text_secondary": "#B0B8C1" if st.session_state["dark_mode"] else "#666666", 
     
@@ -72,21 +72,19 @@ h3 {{
     font-weight: 600 !important;
 }}
 
-/* 3. RADIO BUTTONS (Risk Tab Fix) */
-/* The Label "Select View Horizon:" */
+/* 3. Radio Button Labels */
 div[data-testid="stRadio"] > label {{
-    color: var(--text-secondary) !important; /* Force Light Grey */
+    color: var(--text-secondary) !important;
     font-weight: 600 !important;
     font-size: 14px !important;
 }}
-/* The Options "Tactical", "Strategic" */
 div[data-testid="stRadio"] div[role="radiogroup"] p {{
-    color: var(--text-secondary) !important; /* Force Light Grey */
+    color: var(--text-secondary) !important;
 }}
 
-/* 4. METRIC LABELS (Risk VIX, Credit Spreads) */
+/* 4. METRIC LABELS (The "Risk (VIX)" Fix) */
 div[data-testid="stMetricLabel"] {{
-    color: var(--text-secondary) !important; /* Force Light Grey */
+    color: var(--text-secondary) !important; /* Forces Light Grey in Dark Mode */
     font-size: 14px !important;
     font-weight: 500 !important;
 }}
@@ -94,13 +92,14 @@ div[data-testid="stMetricValue"] {{
     color: var(--text-primary) !important;
 }}
 
-/* 5. Tooltip Icons */
+/* 5. TOOLTIPS (The Question Mark Fix) */
 [data-testid="stTooltipIcon"] {{
-    color: var(--text-secondary) !important;
-    opacity: 0.8 !important;
+    color: var(--text-secondary) !important; /* Forces Light Grey */
+    opacity: 0.9 !important;
 }}
 [data-testid="stTooltipIcon"] svg {{
     fill: var(--text-secondary) !important;
+    color: var(--text-secondary) !important;
 }}
 
 /* 6. Expander Header (Strategist) */
@@ -141,9 +140,10 @@ div[data-testid="stMetricValue"] {{
     font-size: 26px !important;
 }}
 
-/* TAGLINE (ALWAYS LIGHT GREY) */
+/* TAGLINE (THE SILVER FIX) */
+/* This ensures it is ALWAYS Silver, even in Light Mode */
 .tagline-text {{
-    color: #C0C0C0 !important; /* Silver/Light Grey */
+    color: #C0C0C0 !important; 
     font-family: 'Inter', sans-serif;
     font-size: 10px;
     font-weight: 600;
@@ -214,7 +214,7 @@ button[data-baseweb="tab"][aria-selected="true"] p {{
     margin-bottom: 15px;
 }}
 
-/* SMALL GOVERNANCE PILL */
+/* GOVERNANCE PILL */
 .gov-pill {{
     display: inline-block;
     padding: 4px 12px;
@@ -391,7 +391,7 @@ with c_menu:
         st.link_button("About Us", "https://sixmonthstockmarketforecast.com/about") 
         st.link_button("Contact Analyst", "mailto:analyst@macroeffects.com")
 
-# SUBHEADER WITH SMALL PILL
+# SUBHEADER
 st.markdown(f"""
 <div style="margin-bottom: 20px; margin-top: 15px;">
     <span style="font-family: 'Inter'; font-weight: 600; font-size: 16px; color: var(--text-secondary);">Macro-Economic Intelligence: Global Market Command Center</span>
@@ -563,7 +563,7 @@ else:
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v37.0 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v38.0 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
