@@ -1,8 +1,8 @@
 [theme]
-primaryColor = "#00f2ff"  # Electric Blue / Cyan for "API/Tech" look
-backgroundColor = "#0e1117"
-secondaryBackgroundColor = "#161b22"
-textColor = "#e6e6e6"
+primaryColor = "#007bff"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f0f2f6"
+textColor = "#31333F"
 font = "sans serif"
 
 [browser]

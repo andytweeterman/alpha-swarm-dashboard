@@ -18,6 +18,9 @@ sys.modules["streamlit"].cache_data = lambda ttl=3600: lambda func: func
 sys.modules["streamlit"].set_page_config = MagicMock()
 # Mock sidebar
 sys.modules["streamlit"].sidebar = MagicMock()
+# Mock toggle return value to avoid KeyError in theme_config
+sys.modules["streamlit"].toggle.return_value = False
+sys.modules["streamlit"].sidebar.toggle.return_value = False # In case I used st.sidebar.toggle
 
 # Import functions from app.py
 from app import calculate_governance_history, calculate_ppo, calculate_cone
