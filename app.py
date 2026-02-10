@@ -54,33 +54,44 @@ st.markdown(f"""
 
 .stApp {{ background-color: var(--bg-color) !important; font-family: 'Inter', sans-serif; }}
 
-/* --- TEXT READABILITY ENFORCERS --- */
+/* --- TEXT READABILITY ENFORCERS (DARK MODE FIXES) --- */
 
-/* 1. Force Paragraphs and Spans to use Primary Color */
+/* 1. General Paragraphs */
 .stMarkdown p, .stMarkdown span, .stMarkdown li {{
     color: var(--text-primary) !important;
 }}
 
-/* 2. Force Radio Button Labels */
-div[role="radiogroup"] label p {{
+/* 2. Radio Button Labels (View Horizon / Market Scope) */
+div[data-testid="stRadio"] label p {{
     color: var(--text-primary) !important;
     font-weight: 600 !important;
 }}
 
-/* 3. Force Metrics (Value and Label) */
+/* 3. Metric Labels (Risk VIX, Credit Spreads, etc.) */
+div[data-testid="stMetricLabel"] {{
+    color: var(--text-secondary) !important;
+    font-weight: 500 !important;
+}}
 div[data-testid="stMetricValue"] {{
     color: var(--text-primary) !important;
 }}
-div[data-testid="stMetricLabel"] {{
+
+/* 4. Tooltip Icons (Question Marks) */
+[data-testid="stTooltipIcon"] {{
     color: var(--text-secondary) !important;
 }}
 
-/* 4. Force Expander Text */
+/* 5. Premium Banner Text */
+.premium-banner {{
+    color: var(--text-primary) !important;
+}}
+
+/* 6. Expander Text */
 .streamlit-expanderContent p {{
     color: var(--text-primary) !important;
 }}
 
-/* 5. Force Headers */
+/* 7. Headers */
 h1, h2, h3, h4, h5, h6 {{
     color: var(--text-primary) !important;
 }}
@@ -135,7 +146,7 @@ div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
     opacity: 0.8;
 }}
 
-/* MENU BUTTON INTEGRATION */
+/* MENU BUTTON INTEGRATION (With Shadow Fix) */
 [data-testid="stPopover"] button {{
     border: 1px solid #4a4f58;
     background: linear-gradient(145deg, #1a1f26, #2d343f);
@@ -147,6 +158,7 @@ div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
     margin-top: 0px;
     border-radius: 0 8px 8px 0; 
     border-left: 1px solid #4a4f58;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3); /* SHADOW MATCH */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -196,6 +208,20 @@ button[data-baseweb="tab"][aria-selected="true"] p {{
 .mini-badge {{ display: inline-block; padding: 4px 12px; border-radius: 12px; font-family: 'Fira Code', monospace; font-size: 11px; font-weight: bold; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); margin-left: 10px; vertical-align: middle; }}
 .premium-pill {{ display: inline-block; padding: 4px 12px; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 800; color: #3b2c00; background: linear-gradient(135deg, #bf953f 0%, #fcf6ba 100%); box-shadow: 0 2px 5px rgba(0,0,0,0.2); margin-left: 5px; vertical-align: middle; letter-spacing: 1px; }}
 
+.premium-banner {{
+    background: linear-gradient(90deg, #090c10 0%, #161b22 100%);
+    border: 1px solid #30363d;
+    border-left: 4px solid var(--accent-gold);
+    color: var(--text-primary) !important; /* FIXED */
+    padding: 10px;
+    border-radius: 4px;
+    text-align: center;
+    margin: 15px 0;
+    font-family: 'Fira Code', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+}}
+
 .market-card {{ background: var(--card-bg); border: var(--card-border); border-radius: 6px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; margin-bottom: 10px; }}
 .market-ticker {{ color: var(--text-secondary); font-size: 11px; margin-bottom: 2px; }}
 .market-price {{ color: {current_theme['text_primary']}; font-family: 'Fira Code', monospace; font-size: 22px; font-weight: 700; margin: 2px 0; }}
@@ -208,7 +234,7 @@ button[data-baseweb="tab"][aria-selected="true"] p {{
 .custom-footer {{
     font-family: 'Fira Code', monospace;
     font-size: 10px;
-    color: var(--text-secondary) !important; /* DYNAMIC COLOR FIX */
+    color: var(--text-secondary) !important;
     text-align: center;
     margin-top: 50px;
     border-top: 1px solid #30363d;
@@ -508,7 +534,7 @@ else:
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v30.0 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v31.0 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
