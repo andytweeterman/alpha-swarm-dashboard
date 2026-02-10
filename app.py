@@ -7,7 +7,7 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. PAGE SETUP (v19.2 - INTEGRATED HEADER)
+# 1. PAGE SETUP (v19.3 - SHARP TABS & BIG MENU)
 # ==========================================
 st.set_page_config(page_title="MacroEffects | Global Command", page_icon="M", layout="wide")
 
@@ -90,8 +90,8 @@ header {visibility: hidden;}
     border-radius: 8px;
     border: 1px solid #4a4f58;
     box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-    margin-bottom: 5px; /* Reduced bottom margin to pull menu up */
-    height: 80px; /* Fixed height to contain menu */
+    margin-bottom: 5px; 
+    height: 80px; 
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -110,9 +110,9 @@ header {visibility: hidden;}
     font-size: 24px !important;
 }
 
-/* TAGLINE (Lighter) */
+/* TAGLINE */
 .tagline-text {
-    color: #F0F0F0 !important; /* Lighter Text */
+    color: #F0F0F0 !important; 
     font-family: 'Inter', sans-serif;
     font-size: 10px;
     font-weight: 500;
@@ -123,24 +123,26 @@ header {visibility: hidden;}
     opacity: 0.9;
 }
 
-/* MENU INTEGRATION (The Negative Margin Hack) */
+/* MENU INTEGRATION (Fixed Position Right) */
 [data-testid="stPopover"] {
     float: right;
-    margin-top: -65px; /* Pulls menu UP into the Steel Header */
-    margin-right: 15px;
+    margin-top: -70px; /* Pulls menu UP into the Steel Header */
+    margin-right: 5px;
     position: relative;
     z-index: 999;
 }
 
+/* MENU BUTTON STYLING (Larger) */
 [data-testid="stPopover"] button {
     border: none;
     background: transparent;
     color: #C6A87C; /* Gold Menu Token */
-    font-size: 24px;
+    font-size: 28px !important; /* Larger Icon */
     font-weight: bold;
     height: auto;
     width: auto;
     padding: 0;
+    line-height: 1;
 }
 [data-testid="stPopover"] button:hover {
     color: #FFFFFF;
@@ -166,11 +168,11 @@ button[data-baseweb="tab"] {
     margin-right: 4px;
 }
 
-/* SELECTED TAB (Lighter/Brighter) */
+/* SELECTED TAB (Crisp White - No Blur) */
 button[data-baseweb="tab"][aria-selected="true"] {
     background: linear-gradient(180deg, #2d343f 0%, #1a1f26 100%) !important;
     color: #FFFFFF !important; /* Bright White */
-    text-shadow: 0 0 5px rgba(255,255,255,0.5); /* Glow effect */
+    text-shadow: none !important; /* REMOVED BLUR */
     border-top: 2px solid var(--accent-gold) !important;
 }
 
@@ -282,45 +284,38 @@ def make_sparkline(data, color):
     return fig
 
 # ==========================================
-# 3. DATA FETCHING
-# ==========================================
-try:
-    full_data = fetch_data()
-    closes = full_data['Close']
-    gov_df, status, color, reason = calculate_governance_history(full_data)
-    latest_monitor = gov_df.iloc[-1]
-except Exception as e:
-    status, color, reason = "OFFLINE", "#888888", "Data connection failed"
-    full_data = None
-
-# ==========================================
 # 4. THE UI RENDER
 # ==========================================
 
-# HEADER (Full Width Steel Container)
-st.markdown(f"""
-<div class="steel-header-container">
-    <span class="steel-text">MacroEffects</span><br>
-    <span class="tagline-text">AI INFERENCE FOCUSED ON STOCK MARKETS</span>
-</div>
-""", unsafe_allow_html=True)
+# HEADER LAYOUT (Adjusted to push menu right)
+c_title, c_menu = st.columns([0.92, 0.08])
 
-# INTEGRATED MENU (Pulled up via CSS)
-with st.popover("☰", use_container_width=False):
-    st.caption("Settings & Links")
-    # Dark Mode Toggle
-    is_dark = st.toggle("Dark Mode", value=st.session_state["dark_mode"])
-    if is_dark != st.session_state["dark_mode"]:
-        st.session_state["dark_mode"] = is_dark
-        st.rerun()
+with c_title:
+    # Title & Tagline inside Steel Box
+    st.markdown(f"""
+    <div class="steel-header-container">
+        <span class="steel-text">MacroEffects</span><br>
+        <span class="tagline-text">AI INFERENCE FOCUSED ON STOCK MARKETS</span>
+    </div>
+    """, unsafe_allow_html=True)
+
+with c_menu:
+    # Functional Menu
+    with st.popover("☰", use_container_width=False):
+        st.caption("Settings & Links")
+        # Dark Mode Toggle
+        is_dark = st.toggle("Dark Mode", value=st.session_state["dark_mode"])
+        if is_dark != st.session_state["dark_mode"]:
+            st.session_state["dark_mode"] = is_dark
+            st.rerun()
+            
+        st.divider()
         
-    st.divider()
-    
-    # Links
-    st.page_link("https://sixmonthstockmarketforecast.com/home/", label="Six Month Forecast", icon="📈")
-    st.link_button("User Guide", "https://github.com/andytweeterman/alpha-swarm-dashboard/blob/main/docs/USER_GUIDE.md") 
-    st.link_button("About Us", "https://sixmonthstockmarketforecast.com/about") 
-    st.link_button("Contact Analyst", "mailto:analyst@macroeffects.com")
+        # Links
+        st.page_link("https://sixmonthstockmarketforecast.com/home/", label="Six Month Forecast", icon="📈")
+        st.link_button("User Guide", "https://github.com/andytweeterman/alpha-swarm-dashboard/blob/main/docs/USER_GUIDE.md") 
+        st.link_button("About Us", "https://sixmonthstockmarketforecast.com/about") 
+        st.link_button("Contact Analyst", "mailto:analyst@macroeffects.com")
 
 # SUBHEADER WITH STATUS MARKERS
 st.markdown(f"""
@@ -533,7 +528,7 @@ else:
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v19.2 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v19.3 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
