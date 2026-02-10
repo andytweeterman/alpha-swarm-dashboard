@@ -7,13 +7,13 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. PAGE SETUP (v16.3 - LIVE MONITOR FEED)
+# 1. PAGE SETUP (v17.0 - MACROEFFECTS GLOW UP)
 # ==========================================
-st.set_page_config(page_title="Tiedeman Research | Alpha Swarm", page_icon="🛡️", layout="wide")
+st.set_page_config(page_title="MacroEffects | Global Command", page_icon="M", layout="wide")
 
 # SIDEBAR SETTINGS
 with st.sidebar:
-    st.header("🏛️ Tiedeman Research")
+    st.header("M | MacroEffects")
     st.divider()
     st.caption("Powered by Alpha Swarm v17.0")
     st.caption("Status: INSTITUTIONAL ACCESS")
@@ -72,11 +72,15 @@ st.markdown(f"""
     --text-secondary: {current_theme['text_secondary']};
     --accent-gold: {current_theme['accent_gold']};
     --accent-blue: {current_theme['accent_blue']};
-    --success: #00d26a;
-    --danger: #f93e3e;
     --glass-shadow: {current_theme['glass_shadow']};
     --glass-bg: {current_theme['glass_bg']};
     --steel-gradient: {current_theme['steel_gradient']};
+}}
+
+/* TIGHTEN SPACING (Dad's Request) */
+.block-container {{
+    padding-top: 1rem !important;
+    padding-bottom: 2rem !important;
 }}
 
 /* HIDE DEFAULT STREAMLIT ELEMENTS */
@@ -84,25 +88,34 @@ st.markdown(f"""
 footer {{visibility: hidden;}}
 header {{visibility: visible;}}
 
-/* GLASS HEADER */
+/* MACROEFFECTS BANNER (Blue/White Slim) */
 .glass-header {{
-    background: var(--glass-bg);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 10px;
-    padding: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    margin-bottom: 20px;
+    background: linear-gradient(90deg, #002244 0%, #004488 100%); /* Institutional Blue */
+    border-radius: 4px;
+    padding: 10px 20px; /* Slimmer padding */
+    border-bottom: 3px solid var(--accent-gold);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }}
 
-/* SETTINGS BUTTON */
-header button {{
-    background-color: rgba(0, 0, 0, 0.5) !important;
-    border: 1px solid var(--accent-gold) !important;
-    border-radius: 50% !important;
-    color: var(--accent-gold) !important;
-    width: 2.5rem !important;
-    height: 2.5rem !important;
+.glass-header h1 {{
+    margin: 0;
+    padding: 0;
+    border: none;
+    font-size: 24px !important;
+    color: white !important;
+    -webkit-text-fill-color: white !important; /* Override gradient text for Logo */
+    background: none !important;
+    letter-spacing: 2px;
+}}
+
+.menu-token {{
+    font-size: 24px;
+    color: white;
+    margin-right: 15px;
+    cursor: pointer;
 }}
 
 /* APP BACKGROUND */
@@ -120,21 +133,17 @@ h1, h2, h3, h4, h5, h6 {{
     text-transform: uppercase;
 }}
 
-h1, h2, h3, h4, h5, h6, section[data-testid="stSidebar"] h2 {{
+/* Gradient Text for Sub-headers Only */
+h2, h3 {{
     background: var(--steel-gradient) !important;
     -webkit-background-clip: text !important;
     -webkit-text-fill-color: transparent !important;
 }}
 
-h1 {{
-    border-bottom: 1px solid var(--accent-blue);
-    padding-bottom: 10px;
-    display: inline-block;
-}}
-
 p, span, li, label {{
     color: var(--text-secondary) !important;
     font-family: 'Inter', sans-serif;
+    font-size: 14px; /* Slightly smaller base font */
 }}
 
 /* SIDEBAR STYLING */
@@ -152,7 +161,7 @@ section[data-testid="stSidebar"] h2 {{
 /* METRICS & DATA (Monospace for Numbers) */
 div[data-testid="stMetricValue"] {{
     font-family: 'Fira Code', monospace !important;
-    font-size: 28px !important;
+    font-size: 24px !important; /* Smaller than 28px */
     color: {current_theme['text_primary']} !important;
     font-weight: 700;
 }}
@@ -160,7 +169,7 @@ div[data-testid="stMetricValue"] {{
 div[data-testid="stMetricLabel"] {{
     font-family: 'Inter', sans-serif;
     color: var(--text-secondary) !important;
-    font-size: 14px;
+    font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 1px;
 }}
@@ -169,14 +178,14 @@ div[data-testid="stMetricLabel"] {{
 .market-card {{
     background: var(--card-bg);
     border: var(--card-border);
-    border-radius: 4px; /* Sharper corners for "Tech" feel */
-    padding: 20px;
+    border-radius: 4px;
+    padding: 12px; /* Tighter padding */
     box-shadow: var(--glass-shadow);
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
     text-align: center;
     transition: transform 0.2s ease, border-color 0.2s ease;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }}
 
 .market-card:hover {{
@@ -187,22 +196,22 @@ div[data-testid="stMetricLabel"] {{
 .market-ticker {{
     color: var(--text-secondary);
     font-family: 'Fira Code', monospace;
-    font-size: 12px;
+    font-size: 10px;
     letter-spacing: 1px;
-    margin-bottom: 5px;
+    margin-bottom: 2px;
 }}
 
 .market-price {{
     color: {current_theme['text_primary']};
     font-family: 'Fira Code', monospace;
-    font-size: 24px;
+    font-size: 20px; /* Reduced from 24px */
     font-weight: 700;
-    margin: 5px 0;
+    margin: 2px 0;
 }}
 
 .market-delta {{
     font-family: 'Fira Code', monospace;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 500;
 }}
 
@@ -213,13 +222,13 @@ button[data-baseweb="tab"] {{
     -webkit-backdrop-filter: blur(10px);
     font-family: 'Inter', sans-serif;
     text-transform: uppercase;
-    font-size: 12px;
+    font-size: 11px; /* Smaller font */
     letter-spacing: 1px;
-    border-radius: 8px !important;
+    border-radius: 4px !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    margin-right: 8px;
-    padding: 8px 16px;
-    margin-top: 10px;
+    margin-right: 5px;
+    padding: 5px 12px;
+    margin-top: 5px;
 }}
 
 button[data-baseweb="tab"] div p {{
@@ -243,17 +252,18 @@ button[data-baseweb="tab"][aria-selected="true"] {{
 [data-testid="stExpander"] summary {{
     color: var(--text-primary) !important;
     font-family: 'Fira Code', monospace;
+    font-size: 13px;
 }}
 
 /* ALERTS & BADGES */
 .big-badge {{
     font-family: 'Inter', sans-serif;
-    font-size: 18px;
+    font-size: 16px; /* Reduced from 18px */
     font-weight: 800;
-    padding: 15px 25px;
+    padding: 10px 15px;
     border-radius: 4px;
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     text-transform: uppercase;
     letter-spacing: 2px;
     position: relative;
@@ -281,12 +291,12 @@ button[data-baseweb="tab"][aria-selected="true"] {{
     border: 1px solid #30363d;
     border-left: 4px solid var(--accent-gold);
     color: var(--text-primary) !important;
-    padding: 15px;
+    padding: 10px;
     border-radius: 4px;
     text-align: center;
-    margin: 20px 0;
+    margin: 15px 0;
     font-family: 'Fira Code', monospace;
-    font-size: 12px;
+    font-size: 11px;
     text-transform: uppercase;
 }}
 
@@ -296,9 +306,9 @@ button[data-baseweb="tab"][aria-selected="true"] {{
     font-size: 10px;
     color: #484f58 !important;
     text-align: center;
-    margin-top: 80px;
+    margin-top: 50px;
     border-top: 1px solid #30363d;
-    padding-top: 30px;
+    padding-top: 20px;
     text-transform: uppercase;
 }}
 </style>
@@ -379,7 +389,7 @@ def make_sparkline(data, color):
     fig.add_trace(go.Scatter(x=data.index, y=data, mode='lines', 
                             line=dict(color=color, width=2), hoverinfo='skip'))
     fig.update_layout(
-        height=50, margin=dict(l=0,r=0,t=0,b=0),
+        height=40, margin=dict(l=0,r=0,t=0,b=0), # Reduced height for tightness
         xaxis=dict(visible=False), yaxis=dict(visible=False),
         plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)'
     )
@@ -388,8 +398,15 @@ def make_sparkline(data, color):
 # ==========================================
 # 3. THE UI RENDER
 # ==========================================
-st.markdown('<div class="glass-header"><h1><span>🏛️ TIEDEMAN RESEARCH</span></h1></div>', unsafe_allow_html=True)
-st.markdown("### Alpha Swarm Intelligence: Global Market Command Center")
+# CUSTOM HEADER (Blue Banner + Menu Token)
+st.markdown("""
+<div class="glass-header">
+    <span class="menu-token">☰</span>
+    <h1>MacroEffects</h1>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("### Macro-Economic Intelligence: Global Market Command Center")
 st.caption(f"Governance Protocol Active: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 st.divider()
 
@@ -538,37 +555,34 @@ try:
         m1, m2, m3 = st.columns(3)
         
         # Monitor 1: Credit Spreads (HYG vs IEF)
-        # Logic: If HYG falls faster than IEF, Credit Spreads are widening (Bad)
         credit_val = latest_monitor['Credit_Delta']
         credit_status = "STRESS" if credit_val < -0.015 else "NOMINAL"
-        m1.metric("Credit Spreads (HYG/IEF)", f"{credit_val:.2%}", 
+        m1.metric("Credit Spreads", f"{credit_val:.2%}", 
                  delta="STABLE" if credit_status=="NOMINAL" else "WIDENING", 
                  delta_color="normal" if credit_status=="NOMINAL" else "inverse",
-                 help="Tracks High Yield bonds vs Treasuries. Widening spreads indicate banking stress.")
+                 help="Tracks High Yield bonds vs Treasuries.")
 
         # Monitor 2: US Dollar (DXY)
-        # Logic: Fast spike in DXY kills earnings
         dxy_val = latest_monitor['DXY_Delta']
         dxy_status = "SPIKE" if dxy_val > 0.02 else "STABLE"
-        m2.metric("US Dollar (DXY)", f"{dxy_val:.2%}", 
+        m2.metric("US Dollar", f"{dxy_val:.2%}", 
                  delta="STABLE" if dxy_status=="STABLE" else "SPIKING", 
                  delta_color="inverse",
-                 help="Tracks value of USD. Rapid spikes (>2%) hurt multinational earnings.")
+                 help="Tracks value of USD.")
 
         # Monitor 3: Market Breadth (RSP vs SPY)
-        # Logic: If Equal Weight (RSP) lags Cap Weight (SPY), the rally is thinning (Bad)
         breadth_val = latest_monitor['Breadth_Delta']
         breadth_status = "NARROWING" if breadth_val < -0.025 else "HEALTHY"
-        m3.metric("Market Breadth (RSP/SPY)", f"{breadth_val:.2%}", 
+        m3.metric("Market Breadth", f"{breadth_val:.2%}", 
                  delta=breadth_status, 
                  delta_color="normal" if breadth_status=="HEALTHY" else "inverse",
-                 help="Compares Equal Weight S&P to Cap Weight. Narrowing breadth warns of a top.")
+                 help="Compares Equal Weight S&P to Cap Weight.")
 
     # ---------------------------
     # TAB 3: STRATEGIST VIEW
     # ---------------------------
     with tab3:
-        st.subheader("📝 Tiedeman Research: Chief Strategist's View")
+        st.subheader("📝 MacroEffects: Chief Strategist's View")
         
         try:
             # ------------------------------------------------------------------
@@ -607,10 +621,10 @@ try:
     # FOOTER
     st.markdown("""
     <div class="custom-footer">
-    TIEDEMAN RESEARCH | ALPHA SWARM PROTOCOL v16.3 | INSTITUTIONAL RISK GOVERNANCE<br>
+    MACROEFFECTS | ALPHA SWARM PROTOCOL v17.0 | INSTITUTIONAL RISK GOVERNANCE<br>
     Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
     <br>
-    <strong>Institutional Access:</strong> <a href="mailto:institutional@tiedeman.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@tiedeman.com</a>
+    <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
     </div>
     """, unsafe_allow_html=True)
 
