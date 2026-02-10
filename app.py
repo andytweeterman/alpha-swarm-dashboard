@@ -7,21 +7,22 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. PAGE SETUP & SAFE INITIALIZATION
+# 1. PAGE SETUP & GLOBAL SAFETY
 # ==========================================
 st.set_page_config(page_title="MacroEffects | Global Command", page_icon="M", layout="wide")
+
+# --- GLOBAL SAFETY VARIABLES (PREVENTS CRASHES) ---
+# These are defined BEFORE anything else runs.
+status = "SYSTEM BOOT"
+color = "#888888"
+reason = "Initializing Protocol..."
+full_data = None
+closes = None
+latest_monitor = None
 
 # INITIALIZE SESSION STATE
 if "dark_mode" not in st.session_state:
     st.session_state["dark_mode"] = False
-
-# DEFINE SAFE DEFAULTS (Prevents Crashes)
-status = "SYSTEM BOOT"
-color = "#888888"
-reason = "Initializing..."
-full_data = None
-closes = None
-latest_monitor = None
 
 # THEME CONFIGURATION
 theme_config = {
@@ -94,12 +95,21 @@ header {visibility: hidden;}
 /* TIGHTEN SPACING */
 .block-container { padding-top: 1rem !important; padding-bottom: 2rem !important; }
 
+/* GAP REMOVAL (Key Fix for Title/Menu Integration) */
+div[data-testid="column"] {
+    padding: 0px !important;
+}
+div[data-testid="stHorizontalBlock"] {
+    gap: 0rem !important;
+}
+
 /* STEEL HEADER BOX */
 .steel-header-container {
     background: linear-gradient(145deg, #1a1f26, #2d343f);
     padding: 10px 20px;
-    border-radius: 8px;
+    border-radius: 8px 0 0 8px; /* Rounded Left only */
     border: 1px solid #4a4f58;
+    border-right: none; /* Connect to Menu */
     box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     margin-bottom: 5px; 
     height: 70px; 
@@ -155,7 +165,8 @@ header {visibility: hidden;}
     height: 70px; /* Match Header Height */
     width: 100%;
     margin-top: 0px;
-    border-radius: 8px;
+    border-radius: 0 8px 8px 0; /* Rounded Right only */
+    border-left: 1px solid #4a4f58; /* Subtle divider */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -305,7 +316,7 @@ except Exception as e:
 # ==========================================
 
 # HEADER LAYOUT (Two Columns: Title Box | Menu Box)
-c_title, c_menu = st.columns([0.9, 0.1])
+c_title, c_menu = st.columns([0.92, 0.08]) # Tight ratio
 
 with c_title:
     st.markdown(f"""
@@ -537,12 +548,12 @@ if full_data is not None and closes is not None:
         st.info("💡 **Analyst Note:** This commentary is pulled live from the Chief Strategist's desk via the Alpha Swarm CMS.")
 
 else:
-    st.error("Data connection initializing or offline. Please check network.")
+    st.error("Data connection offline. Please check network.")
 
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v20.0 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v19.5 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
