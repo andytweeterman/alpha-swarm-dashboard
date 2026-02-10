@@ -23,21 +23,26 @@ status = "SYSTEM BOOT"
 color = "#888888"
 
 # ==========================================
-# 2. THEME ENGINE (SEPARATED LOGIC)
+# 2. THEME ENGINE (GLOBAL GREY SHIFT)
 # ==========================================
-# Base Colors
 if st.session_state["dark_mode"]:
+    # DARK MODE
     BG_COLOR = "#0e1117"
     CARD_BG = "rgba(22, 27, 34, 0.7)"
-    TEXT_PRIMARY = "#FFFFFF" # Bright White for Values
-    TEXT_SECONDARY = "#999999" # Distinct Grey for Labels (Risk, Spreads)
+    
+    # VALUES (Big Numbers) remain Bright White
+    TEXT_VALUE = "#FFFFFF" 
+    # EVERYTHING ELSE (Labels, Paragraphs, Headers) becomes Light Grey
+    TEXT_BODY = "#B0B8C1" 
+    
     CHART_TEMPLATE = "plotly_dark"
-    CHART_FONT = "#E6E6E6"
+    CHART_FONT = "#B0B8C1" # Charts match the grey text
 else:
+    # LIGHT MODE
     BG_COLOR = "#ffffff"
     CARD_BG = "rgba(255, 255, 255, 0.9)"
-    TEXT_PRIMARY = "#000000"
-    TEXT_SECONDARY = "#444444"
+    TEXT_VALUE = "#000000"
+    TEXT_BODY = "#333333" # Standard Dark Grey
     CHART_TEMPLATE = "plotly_white"
     CHART_FONT = "#111111"
 
@@ -53,61 +58,81 @@ st.markdown(f"""
 :root {{
     --bg-color: {BG_COLOR};
     --card-bg: {CARD_BG};
-    --text-primary: {TEXT_PRIMARY};
-    --text-secondary: {TEXT_SECONDARY};
+    --text-value: {TEXT_VALUE};
+    --text-body: {TEXT_BODY};
     --accent-gold: {ACCENT_GOLD};
 }}
 
 .stApp {{ background-color: var(--bg-color) !important; font-family: 'Inter', sans-serif; }}
 
-/* ------------------------------------------
-   CRITICAL OVERRIDES (THE JULES PROTOCOL)
------------------------------------------- */
+/* ----------------------------------------------------
+   GLOBAL TEXT OVERRIDES (THE GREY SHIFT)
+---------------------------------------------------- */
 
-/* 1. TAGLINE: ALWAYS SILVER (No matter what) */
-.tagline-text {{
-    color: #C0C0C0 !important; 
-    font-family: 'Inter', sans-serif;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin: 0;
-    line-height: 1.1;
+/* Force ALL standard text to use the Body Color (Light Grey in Dark Mode) */
+.stMarkdown p, .stMarkdown span, .stMarkdown li, .stMarkdown div {{
+    color: var(--text-body) !important;
 }}
 
-/* 2. DARK MODE METRIC LABELS: FORCE GREY */
-/* We target every possible child element to ensure the grey sticks */
+/* Force Headers (H1-H6) to use Body Color */
+h1, h2, h3, h4, h5, h6 {{
+    color: var(--text-body) !important;
+    font-weight: 600 !important;
+}}
+
+/* ----------------------------------------------------
+   COMPONENT SPECIFIC OVERRIDES
+---------------------------------------------------- */
+
+/* METRIC LABELS (Risk VIX, etc) -> Grey */
 div[data-testid="stMetricLabel"] {{
-    color: var(--text-secondary) !important;
+    color: var(--text-body) !important;
     font-size: 14px !important;
     font-weight: 500 !important;
 }}
-div[data-testid="stMetricLabel"] > div {{
-    color: var(--text-secondary) !important;
-}}
-div[data-testid="stMetricLabel"] > label {{
-    color: var(--text-secondary) !important;
-}}
 div[data-testid="stMetricLabel"] p {{
-    color: var(--text-secondary) !important;
+    color: var(--text-body) !important;
 }}
 
-/* 3. METRIC VALUES: ALWAYS PRIMARY COLOR */
+/* METRIC VALUES (The Numbers) -> Keep Bright/Dark */
 div[data-testid="stMetricValue"] {{
-    color: var(--text-primary) !important;
+    color: var(--text-value) !important;
 }}
 
-/* 4. RADIO BUTTONS: MATCH SECONDARY COLOR */
-div[data-testid="stRadio"] label p {{
-    color: var(--text-secondary) !important;
+/* RADIO BUTTONS -> Grey */
+div[data-testid="stRadio"] > label {{
+    color: var(--text-body) !important;
+    font-weight: 600 !important;
+}}
+div[data-testid="stRadio"] div[role="radiogroup"] p {{
+    color: var(--text-body) !important;
 }}
 
-/* ------------------------------------------
-   STANDARD UI COMPONENTS
------------------------------------------- */
+/* TOOLTIPS -> Grey */
+[data-testid="stTooltipIcon"] {{
+    color: var(--text-body) !important;
+    opacity: 0.9 !important;
+}}
+[data-testid="stTooltipIcon"] svg {{
+    fill: var(--text-body) !important;
+}}
 
-/* HEADER CONTAINER */
+/* EXPANDER (Strategist) -> Grey */
+[data-testid="stExpander"] {{
+    background-color: transparent !important; 
+    border: 1px solid rgba(128,128,128,0.2) !important;
+}}
+.streamlit-expanderHeader p {{
+    color: var(--text-body) !important; /* Title becomes Grey */
+    font-weight: 600;
+}}
+.streamlit-expanderContent p {{
+    color: var(--text-body) !important; /* Content becomes Grey */
+}}
+
+/* ----------------------------------------------------
+   HEADER & TAGLINE
+---------------------------------------------------- */
 .steel-header-container {{
     background: linear-gradient(145deg, #1a1f26, #2d343f);
     padding: 0px 20px;
@@ -135,6 +160,18 @@ div[data-testid="stRadio"] label p {{
     font-size: 26px !important;
 }}
 
+/* TAGLINE: ALWAYS SILVER (Hardcoded) */
+.tagline-text {{
+    color: #C0C0C0 !important; 
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin: 0;
+    line-height: 1.1;
+}}
+
 /* MENU BUTTON */
 [data-testid="stPopover"] button {{
     border: 1px solid #4a4f58;
@@ -160,7 +197,7 @@ button[data-baseweb="tab"] {{
     background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.05) 100%) !important;
     border: 1px solid rgba(128,128,128,0.2) !important;
     border-radius: 6px 6px 0 0 !important;
-    color: var(--text-secondary) !important;
+    color: var(--text-body) !important; /* Tabs use Grey */
     font-family: 'Inter', sans-serif;
     font-weight: 600;
     font-size: 14px;
@@ -182,19 +219,10 @@ button[data-baseweb="tab"][aria-selected="true"] {{
     border-top: 2px solid var(--accent-gold) !important;
 }}
 button[data-baseweb="tab"][aria-selected="true"] p {{
-    color: #FFFFFF !important;
+    color: #FFFFFF !important; /* Active Tab uses White */
 }}
 
-/* SUBHEADERS & CARDS */
-.steel-sub-header {{
-    background: linear-gradient(145deg, #1a1f26, #2d343f);
-    padding: 8px 15px;
-    border-radius: 6px;
-    border: 1px solid #4a4f58;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    margin-bottom: 15px;
-}}
-
+/* PILL & CARD */
 .gov-pill {{
     display: inline-block;
     padding: 4px 12px;
@@ -211,43 +239,30 @@ button[data-baseweb="tab"][aria-selected="true"] p {{
 
 .premium-pill {{ display: inline-block; padding: 4px 12px; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 800; color: #3b2c00; background: linear-gradient(135deg, #bf953f 0%, #fcf6ba 100%); box-shadow: 0 2px 5px rgba(0,0,0,0.2); margin-left: 5px; vertical-align: middle; letter-spacing: 1px; }}
 
-.premium-banner {{
-    background: linear-gradient(90deg, rgba(200,200,200,0.1) 0%, rgba(200,200,200,0.05) 100%);
-    border: 1px solid rgba(128,128,128,0.2);
-    border-left: 4px solid var(--accent-gold);
-    color: var(--text-primary) !important; 
-    padding: 10px;
-    border-radius: 4px;
-    text-align: center;
-    margin: 15px 0;
-    font-family: 'Fira Code', monospace;
-    font-size: 11px;
-    text-transform: uppercase;
-    font-weight: 700;
+.steel-sub-header {{
+    background: linear-gradient(145deg, #1a1f26, #2d343f);
+    padding: 8px 15px;
+    border-radius: 6px;
+    border: 1px solid #4a4f58;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    margin-bottom: 15px;
 }}
 
 .market-card {{ background: var(--card-bg); border: 1px solid rgba(128,128,128,0.2); border-radius: 6px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; margin-bottom: 10px; }}
-.market-ticker {{ color: var(--text-secondary); font-size: 11px; margin-bottom: 2px; }}
-.market-price {{ color: {TEXT_PRIMARY}; font-family: 'Fira Code', monospace; font-size: 22px; font-weight: 700; margin: 2px 0; }}
+.market-ticker {{ color: var(--text-body); font-size: 11px; margin-bottom: 2px; }}
+.market-price {{ color: var(--text-value); font-family: 'Fira Code', monospace; font-size: 22px; font-weight: 700; margin: 2px 0; }}
 .market-delta {{ font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 600; }}
 
-/* TOOLTIPS */
-[data-testid="stTooltipIcon"] {{
-    color: var(--text-secondary) !important;
-    opacity: 0.9 !important;
-}}
-[data-testid="stTooltipIcon"] svg {{
-    fill: var(--text-secondary) !important;
-}}
-
-/* EXPANDER */
-[data-testid="stExpander"] {{
-    background-color: transparent !important; 
-    border: 1px solid rgba(128,128,128,0.2) !important;
-}}
-.streamlit-expanderHeader p {{
-    color: var(--text-primary) !important;
-    font-weight: 600;
+/* FOOTER */
+.custom-footer {{
+    font-family: 'Fira Code', monospace;
+    font-size: 10px;
+    color: var(--text-body) !important;
+    text-align: center;
+    margin-top: 50px;
+    border-top: 1px solid #30363d;
+    padding-top: 20px;
+    text-transform: uppercase;
 }}
 
 /* REMOVE DEFAULT UI */
@@ -257,18 +272,6 @@ header {{visibility: hidden;}}
 .block-container {{ padding-top: 1rem !important; padding-bottom: 2rem !important; }}
 div[data-testid="column"] {{ padding: 0px !important; }}
 div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
-
-/* FOOTER */
-.custom-footer {{
-    font-family: 'Fira Code', monospace;
-    font-size: 10px;
-    color: var(--text-secondary) !important;
-    text-align: center;
-    margin-top: 50px;
-    border-top: 1px solid #30363d;
-    padding-top: 20px;
-    text-transform: uppercase;
-}}
 </style>
 """, unsafe_allow_html=True)
 
@@ -370,11 +373,10 @@ except Exception as e:
 c_title, c_menu = st.columns([0.85, 0.15])
 
 with c_title:
-    # TAGLINE IS HARDCODED TO SILVER HERE
     st.markdown(f"""
     <div class="steel-header-container">
         <span class="steel-text">MacroEffects</span>
-        <span class="tagline-text">AI INFERENCE FOCUSED ON STOCK MARKETS</span>
+        <span class="tagline-text" style="color: #C0C0C0 !important;">AI INFERENCE FOCUSED ON STOCK MARKETS</span>
     </div>
     """, unsafe_allow_html=True)
 
@@ -394,7 +396,7 @@ with c_menu:
 # SUBHEADER WITH SMALL PILL
 st.markdown(f"""
 <div style="margin-bottom: 20px; margin-top: 15px;">
-    <span style="font-family: 'Inter'; font-weight: 600; font-size: 16px; color: var(--text-secondary);">Macro-Economic Intelligence: Global Market Command Center</span>
+    <span style="font-family: 'Inter'; font-weight: 600; font-size: 16px; color: var(--text-body);">Macro-Economic Intelligence: Global Market Command Center</span>
     <div class="gov-pill" style="background: linear-gradient(135deg, {color}, {color}88); border: 1px solid {color};">{status}</div>
     <div class="premium-pill">PREMIUM</div>
 </div>
@@ -563,7 +565,7 @@ else:
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v43.0 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v44.0 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
