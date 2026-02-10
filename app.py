@@ -7,7 +7,7 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. PAGE CONFIGURATION
+# 1. PAGE SETUP & GLOBAL VARIABLES
 # ==========================================
 st.set_page_config(page_title="MacroEffects | Global Command", page_icon="M", layout="wide")
 
@@ -52,6 +52,11 @@ theme_config = {
 }
 current_theme = theme_config[st.session_state["dark_mode"]]
 
+# --- CRITICAL FIX: EXPOSE CHART VARIABLES GLOBALLY ---
+# This ensures the "Swarm Deep Dive" can see them.
+chart_template = current_theme['chart_template']
+chart_font_color = current_theme['chart_font_color']
+
 # ==========================================
 # 2. CSS STYLING
 # ==========================================
@@ -81,19 +86,20 @@ header {{visibility: hidden;}}
 div[data-testid="column"] {{ padding: 0px !important; }}
 div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
 
-/* HEADER CONTAINER */
+/* HEADER CONTAINER (CENTERED CONTENT) */
 .steel-header-container {{
     background: linear-gradient(145deg, #1a1f26, #2d343f);
-    padding: 10px 20px;
+    padding: 0px 20px; /* Zero padding, flex does the work */
     border-radius: 8px 0 0 8px; 
     border: 1px solid #4a4f58;
     border-right: none; 
     box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     margin-bottom: 5px; 
-    height: 70px; 
+    height: 80px; 
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: center; /* VERTICAL CENTER */
+    gap: 4px; /* Space between Title and Tagline */
 }}
 
 .steel-text {{
@@ -105,7 +111,8 @@ div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
     text-transform: uppercase;
     letter-spacing: 1.5px;
     margin: 0;
-    font-size: 24px !important;
+    line-height: 1; /* TIGHT LINE HEIGHT */
+    font-size: 26px !important;
 }}
 
 .tagline-text {{
@@ -115,8 +122,9 @@ div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
     font-weight: 500;
     letter-spacing: 2px;
     text-transform: uppercase;
-    margin-top: -2px;
-    opacity: 0.9;
+    margin: 0;
+    line-height: 1;
+    opacity: 0.8;
 }}
 
 /* MENU BUTTON INTEGRATION */
@@ -126,7 +134,7 @@ div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
     color: #C6A87C; 
     font-size: 28px !important;
     font-weight: bold;
-    height: 70px; 
+    height: 80px; /* Match Header Height Exactly */
     width: 100%;
     margin-top: 0px;
     border-radius: 0 8px 8px 0; 
@@ -287,7 +295,7 @@ c_title, c_menu = st.columns([0.9, 0.1])
 with c_title:
     st.markdown(f"""
     <div class="steel-header-container">
-        <span class="steel-text">MacroEffects</span><br>
+        <span class="steel-text">MacroEffects</span>
         <span class="tagline-text">AI INFERENCE FOCUSED ON STOCK MARKETS</span>
     </div>
     """, unsafe_allow_html=True)
@@ -469,12 +477,12 @@ if full_data is not None and closes is not None:
             st.error(f"Strategist View Error: {e}")
 
 else:
-    st.error("Connection Offline. Please check your data feed.")
+    st.error("Data connection initializing or offline. Please check network.")
 
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v23.0 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v24.0 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
