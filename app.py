@@ -347,7 +347,8 @@ with c_title:
 with c_menu:
     with st.popover("☰", use_container_width=True):
         st.caption("Settings & Links")
-             is_dark = st.toggle("Dark Mode", value=st.session_state["dark_mode"])
+        # FIXED INDENTATION HERE:
+        is_dark = st.toggle("Dark Mode", value=st.session_state["dark_mode"])
         if is_dark != st.session_state["dark_mode"]:
             st.session_state["dark_mode"] = is_dark
             st.rerun()
