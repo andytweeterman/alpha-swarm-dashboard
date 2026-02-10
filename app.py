@@ -7,7 +7,7 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. PAGE SETUP (v19.4 - STABLE GOLD MASTER)
+# 1. PAGE SETUP (v19.5 - STABLE)
 # ==========================================
 st.set_page_config(page_title="MacroEffects | Global Command", page_icon="M", layout="wide")
 
@@ -126,8 +126,8 @@ header {visibility: hidden;}
 /* MENU INTEGRATION (Fixed Position Right) */
 [data-testid="stPopover"] {
     float: right;
-    margin-top: -70px; /* Pulls menu UP into the Steel Header */
-    margin-right: 5px;
+    margin-top: -65px; /* Pulls menu UP into the Steel Header */
+    margin-right: 10px;
     position: relative;
     z-index: 999;
 }
@@ -203,15 +203,8 @@ button[data-baseweb="tab"][aria-selected="true"] {
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. DATA ENGINE
+# 2. LOGIC ENGINE (FUNCTIONS)
 # ==========================================
-# DEFENSIVE INITIALIZATION (Prevents NameError if fetch fails)
-status = "INITIALIZING"
-color = "#888888"
-reason = "System Boot..."
-full_data = None
-latest_monitor = None
-
 @st.cache_data(ttl=3600)
 def fetch_data():
     with st.spinner('Accessing Global Market Data...'):
@@ -287,26 +280,35 @@ def make_sparkline(data, color):
     return fig
 
 # ==========================================
-# 3. DATA FETCHING (EXECUTION)
+# 3. EXECUTION PHASE (Before UI Render)
 # ==========================================
+# DEFAULT VALUES (Prevents NameError on Crash)
+status = "INITIALIZING"
+color = "#888888"
+reason = "System Boot..."
+full_data = None
+latest_monitor = None
+closes = None
+
 try:
     full_data = fetch_data()
-    closes = full_data['Close']
-    gov_df, status, color, reason = calculate_governance_history(full_data)
-    latest_monitor = gov_df.iloc[-1]
+    if full_data is not None and not full_data.empty:
+        closes = full_data['Close']
+        gov_df, status, color, reason = calculate_governance_history(full_data)
+        latest_monitor = gov_df.iloc[-1]
+    else:
+        status, color, reason = "DATA ERROR", "#ff0000", "Feed Unavailable"
 except Exception as e:
-    status, color, reason = "OFFLINE", "#888888", "Data connection failed"
-    full_data = None
+    status, color, reason = "SYSTEM ERROR", "#ff0000", str(e)
 
 # ==========================================
 # 4. THE UI RENDER
 # ==========================================
 
-# HEADER LAYOUT (Adjusted to push menu right)
+# HEADER LAYOUT
 c_title, c_menu = st.columns([0.92, 0.08])
 
 with c_title:
-    # Title & Tagline inside Steel Box
     st.markdown(f"""
     <div class="steel-header-container">
         <span class="steel-text">MacroEffects</span><br>
@@ -315,26 +317,21 @@ with c_title:
     """, unsafe_allow_html=True)
 
 with c_menu:
-    # Functional Menu
     with st.popover("☰", use_container_width=False):
         st.caption("Settings & Links")
-        # Dark Mode Toggle
         is_dark = st.toggle("Dark Mode", value=st.session_state["dark_mode"])
         if is_dark != st.session_state["dark_mode"]:
             st.session_state["dark_mode"] = is_dark
             st.rerun()
-            
         st.divider()
-        
-        # Links
         st.page_link("https://sixmonthstockmarketforecast.com/home/", label="Six Month Forecast", icon="📈")
         st.link_button("User Guide", "https://github.com/andytweeterman/alpha-swarm-dashboard/blob/main/docs/USER_GUIDE.md") 
         st.link_button("About Us", "https://sixmonthstockmarketforecast.com/about") 
         st.link_button("Contact Analyst", "mailto:analyst@macroeffects.com")
 
-# SUBHEADER WITH STATUS MARKERS
+# SUBHEADER (With Spacing Fix)
 st.markdown(f"""
-<div style="margin-bottom: 20px; margin-top: -10px;">
+<div style="margin-bottom: 20px; margin-top: 25px;">
     <span style="font-family: 'Inter'; font-weight: 600; font-size: 16px; color: var(--text-secondary);">Macro-Economic Intelligence: Global Market Command Center</span>
     <div class="mini-badge" style="background-color: {color};">{status}</div>
     <div class="premium-pill">PREMIUM</div>
@@ -343,7 +340,7 @@ st.markdown(f"""
 
 st.divider()
 
-if full_data is not None:
+if full_data is not None and closes is not None:
     # --- TAB NAVIGATION ---
     tab1, tab2, tab3 = st.tabs(["Market Swarm", "Risk Governance", "Strategist View"])
 
@@ -480,28 +477,29 @@ if full_data is not None:
         st.divider()
         st.subheader("📡 Active Monitor Feed (Live Logic)")
         
-        m1, m2, m3 = st.columns(3)
-        
-        credit_val = latest_monitor['Credit_Delta']
-        credit_status = "STRESS" if credit_val < -0.015 else "NOMINAL"
-        m1.metric("Credit Spreads", f"{credit_val:.2%}", 
-                 delta="STABLE" if credit_status=="NOMINAL" else "WIDENING", 
-                 delta_color="normal" if credit_status=="NOMINAL" else "inverse",
-                 help="Tracks High Yield bonds vs Treasuries.")
+        if latest_monitor is not None:
+            m1, m2, m3 = st.columns(3)
+            
+            credit_val = latest_monitor['Credit_Delta']
+            credit_status = "STRESS" if credit_val < -0.015 else "NOMINAL"
+            m1.metric("Credit Spreads", f"{credit_val:.2%}", 
+                     delta="STABLE" if credit_status=="NOMINAL" else "WIDENING", 
+                     delta_color="normal" if credit_status=="NOMINAL" else "inverse",
+                     help="Tracks High Yield bonds vs Treasuries.")
 
-        dxy_val = latest_monitor['DXY_Delta']
-        dxy_status = "SPIKE" if dxy_val > 0.02 else "STABLE"
-        m2.metric("US Dollar", f"{dxy_val:.2%}", 
-                 delta="STABLE" if dxy_status=="STABLE" else "SPIKING", 
-                 delta_color="inverse",
-                 help="Tracks value of USD.")
+            dxy_val = latest_monitor['DXY_Delta']
+            dxy_status = "SPIKE" if dxy_val > 0.02 else "STABLE"
+            m2.metric("US Dollar", f"{dxy_val:.2%}", 
+                     delta="STABLE" if dxy_status=="STABLE" else "SPIKING", 
+                     delta_color="inverse",
+                     help="Tracks value of USD.")
 
-        breadth_val = latest_monitor['Breadth_Delta']
-        breadth_status = "NARROWING" if breadth_val < -0.025 else "HEALTHY"
-        m3.metric("Market Breadth", f"{breadth_val:.2%}", 
-                 delta=breadth_status, 
-                 delta_color="normal" if breadth_status=="HEALTHY" else "inverse",
-                 help="Compares Equal Weight S&P to Cap Weight.")
+            breadth_val = latest_monitor['Breadth_Delta']
+            breadth_status = "NARROWING" if breadth_val < -0.025 else "HEALTHY"
+            m3.metric("Market Breadth", f"{breadth_val:.2%}", 
+                     delta=breadth_status, 
+                     delta_color="normal" if breadth_status=="HEALTHY" else "inverse",
+                     help="Compares Equal Weight S&P to Cap Weight.")
 
     # ---------------------------
     # TAB 3: STRATEGIST VIEW
@@ -543,7 +541,7 @@ else:
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v19.4 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v19.5 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
