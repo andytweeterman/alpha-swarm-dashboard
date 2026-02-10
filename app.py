@@ -23,33 +23,22 @@ status = "SYSTEM BOOT"
 color = "#888888"
 
 # ==========================================
-# 2. THEME ENGINE (DYNAMIC INJECTION)
+# 2. THEME ENGINE (SEPARATED LOGIC)
 # ==========================================
-# We define specific colors here to inject directly into CSS
+# Base Colors
 if st.session_state["dark_mode"]:
-    # DARK MODE PALETTE
     BG_COLOR = "#0e1117"
     CARD_BG = "rgba(22, 27, 34, 0.7)"
-    TEXT_PRIMARY = "#FFFFFF"
-    TEXT_SECONDARY = "#B0B8C1"
-    
-    # SPECIFIC REQUESTS FOR DARK MODE:
-    METRIC_LABEL_COLOR = "#D3D3D3" # Light Grey for Risk/Spreads labels
-    TAGLINE_COLOR = "#C0C0C0"      # Silver
-    CHART_THEME = "plotly_dark"
+    TEXT_PRIMARY = "#FFFFFF" # Bright White for Values
+    TEXT_SECONDARY = "#999999" # Distinct Grey for Labels (Risk, Spreads)
+    CHART_TEMPLATE = "plotly_dark"
     CHART_FONT = "#E6E6E6"
-    
 else:
-    # LIGHT MODE PALETTE
     BG_COLOR = "#ffffff"
     CARD_BG = "rgba(255, 255, 255, 0.9)"
     TEXT_PRIMARY = "#000000"
     TEXT_SECONDARY = "#444444"
-    
-    # SPECIFIC REQUESTS FOR LIGHT MODE:
-    METRIC_LABEL_COLOR = "#444444" # Dark Grey for readability on white
-    TAGLINE_COLOR = "#C0C0C0"      # Silver (Requested for Header)
-    CHART_THEME = "plotly_white"
+    CHART_TEMPLATE = "plotly_white"
     CHART_FONT = "#111111"
 
 ACCENT_GOLD = "#C6A87C"
@@ -71,62 +60,54 @@ st.markdown(f"""
 
 .stApp {{ background-color: var(--bg-color) !important; font-family: 'Inter', sans-serif; }}
 
-/* --- TEXT ENFORCERS --- */
+/* ------------------------------------------
+   CRITICAL OVERRIDES (THE JULES PROTOCOL)
+------------------------------------------ */
 
-/* 1. Global Paragraphs */
-.stMarkdown p, .stMarkdown span, .stMarkdown li {{
-    color: var(--text-primary) !important;
+/* 1. TAGLINE: ALWAYS SILVER (No matter what) */
+.tagline-text {{
+    color: #C0C0C0 !important; 
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin: 0;
+    line-height: 1.1;
 }}
 
-/* 2. Headers (H3) */
-h3 {{
-    color: var(--text-secondary) !important;
-    font-weight: 600 !important;
-}}
-
-/* 3. METRIC LABELS (DYNAMICALLY INJECTED COLOR) */
+/* 2. DARK MODE METRIC LABELS: FORCE GREY */
+/* We target every possible child element to ensure the grey sticks */
 div[data-testid="stMetricLabel"] {{
-    color: {METRIC_LABEL_COLOR} !important; /* Force the specific grey requested */
+    color: var(--text-secondary) !important;
     font-size: 14px !important;
     font-weight: 500 !important;
 }}
-div[data-testid="stMetricLabel"] p {{
-    color: {METRIC_LABEL_COLOR} !important;
+div[data-testid="stMetricLabel"] > div {{
+    color: var(--text-secondary) !important;
 }}
+div[data-testid="stMetricLabel"] > label {{
+    color: var(--text-secondary) !important;
+}}
+div[data-testid="stMetricLabel"] p {{
+    color: var(--text-secondary) !important;
+}}
+
+/* 3. METRIC VALUES: ALWAYS PRIMARY COLOR */
 div[data-testid="stMetricValue"] {{
     color: var(--text-primary) !important;
 }}
 
-/* 4. TOOLTIP ICONS */
-[data-testid="stTooltipIcon"] {{
-    color: {METRIC_LABEL_COLOR} !important;
-    opacity: 0.9 !important;
-}}
-[data-testid="stTooltipIcon"] svg {{
-    fill: {METRIC_LABEL_COLOR} !important;
+/* 4. RADIO BUTTONS: MATCH SECONDARY COLOR */
+div[data-testid="stRadio"] label p {{
+    color: var(--text-secondary) !important;
 }}
 
-/* 5. RADIO BUTTONS */
-div[data-testid="stRadio"] > label {{
-    color: {METRIC_LABEL_COLOR} !important;
-    font-weight: 600 !important;
-    font-size: 14px !important;
-}}
-div[data-testid="stRadio"] div[role="radiogroup"] p {{
-    color: {METRIC_LABEL_COLOR} !important;
-}}
+/* ------------------------------------------
+   STANDARD UI COMPONENTS
+------------------------------------------ */
 
-/* 6. EXPANDER HEADER */
-[data-testid="stExpander"] {{
-    background-color: transparent !important; 
-    border: 1px solid rgba(128,128,128,0.2) !important;
-}}
-.streamlit-expanderHeader p {{
-    color: var(--text-primary) !important;
-    font-weight: 600;
-}}
-
-/* --- HEADER & TAGLINE --- */
+/* HEADER CONTAINER */
 .steel-header-container {{
     background: linear-gradient(145deg, #1a1f26, #2d343f);
     padding: 0px 20px;
@@ -152,19 +133,6 @@ div[data-testid="stRadio"] div[role="radiogroup"] p {{
     margin: 0;
     line-height: 1.1;
     font-size: 26px !important;
-}}
-
-/* TAGLINE (DYNAMICALLY INJECTED SILVER) */
-.tagline-text {{
-    color: {TAGLINE_COLOR} !important; /* Silver in both modes */
-    font-family: 'Inter', sans-serif;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin: 0;
-    line-height: 1.1;
-    opacity: 1 !important;
 }}
 
 /* MENU BUTTON */
@@ -217,7 +185,7 @@ button[data-baseweb="tab"][aria-selected="true"] p {{
     color: #FFFFFF !important;
 }}
 
-/* COMPONENTS */
+/* SUBHEADERS & CARDS */
 .steel-sub-header {{
     background: linear-gradient(145deg, #1a1f26, #2d343f);
     padding: 8px 15px;
@@ -227,7 +195,6 @@ button[data-baseweb="tab"][aria-selected="true"] p {{
     margin-bottom: 15px;
 }}
 
-/* GOVERNANCE PILL */
 .gov-pill {{
     display: inline-block;
     padding: 4px 12px;
@@ -263,6 +230,25 @@ button[data-baseweb="tab"][aria-selected="true"] p {{
 .market-ticker {{ color: var(--text-secondary); font-size: 11px; margin-bottom: 2px; }}
 .market-price {{ color: {TEXT_PRIMARY}; font-family: 'Fira Code', monospace; font-size: 22px; font-weight: 700; margin: 2px 0; }}
 .market-delta {{ font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 600; }}
+
+/* TOOLTIPS */
+[data-testid="stTooltipIcon"] {{
+    color: var(--text-secondary) !important;
+    opacity: 0.9 !important;
+}}
+[data-testid="stTooltipIcon"] svg {{
+    fill: var(--text-secondary) !important;
+}}
+
+/* EXPANDER */
+[data-testid="stExpander"] {{
+    background-color: transparent !important; 
+    border: 1px solid rgba(128,128,128,0.2) !important;
+}}
+.streamlit-expanderHeader p {{
+    color: var(--text-primary) !important;
+    font-weight: 600;
+}}
 
 /* REMOVE DEFAULT UI */
 #MainMenu {{visibility: hidden;}}
@@ -384,6 +370,7 @@ except Exception as e:
 c_title, c_menu = st.columns([0.85, 0.15])
 
 with c_title:
+    # TAGLINE IS HARDCODED TO SILVER HERE
     st.markdown(f"""
     <div class="steel-header-container">
         <span class="steel-text">MacroEffects</span>
@@ -494,7 +481,7 @@ if full_data is not None and closes is not None:
 
             fig.update_layout(
                 height=500, 
-                template=CHART_THEME, 
+                template=CHART_TEMPLATE, 
                 margin=dict(l=0, r=0, t=0, b=0), 
                 showlegend=False, 
                 plot_bgcolor='rgba(0,0,0,0)', 
@@ -576,7 +563,7 @@ else:
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v42.0 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v43.0 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
