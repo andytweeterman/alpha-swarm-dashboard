@@ -7,7 +7,7 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. PAGE SETUP (v19.1 - FINAL POLISH)
+# 1. PAGE SETUP (v19.2 - INTEGRATED HEADER)
 # ==========================================
 st.set_page_config(page_title="MacroEffects | Global Command", page_icon="M", layout="wide")
 
@@ -90,7 +90,11 @@ header {visibility: hidden;}
     border-radius: 8px;
     border: 1px solid #4a4f58;
     box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-    margin-bottom: 15px;
+    margin-bottom: 5px; /* Reduced bottom margin to pull menu up */
+    height: 80px; /* Fixed height to contain menu */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 /* STEEL TEXT (Main Title) */
@@ -106,16 +110,42 @@ header {visibility: hidden;}
     font-size: 24px !important;
 }
 
-/* TAGLINE */
+/* TAGLINE (Lighter) */
 .tagline-text {
-    color: #CCCCCC;
+    color: #F0F0F0 !important; /* Lighter Text */
     font-family: 'Inter', sans-serif;
     font-size: 10px;
-    font-weight: 400;
+    font-weight: 500;
     letter-spacing: 2px;
     text-transform: uppercase;
-    margin-top: -5px;
+    margin-top: -2px;
     display: block;
+    opacity: 0.9;
+}
+
+/* MENU INTEGRATION (The Negative Margin Hack) */
+[data-testid="stPopover"] {
+    float: right;
+    margin-top: -65px; /* Pulls menu UP into the Steel Header */
+    margin-right: 15px;
+    position: relative;
+    z-index: 999;
+}
+
+[data-testid="stPopover"] button {
+    border: none;
+    background: transparent;
+    color: #C6A87C; /* Gold Menu Token */
+    font-size: 24px;
+    font-weight: bold;
+    height: auto;
+    width: auto;
+    padding: 0;
+}
+[data-testid="stPopover"] button:hover {
+    color: #FFFFFF;
+    background: transparent;
+    border: none;
 }
 
 /* TYPOGRAPHY */
@@ -135,10 +165,23 @@ button[data-baseweb="tab"] {
     padding: 10px 20px;
     margin-right: 4px;
 }
+
+/* SELECTED TAB (Lighter/Brighter) */
 button[data-baseweb="tab"][aria-selected="true"] {
     background: linear-gradient(180deg, #2d343f 0%, #1a1f26 100%) !important;
-    color: #FFFFFF !important;
+    color: #FFFFFF !important; /* Bright White */
+    text-shadow: 0 0 5px rgba(255,255,255,0.5); /* Glow effect */
     border-top: 2px solid var(--accent-gold) !important;
+}
+
+/* SUB-HEADER STEEL BOXES */
+.steel-sub-header {
+    background: linear-gradient(145deg, #1a1f26, #2d343f);
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 1px solid #4a4f58;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    margin-bottom: 15px;
 }
 
 /* PREMIUM BADGES */
@@ -154,19 +197,6 @@ button[data-baseweb="tab"][aria-selected="true"] {
 [data-testid="stExpander"] { background-color: rgba(255,255,255,0.02) !important; border: 1px solid #30363d !important; border-radius: 4px; }
 [data-testid="stExpander"] summary { color: var(--text-primary) !important; font-family: 'Fira Code', monospace; font-size: 13px; }
 
-/* MENU OVERRIDE (High Contrast) */
-[data-testid="stPopover"] {
-    float: right;
-}
-[data-testid="stPopover"] button {
-    border: 1px solid #4a4f58;
-    background: linear-gradient(145deg, #1a1f26, #2d343f);
-    color: #C6A87C; /* Gold Menu Token */
-    font-size: 20px;
-    height: 48px;
-    width: 48px;
-    margin-top: 0px;
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -267,39 +297,34 @@ except Exception as e:
 # 4. THE UI RENDER
 # ==========================================
 
-# HEADER LAYOUT (Columns to align Title and Menu)
-c_title, c_menu = st.columns([0.85, 0.15])
+# HEADER (Full Width Steel Container)
+st.markdown(f"""
+<div class="steel-header-container">
+    <span class="steel-text">MacroEffects</span><br>
+    <span class="tagline-text">AI INFERENCE FOCUSED ON STOCK MARKETS</span>
+</div>
+""", unsafe_allow_html=True)
 
-with c_title:
-    # Title & Tagline inside Steel Box
-    st.markdown(f"""
-    <div class="steel-header-container">
-        <span class="steel-text">MacroEffects</span><br>
-        <span class="tagline-text">AI INFERENCE FOCUSED ON STOCK MARKETS</span>
-    </div>
-    """, unsafe_allow_html=True)
-
-with c_menu:
-    # Functional Menu
-    with st.popover("☰", use_container_width=True):
-        st.caption("Settings & Links")
-        # Dark Mode Toggle
-        is_dark = st.toggle("Dark Mode", value=st.session_state["dark_mode"])
-        if is_dark != st.session_state["dark_mode"]:
-            st.session_state["dark_mode"] = is_dark
-            st.rerun()
-            
-        st.divider()
+# INTEGRATED MENU (Pulled up via CSS)
+with st.popover("☰", use_container_width=False):
+    st.caption("Settings & Links")
+    # Dark Mode Toggle
+    is_dark = st.toggle("Dark Mode", value=st.session_state["dark_mode"])
+    if is_dark != st.session_state["dark_mode"]:
+        st.session_state["dark_mode"] = is_dark
+        st.rerun()
         
-        # Links
-        st.page_link("https://sixmonthstockmarketforecast.com/home/", label="Six Month Forecast", icon="📈")
-        st.link_button("User Guide", "https://github.com/andytweeterman/alpha-swarm-dashboard/blob/main/docs/USER_GUIDE.md") 
-        st.link_button("About Us", "https://sixmonthstockmarketforecast.com/about") 
-        st.link_button("Contact Analyst", "mailto:analyst@macroeffects.com")
+    st.divider()
+    
+    # Links
+    st.page_link("https://sixmonthstockmarketforecast.com/home/", label="Six Month Forecast", icon="📈")
+    st.link_button("User Guide", "https://github.com/andytweeterman/alpha-swarm-dashboard/blob/main/docs/USER_GUIDE.md") 
+    st.link_button("About Us", "https://sixmonthstockmarketforecast.com/about") 
+    st.link_button("Contact Analyst", "mailto:analyst@macroeffects.com")
 
 # SUBHEADER WITH STATUS MARKERS
 st.markdown(f"""
-<div style="margin-bottom: 20px;">
+<div style="margin-bottom: 20px; margin-top: -10px;">
     <span style="font-family: 'Inter'; font-weight: 600; font-size: 16px; color: var(--text-secondary);">Macro-Economic Intelligence: Global Market Command Center</span>
     <div class="mini-badge" style="background-color: {color};">{status}</div>
     <div class="premium-pill">PREMIUM</div>
@@ -316,7 +341,7 @@ if full_data is not None:
     # TAB 1: MARKET SWARM
     # ---------------------------
     with tab1:
-        st.markdown('<div class="steel-header-container"><span class="steel-text">Global Asset Grid</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="steel-sub-header"><span class="steel-text">Global Asset Grid</span></div>', unsafe_allow_html=True)
         
         assets = [
             {"name": "Dow Jones", "ticker": "^DJI", "color": "#00CC00"},
@@ -368,7 +393,7 @@ if full_data is not None:
         st.divider()
 
         # --- SWARM DEEP DIVE ---
-        st.markdown('<div class="steel-header-container"><span class="steel-text">Swarm Deep Dive</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="steel-sub-header"><span class="steel-text">Swarm Deep Dive</span></div>', unsafe_allow_html=True)
         
         spy_close = full_data['Close']['SPY']
         ppo, sig, hist = calculate_ppo(spy_close)
@@ -426,7 +451,7 @@ if full_data is not None:
     # TAB 2: GOVERNANCE
     # ---------------------------
     with tab2:
-        st.markdown('<div class="steel-header-container"><span class="steel-text">Risk Governance & Compliance</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="steel-sub-header"><span class="steel-text">Risk Governance & Compliance</span></div>', unsafe_allow_html=True)
         
         col1, col2 = st.columns([2, 1])
         with col1:
@@ -472,7 +497,7 @@ if full_data is not None:
     # TAB 3: STRATEGIST VIEW
     # ---------------------------
     with tab3:
-        st.markdown('<div class="steel-header-container"><span class="steel-text">MacroEffects: Chief Strategist\'s View</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="steel-sub-header"><span class="steel-text">MacroEffects: Chief Strategist\'s View</span></div>', unsafe_allow_html=True)
         
         try:
             SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT4ik-SBHr_ER_SyMHgwVAds3UaxRtPTA426qU_26TuHkHlyb5h6zl8_H9E-_Kw5FUO3W1mBU8CKiZP/pub?gid=0&single=true&output=csv" 
@@ -508,7 +533,7 @@ else:
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v19.1 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v19.2 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
