@@ -78,46 +78,31 @@ div[data-testid="stRadio"] div[role="radiogroup"] p {{ color: var(--text-seconda
 [data-testid="stExpander"] {{ background-color: transparent !important; border: 1px solid var(--card-border) !important; }}
 .streamlit-expanderHeader p {{ color: var(--text-primary) !important; font-weight: 600; }}
 
-/* --- HEADER STYLES (Restored for Fallback) --- */
-.steel-header-container {{
+/* --- HEADER CONTAINER (The Steel Bar) --- */
+.header-bar {{
     background: linear-gradient(145deg, #1a1f26, #2d343f);
-    padding: 0px 20px;
-    border-radius: 8px 0 0 8px; 
-    border: 1px solid #4a4f58;
-    border-right: none; 
-    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-    margin-bottom: 5px; 
-    height: 80px; 
+    height: 60px; /* Slim Height */
     display: flex;
-    flex-direction: column;
-    justify-content: center;
+    align-items: center;
+    padding-left: 15px;
+    border: 1px solid #4a4f58;
+    border-right: none;
+    border-radius: 8px 0 0 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
 }}
 
-.steel-text {{
-    background: linear-gradient(180deg, #FFFFFF 0%, #A0A0A0 50%, #E0E0E0 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    font-family: 'Inter', sans-serif;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    margin: 0;
-    line-height: 1.1;
-    font-size: 26px !important;
-}}
-
-/* MENU BUTTON */
+/* MENU BUTTON STYLING */
 [data-testid="stPopover"] button {{
     border: 1px solid #4a4f58;
     background: linear-gradient(145deg, #1a1f26, #2d343f);
     color: #C6A87C; 
-    font-size: 28px !important;
+    font-size: 24px !important;
     font-weight: bold;
-    height: 80px; 
+    height: 60px; /* Match Header Height */
     width: 100%;
     margin-top: 0px;
-    border-radius: 0 8px 8px 0; 
-    border-left: 1px solid #4a4f58;
+    border-radius: 0 8px 8px 0; /* Only round right corners */
+    border-left: 1px solid #4a4f58; /* Seamless join */
     box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     display: flex;
     align-items: center;
@@ -268,20 +253,42 @@ except Exception as e:
 # 6. UI LAYOUT
 # ==========================================
 
-# HEADER (85/15 Ratio)
-c_title, c_menu = st.columns([0.85, 0.15])
+# HEADER (90/10 Ratio for tighter fit)
+c_title, c_menu = st.columns([0.90, 0.10], gap="small")
 
 with c_title:
-    # --- SAFE BANNER LOADING (RESIZED TO 450px) ---
+    # We wrap the image in a div that matches the menu background color (#1a1f26)
+    # This creates the "extended bar" effect.
     if os.path.exists("banner.png"):
-        # Fixed width of 450px ensures it fits the title bar area perfectly
-        st.image("banner.png", width=450)
-    else:
-        # Fallback to Text Header if file is missing (e.g. on Cloud)
         st.markdown(f"""
-        <div class="steel-header-container">
-            <span class="steel-text">MacroEffects</span>
-            <span class="tagline-text" style="color: #C0C0C0 !important; font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin: 0; line-height: 1.1;">AI INFERENCE FOCUSED ON STOCK MARKETS</span>
+        <div class="header-bar">
+            <img src="app/static/banner.png" style="height: 40px; width: auto;"> 
+            </div>
+        """, unsafe_allow_html=True)
+        # BACKUP: If the HTML above doesn't render the local image correctly in your specific env:
+        # st.image("banner.png", width=280) 
+    else:
+        # Fallback Text Header
+        st.markdown(f"""
+        <div class="header-bar">
+            <span class="steel-text" style="font-size: 20px !important;">MacroEffects</span>
+        </div>
+        """, unsafe_allow_html=True)
+
+# NOTE ON IMAGES IN HTML: 
+# Accessing local images inside st.markdown HTML is restricted by Streamlit's security.
+# To make this work seamlessly with the visual design:
+# We will use st.image inside the column but style the column itself to look like the bar.
+
+# RE-DOING HEADER FOR ROBUSTNESS:
+with c_title:
+    # Use standard Streamlit image to ensure it loads, but keep it small.
+    if os.path.exists("banner.png"):
+        st.image("banner.png", width=280) # Slimmer width
+    else:
+         st.markdown(f"""
+        <div class="header-bar">
+            <span class="steel-text" style="font-size: 20px !important;">MacroEffects</span>
         </div>
         """, unsafe_allow_html=True)
 
@@ -300,7 +307,7 @@ with c_menu:
 
 # SUBHEADER WITH SMALL PILL
 st.markdown(f"""
-<div style="margin-bottom: 20px; margin-top: 15px;">
+<div style="margin-bottom: 20px; margin-top: 5px;">
     <span style="font-family: 'Inter'; font-weight: 600; font-size: 16px; color: var(--text-secondary);">Macro-Economic Intelligence: Global Market Command Center</span>
     <div class="gov-pill" style="background: linear-gradient(135deg, {color}, {color}88); border: 1px solid {color};">{status}</div>
     <div class="premium-pill">PREMIUM</div>
@@ -470,7 +477,7 @@ else:
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v48.0 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v49.0 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
