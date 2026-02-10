@@ -7,18 +7,13 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. PAGE SETUP (v18.2 - UI POLISH)
+# 1. PAGE SETUP (v19.0 - GOLD MASTER)
 # ==========================================
 st.set_page_config(page_title="MacroEffects | Global Command", page_icon="M", layout="wide")
 
-# SIDEBAR SETTINGS
-with st.sidebar:
-    st.header("M | MacroEffects")
-    st.divider()
-    st.caption("Powered by Alpha Swarm v18.2")
-    st.caption("Status: INSTITUTIONAL ACCESS")
-    st.divider()
-    dark_mode = st.toggle("Dark Mode", value=False)
+# INITIALIZE SESSION STATE FOR DARK MODE
+if "dark_mode" not in st.session_state:
+    st.session_state["dark_mode"] = False
 
 # THEME CONFIGURATION
 theme_config = {
@@ -55,15 +50,13 @@ theme_config = {
         "steel_gradient": "linear-gradient(180deg, #555555 0%, #222222 48%, #555555 50%, #333333 100%)"
     }
 }
-current_theme = theme_config[dark_mode]
+current_theme = theme_config[st.session_state["dark_mode"]]
 
-# --- PART 1: DYNAMIC CSS (Needs Python Variables) ---
+# --- PART 1: DYNAMIC CSS ---
 st.markdown(f"""
 <style>
-/* FONT IMPORTS */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Fira+Code:wght@300;500;700&display=swap');
 
-/* GLOBAL VARIABLES */
 :root {{
     --bg-color: {current_theme['bg_color']};
     --card-bg: {current_theme['card_bg']};
@@ -74,44 +67,23 @@ st.markdown(f"""
     --steel-gradient: {current_theme['steel_gradient']};
 }}
 
-/* APP BACKGROUND */
-.stApp {{
-    background-color: var(--bg-color) !important;
-    font-family: 'Inter', sans-serif;
-}}
-
-/* SIDEBAR STYLING */
-section[data-testid="stSidebar"] {{
-    background-color: {current_theme['sidebar_bg']} !important;
-    border-right: 1px solid {current_theme['sidebar_border']};
-}}
-
-/* MARKET PRICE COLOR (Dynamic) */
-.market-price {{
-    color: {current_theme['text_primary']};
-    font-family: 'Fira Code', monospace;
-    font-size: 22px; 
-    font-weight: 700; 
-    margin: 2px 0;
-}}
+.stApp {{ background-color: var(--bg-color) !important; font-family: 'Inter', sans-serif; }}
+.market-price {{ color: {current_theme['text_primary']}; font-family: 'Fira Code', monospace; font-size: 22px; font-weight: 700; margin: 2px 0; }}
 </style>
 """, unsafe_allow_html=True)
 
-# --- PART 2: STATIC CSS (Safe from Python Errors) ---
+# --- PART 2: STATIC CSS ---
 st.markdown("""
 <style>
-/* TIGHTEN SPACING */
-.block-container {
-    padding-top: 1rem !important;
-    padding-bottom: 2rem !important;
-}
-
-/* HIDE DEFAULT ELEMENTS */
-#MainMenu {visibility: visible;}
+/* REMOVE STREAMLIT BRANDING */
+#MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
-header {visibility: visible;}
+header {visibility: hidden;} 
 
-/* --- THE STEEL HEADER ARCHITECTURE --- */
+/* TIGHTEN SPACING */
+.block-container { padding-top: 1rem !important; padding-bottom: 2rem !important; }
+
+/* STEEL HEADER */
 .steel-header {
     background: linear-gradient(145deg, #1a1f26, #2d343f);
     padding: 10px 20px;
@@ -124,7 +96,6 @@ header {visibility: visible;}
     justify-content: space-between;
 }
 
-/* BRUSHED STEEL TEXT EFFECT (Unified for Title and Subheaders) */
 .steel-text {
     background: linear-gradient(180deg, #FFFFFF 0%, #A0A0A0 50%, #E0E0E0 100%);
     -webkit-background-clip: text;
@@ -134,25 +105,14 @@ header {visibility: visible;}
     text-transform: uppercase;
     letter-spacing: 1.5px;
     margin: 0;
-    font-size: 20px !important; /* UNIFIED FONT SIZE */
+    font-size: 20px !important;
 }
 
 /* TYPOGRAPHY */
-h1, h2, h3, h4, h5, h6 {
-    color: var(--text-primary) !important;
-    font-family: 'Inter', sans-serif;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-    text-transform: uppercase;
-}
+h1, h2, h3, h4, h5, h6 { color: var(--text-primary) !important; font-family: 'Inter', sans-serif; font-weight: 800; letter-spacing: -0.5px; text-transform: uppercase; }
+p, span, li, label { color: var(--text-secondary) !important; font-family: 'Inter', sans-serif; font-size: 14px; }
 
-p, span, li, label {
-    color: var(--text-secondary) !important;
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
-}
-
-/* TAB STYLING */
+/* TABS */
 button[data-baseweb="tab"] {
     background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.05) 100%) !important;
     border: 1px solid rgba(128,128,128,0.2) !important;
@@ -165,108 +125,31 @@ button[data-baseweb="tab"] {
     padding: 10px 20px;
     margin-right: 4px;
 }
-
-/* SELECTED TAB (Fixed Readability) */
 button[data-baseweb="tab"][aria-selected="true"] {
     background: linear-gradient(180deg, #2d343f 0%, #1a1f26 100%) !important;
-    color: #FFFFFF !important; /* Bright White Text */
+    color: #FFFFFF !important;
     border-top: 2px solid var(--accent-gold) !important;
 }
 
-/* GOLD PLAQUE (For Premium Radio) */
-div[data-testid="stColumn"]:nth-of-type(2) div[data-testid="stRadio"] {
-    background: linear-gradient(135deg, #bf953f 0%, #fcf6ba 25%, #b38728 50%, #fbf5b7 75%, #aa771c 100%);
-    padding: 15px;
-    border-radius: 8px;
-    border: 2px solid #8a6e2f;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-}
-
-div[data-testid="stColumn"]:nth-of-type(2) div[data-testid="stRadio"] label p {
-    color: #3b2c00 !important;
-    font-weight: 800 !important;
-    text-shadow: 0px 1px 0px rgba(255,255,255,0.4);
-}
-
-/* MINI GOVERNANCE BADGE */
-.mini-badge {
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-family: 'Fira Code', monospace;
-    font-size: 11px;
-    font-weight: bold;
-    color: white;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    margin-left: 10px;
-    vertical-align: middle;
-}
-
-/* PREMIUM BADGE */
-.premium-pill {
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-family: 'Inter', sans-serif;
-    font-size: 11px;
-    font-weight: 800;
-    color: #3b2c00;
-    background: linear-gradient(135deg, #bf953f 0%, #fcf6ba 100%);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    margin-left: 5px;
-    vertical-align: middle;
-    letter-spacing: 1px;
-}
+/* PREMIUM BADGES */
+.mini-badge { display: inline-block; padding: 4px 12px; border-radius: 12px; font-family: 'Fira Code', monospace; font-size: 11px; font-weight: bold; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); margin-left: 10px; vertical-align: middle; }
+.premium-pill { display: inline-block; padding: 4px 12px; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 800; color: #3b2c00; background: linear-gradient(135deg, #bf953f 0%, #fcf6ba 100%); box-shadow: 0 2px 5px rgba(0,0,0,0.2); margin-left: 5px; vertical-align: middle; letter-spacing: 1px; }
 
 /* MARKET CARDS */
-.market-card {
-    background: var(--card-bg);
-    border: var(--card-border);
-    border-radius: 6px;
-    padding: 15px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    text-align: center;
-    margin-bottom: 10px;
-}
+.market-card { background: var(--card-bg); border: var(--card-border); border-radius: 6px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; margin-bottom: 10px; }
 .market-ticker { color: var(--text-secondary); font-size: 11px; margin-bottom: 2px; }
 .market-delta { font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 600; }
 
-/* BIG BADGE */
-.big-badge {
-    font-family: 'Inter', sans-serif;
-    font-size: 18px;
-    font-weight: 800;
-    padding: 15px 25px;
-    border-radius: 4px;
-    text-align: center;
-    margin-bottom: 20px;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: white;
-}
-
 /* EXPANDER */
-[data-testid="stExpander"] {
-    background-color: rgba(255,255,255,0.02) !important;
-    border: 1px solid #30363d !important;
-    border-radius: 4px;
-}
-[data-testid="stExpander"] summary {
-    color: var(--text-primary) !important;
-    font-family: 'Fira Code', monospace;
-    font-size: 13px;
-}
+[data-testid="stExpander"] { background-color: rgba(255,255,255,0.02) !important; border: 1px solid #30363d !important; border-radius: 4px; }
+[data-testid="stExpander"] summary { color: var(--text-primary) !important; font-family: 'Fira Code', monospace; font-size: 13px; }
 
-/* FOOTER */
-.custom-footer {
-    font-family: 'Fira Code', monospace;
-    font-size: 10px;
-    color: #484f58 !important;
-    text-align: center;
-    margin-top: 50px;
-    border-top: 1px solid #30363d;
-    padding-top: 20px;
-    text-transform: uppercase;
+/* MENU OVERRIDE */
+[data-testid="stPopover"] button {
+    border: none;
+    background: transparent;
+    color: #C6A87C;
+    font-size: 24px;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -367,12 +250,33 @@ except Exception as e:
 # ==========================================
 # 4. THE UI RENDER
 # ==========================================
-# MAIN TITLE BAR (Steel Gradient - UNIFIED FONT)
-st.markdown(f"""
-<div class="steel-header">
-    <span class="steel-text">MacroEffects</span>
-</div>
-""", unsafe_allow_html=True)
+
+# CUSTOM HEADER WITH FUNCTIONAL MENU
+col_header, col_menu = st.columns([10, 1])
+
+with col_header:
+    st.markdown(f"""
+    <div class="steel-header">
+        <span class="steel-text">MacroEffects</span>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col_menu:
+    with st.popover("☰", use_container_width=True):
+        st.caption("Settings & Links")
+        # Dark Mode Toggle
+        is_dark = st.toggle("Dark Mode", value=st.session_state["dark_mode"])
+        if is_dark != st.session_state["dark_mode"]:
+            st.session_state["dark_mode"] = is_dark
+            st.rerun()
+            
+        st.divider()
+        
+        # Links
+        st.page_link("https://sixmonthstockmarketforecast.com/home/", label="Six Month Forecast", icon="📈")
+        st.link_button("User Guide", "https://github.com/Tiedeman/AlphaSwarm/blob/main/docs/USER_GUIDE.md") # Example
+        st.link_button("About Us", "https://sixmonthstockmarketforecast.com/about") # Example
+        st.link_button("Contact Analyst", "mailto:analyst@macroeffects.com")
 
 # SUBHEADER WITH STATUS MARKERS
 st.markdown(f"""
@@ -444,7 +348,7 @@ if full_data is not None:
 
         st.divider()
 
-        # --- SWARM DEEP DIVE (Steel Header) ---
+        # --- SWARM DEEP DIVE ---
         st.markdown('<div class="steel-header"><span class="steel-text">Swarm Deep Dive</span></div>', unsafe_allow_html=True)
         
         spy_close = full_data['Close']['SPY']
@@ -457,7 +361,6 @@ if full_data is not None:
         with c1: 
             view_mode = st.radio("Select View Horizon:", ["Tactical (60-Day Zoom)", "Strategic (2-Year History)"], horizontal=True)
         with c2: 
-            # THE GOLD PLAQUE EFFECT
             st.radio("Market Scope (Premium):", ["US Market (Active)", "Global Swarm 🔒", "Sector Rotation 🔒"], index=0, horizontal=True, disabled=True)
 
         if view_mode == "Tactical (60-Day Zoom)":
@@ -586,7 +489,7 @@ else:
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v18.2 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v19.0 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
