@@ -69,39 +69,67 @@ h3 {{ color: var(--text-secondary) !important; font-weight: 600 !important; }}
 
 /* --- HEADER CONTAINER (Seamless Black) --- */
 .header-bar {{
-    background: #000000; /* Pure Black to match Logo */
+    background: #000000; /* Pure Black */
     height: 70px;
     display: flex;
+    flex-direction: row; /* Ensure logo and text are side-by-side */
     align-items: center;
-    padding-left: 20px;
-    padding-right: 20px;
-    border: 1px solid #333333; /* Darker Border */
+    padding-left: 15px;
+    padding-right: 15px;
+    border: 1px solid #333333;
     border-right: none;
     border-radius: 8px 0 0 8px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.5);
-    gap: 15px;
-    white-space: nowrap;
     overflow: hidden;
 }}
 
-/* BRUSHED STEEL TEXT EFFECT */
-.steel-text-gradient {{
+/* CONTAINER FOR STACKED TEXT */
+.header-text-col {{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-left: 12px;
+    line-height: 1.1;
+}}
+
+/* BRUSHED STEEL TEXT - MAIN TITLE */
+.steel-text-main {{
     background: linear-gradient(180deg, #FFFFFF 0%, #E0E0E0 40%, #A0A0A0 55%, #FFFFFF 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     font-family: 'Inter', sans-serif;
     font-weight: 800;
-    font-size: 22px;
+    font-size: 24px; /* Large for visibility */
     text-transform: uppercase;
-    letter-spacing: 1px;
-    line-height: 1;
-    display: inline-block;
+    letter-spacing: 0.5px;
 }}
 
-/* MENU BUTTON STYLING (Seamless Black) */
+/* BRUSHED STEEL TEXT - SUBTITLE */
+.steel-text-sub {{
+    background: linear-gradient(180deg, #E0E0E0 0%, #A0A0A0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 10px; /* Small to fit mobile width */
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 2px;
+    white-space: nowrap; /* Keep on one line if possible */
+}}
+
+/* MOBILE ADJUSTMENT: If screen is VERY small, allow subtitle to wrap */
+@media (max-width: 400px) {{
+    .steel-text-sub {{
+        font-size: 9px;
+        white-space: normal;
+    }}
+}}
+
+/* MENU BUTTON STYLING */
 [data-testid="stPopover"] button {{
     border: 1px solid #333333;
-    background: #000000; /* Pure Black */
+    background: #000000;
     color: #C6A87C; 
     font-size: 28px !important;
     font-weight: bold;
@@ -118,7 +146,7 @@ h3 {{ color: var(--text-secondary) !important; font-weight: 600 !important; }}
 }}
 [data-testid="stPopover"] button:hover {{ border-color: #C6A87C; color: #FFFFFF; }}
 
-/* TABS (Restored) */
+/* TABS */
 button[data-baseweb="tab"] {{
     background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.05) 100%) !important;
     border: 1px solid rgba(128,128,128,0.2) !important;
@@ -152,14 +180,11 @@ button[data-baseweb="tab"][aria-selected="true"] p {{ color: #FFFFFF !important;
 .market-price {{ color: var(--text-primary); font-family: 'Fira Code', monospace; font-size: 22px; font-weight: 700; margin: 2px 0; }}
 .market-delta {{ font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 600; }}
 
-/* METRICS & UTILS */
+/* UTILS */
 div[data-testid="stMetricLabel"] {{ color: var(--text-secondary) !important; font-size: 14px !important; font-weight: 500 !important; }}
 div[data-testid="stMetricValue"] {{ color: var(--text-primary) !important; }}
-
-/* FIX: Target only the TOP header to hide, leaving Tabs visible */
 header[data-testid="stHeader"] {{ visibility: hidden; }}
 #MainMenu, footer {{ visibility: hidden; }}
-
 .block-container {{ padding-top: 1rem !important; padding-bottom: 2rem !important; }}
 div[data-testid="column"] {{ padding: 0px !important; }}
 div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
@@ -282,15 +307,22 @@ with c_title:
     if img_b64:
         st.markdown(f"""
         <div class="header-bar">
-            <img src="data:image/png;base64,{img_b64}" style="height: 50px; width: auto; object-fit: contain;">
-            <span class="steel-text-gradient">MacroEffects | AI Inference & Risk Intelligence</span>
+            <img src="data:image/png;base64,{img_b64}" style="height: 50px; width: auto; flex-shrink: 0; object-fit: contain;">
+            
+            <div class="header-text-col">
+                <span class="steel-text-main">MacroEffects</span>
+                <span class="steel-text-sub">AI Inference & Risk Intelligence</span>
+            </div>
         </div>
         """, unsafe_allow_html=True)
     else:
         # Fallback Text if image missing
         st.markdown(f"""
         <div class="header-bar">
-            <span class="steel-text-gradient">MacroEffects | AI Inference & Risk Intelligence</span>
+            <div class="header-text-col">
+                <span class="steel-text-main">MacroEffects</span>
+                <span class="steel-text-sub">AI Inference & Risk Intelligence</span>
+            </div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -479,7 +511,7 @@ else:
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v52.0 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v53.0 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
