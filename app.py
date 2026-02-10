@@ -15,14 +15,14 @@ st.set_page_config(page_title="MacroEffects | Global Command", page_icon="M", la
 if "dark_mode" not in st.session_state:
     st.session_state["dark_mode"] = False
 
-# THEME CONFIGURATION
+# THEME CONFIGURATION (Updated for better dark mode contrast)
 theme_config = {
     True: { # Dark Mode
         "bg_color": "#0e1117",
         "card_bg": "rgba(22, 27, 34, 0.7)",
         "card_border": "1px solid rgba(255, 255, 255, 0.08)",
-        "text_primary": "#e6e6e6",
-        "text_secondary": "#8b949e",
+        "text_primary": "#f0f2f6", # BRIGHTER TEXT
+        "text_secondary": "#b0b8c1", # BRIGHTER TEXT
         "accent_gold": "#C6A87C",
         "accent_blue": "#00f2ff",
         "glass_shadow": "0 4px 30px rgba(0, 0, 0, 0.3)",
@@ -296,7 +296,7 @@ c_title, c_menu = st.columns([0.9, 0.1])
 with c_title:
     st.markdown(f"""
     <div class="steel-header-container">
-        <span class="steel-text">MacroEffects</span><br>
+        <span class="steel-text">MacroEffects</span>
         <span class="tagline-text">AI INFERENCE FOCUSED ON STOCK MARKETS</span>
     </div>
     """, unsafe_allow_html=True)
@@ -484,7 +484,7 @@ else:
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v25.0 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v25.1 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
