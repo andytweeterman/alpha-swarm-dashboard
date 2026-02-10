@@ -1,0 +1,13 @@
+{
+  "Energy": ["XOM", "CVX", "COP", "SLB", "WMB", "EOG", "KMI", "PSX", "VLO", "BKR"],
+  "Technology": ["NVDA", "AAPL", "MSFT", "AVGO", "MU", "AMD", "PLTR", "CSCO", "LRCX", "IBM"],
+  "Healthcare": ["LLY", "JNJ", "ABBV", "MRK", "UNH", "AMGN", "TMO", "ABT", "GILD", "ISRG"],
+  "Financials": ["BRK-B", "JPM", "V", "MA", "BAC", "WFC", "GS", "C", "MS", "AXP"],
+  "Industrials": ["CAT", "GE", "RTX", "GEV", "BA", "UBER", "HON", "UNP", "DE", "ETN"],
+  "Consumer Discretionary": ["AMZN", "TSLA", "HD", "MCD", "TJX", "LOW", "BKNG", "SBUX", "RCL", "ORLY"],
+  "Consumer Staples": ["WMT", "COST", "PG", "KO", "PM", "PEP", "CL", "MO", "MDLZ", "MNST"],
+  "Materials": ["LIN", "NEM", "FCX", "CRH", "SHW", "APD", "ECL", "NUE", "CTVA", "MLM"],
+  "Utilities": ["NEE", "SO", "DUK", "CEG", "AEP", "SRE", "D", "VST", "XEL", "EXC"],
+  "Real Estate": ["WELL", "PLD", "EQIX", "AMT", "SPG", "O", "CBRE", "DLR", "PSA", "VTR"],
+  "Communication Services": ["META", "GOOGL", "GOOG", "VZ", "CMCSA", "T", "NFLX", "TMUS", "DIS", "EA"]
+}
