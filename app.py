@@ -34,7 +34,9 @@ theme_config = {
         "sidebar_bg": "#090c10",
         "sidebar_border": "#30363d",
         "chart_template": "plotly_dark",
-        "chart_font_color": "#e6e6e6"
+        "chart_font_color": "#e6e6e6",
+        "glass_bg": "rgba(255, 255, 255, 0.05)",
+        "steel_gradient": "linear-gradient(180deg, #E6E6E6 0%, #A4A4A4 48%, #E6E6E6 50%, #B8B8B8 100%)"
     },
     False: { # Light Mode
         "bg_color": "#ffffff",
@@ -48,7 +50,9 @@ theme_config = {
         "sidebar_bg": "#f8f9fa",
         "sidebar_border": "#dee2e6",
         "chart_template": "plotly_white",
-        "chart_font_color": "#31333F"
+        "chart_font_color": "#31333F",
+        "glass_bg": "rgba(0, 0, 0, 0.05)",
+        "steel_gradient": "linear-gradient(180deg, #555555 0%, #222222 48%, #555555 50%, #333333 100%)"
     }
 }
 current_theme = theme_config[dark_mode]
@@ -71,6 +75,8 @@ st.markdown(f"""
     --success: #00d26a;
     --danger: #f93e3e;
     --glass-shadow: {current_theme['glass_shadow']};
+    --glass-bg: {current_theme['glass_bg']};
+    --steel-gradient: {current_theme['steel_gradient']};
 }}
 
 /* HIDE DEFAULT STREAMLIT ELEMENTS */
@@ -80,7 +86,7 @@ header {{visibility: visible;}}
 
 /* GLASS HEADER */
 .glass-header {{
-    background: rgba(0, 0, 0, 0.5);
+    background: var(--glass-bg);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-radius: 10px;
@@ -114,10 +120,13 @@ h1, h2, h3, h4, h5, h6 {{
     text-transform: uppercase;
 }}
 
+h1, h2, h3, h4, h5, h6, section[data-testid="stSidebar"] h2 {{
+    background: var(--steel-gradient) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}}
+
 h1 {{
-    background: linear-gradient(90deg, #FFFFFF 0%, #888888 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
     border-bottom: 1px solid var(--accent-blue);
     padding-bottom: 10px;
     display: inline-block;
@@ -199,7 +208,7 @@ div[data-testid="stMetricLabel"] {{
 
 /* TABS */
 button[data-baseweb="tab"] {{
-    background-color: rgba(0, 0, 0, 0.5) !important;
+    background-color: var(--glass-bg) !important;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     font-family: 'Inter', sans-serif;
@@ -214,9 +223,9 @@ button[data-baseweb="tab"] {{
 }}
 
 button[data-baseweb="tab"] div p {{
-    background: linear-gradient(90deg, #FFFFFF 0%, #888888 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    background: var(--steel-gradient) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
     font-weight: 700;
 }}
 
