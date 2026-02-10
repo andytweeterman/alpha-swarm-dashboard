@@ -7,13 +7,21 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. PAGE SETUP (v19.5 - STABLE)
+# 1. PAGE SETUP & SAFE INITIALIZATION
 # ==========================================
 st.set_page_config(page_title="MacroEffects | Global Command", page_icon="M", layout="wide")
 
-# INITIALIZE SESSION STATE FOR DARK MODE
+# INITIALIZE SESSION STATE
 if "dark_mode" not in st.session_state:
     st.session_state["dark_mode"] = False
+
+# DEFINE SAFE DEFAULTS (Prevents Crashes)
+status = "SYSTEM BOOT"
+color = "#888888"
+reason = "Initializing..."
+full_data = None
+closes = None
+latest_monitor = None
 
 # THEME CONFIGURATION
 theme_config = {
@@ -52,7 +60,10 @@ theme_config = {
 }
 current_theme = theme_config[st.session_state["dark_mode"]]
 
-# --- PART 1: DYNAMIC CSS ---
+# ==========================================
+# 2. VISUAL ARCHITECTURE (CSS)
+# ==========================================
+# PART 1: DYNAMIC VARIABLES
 st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Fira+Code:wght@300;500;700&display=swap');
@@ -72,7 +83,7 @@ st.markdown(f"""
 </style>
 """, unsafe_allow_html=True)
 
-# --- PART 2: STATIC CSS ---
+# PART 2: STATIC LAYOUT
 st.markdown("""
 <style>
 /* REMOVE STREAMLIT BRANDING */
@@ -83,21 +94,21 @@ header {visibility: hidden;}
 /* TIGHTEN SPACING */
 .block-container { padding-top: 1rem !important; padding-bottom: 2rem !important; }
 
-/* STEEL HEADER CONTAINER */
+/* STEEL HEADER BOX */
 .steel-header-container {
     background: linear-gradient(145deg, #1a1f26, #2d343f);
-    padding: 15px 20px;
+    padding: 10px 20px;
     border-radius: 8px;
     border: 1px solid #4a4f58;
     box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     margin-bottom: 5px; 
-    height: 80px; 
+    height: 70px; 
     display: flex;
     flex-direction: column;
     justify-content: center;
 }
 
-/* STEEL TEXT (Main Title) */
+/* MAIN TITLE TEXT */
 .steel-text {
     background: linear-gradient(180deg, #FFFFFF 0%, #A0A0A0 50%, #E0E0E0 100%);
     -webkit-background-clip: text;
@@ -108,6 +119,16 @@ header {visibility: hidden;}
     letter-spacing: 1.5px;
     margin: 0;
     font-size: 24px !important;
+}
+
+/* SUB-HEADER STEEL BOXES */
+.steel-sub-header {
+    background: linear-gradient(145deg, #1a1f26, #2d343f);
+    padding: 8px 15px;
+    border-radius: 6px;
+    border: 1px solid #4a4f58;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    margin-bottom: 15px;
 }
 
 /* TAGLINE */
@@ -123,38 +144,28 @@ header {visibility: hidden;}
     opacity: 0.9;
 }
 
-/* MENU INTEGRATION (Fixed Position Right) */
-[data-testid="stPopover"] {
-    float: right;
-    margin-top: -65px; /* Pulls menu UP into the Steel Header */
-    margin-right: 10px;
-    position: relative;
-    z-index: 999;
-}
-
-/* MENU BUTTON STYLING (Larger) */
+/* --- MENU INTEGRATION FIX --- */
+/* Target the Popover Button to look like a Unified Header Element */
 [data-testid="stPopover"] button {
-    border: none;
-    background: transparent;
-    color: #C6A87C; /* Gold Menu Token */
-    font-size: 28px !important; /* Larger Icon */
+    border: 1px solid #4a4f58;
+    background: linear-gradient(145deg, #1a1f26, #2d343f);
+    color: #C6A87C; /* Gold Token */
+    font-size: 24px !important;
     font-weight: bold;
-    height: auto;
-    width: auto;
-    padding: 0;
-    line-height: 1;
+    height: 70px; /* Match Header Height */
+    width: 100%;
+    margin-top: 0px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 [data-testid="stPopover"] button:hover {
+    border-color: #C6A87C;
     color: #FFFFFF;
-    background: transparent;
-    border: none;
 }
 
-/* TYPOGRAPHY */
-h1, h2, h3, h4, h5, h6 { color: var(--text-primary) !important; font-family: 'Inter', sans-serif; font-weight: 800; letter-spacing: -0.5px; text-transform: uppercase; }
-p, span, li, label { color: var(--text-secondary) !important; font-family: 'Inter', sans-serif; font-size: 14px; }
-
-/* TABS */
+/* TABS CONFIGURATION */
 button[data-baseweb="tab"] {
     background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.05) 100%) !important;
     border: 1px solid rgba(128,128,128,0.2) !important;
@@ -168,25 +179,21 @@ button[data-baseweb="tab"] {
     margin-right: 4px;
 }
 
-/* SELECTED TAB (Crisp White - No Blur) */
+/* SELECTED TAB (BRIGHT WHITE FIX) */
 button[data-baseweb="tab"][aria-selected="true"] {
     background: linear-gradient(180deg, #2d343f 0%, #1a1f26 100%) !important;
-    color: #FFFFFF !important; /* Bright White */
-    text-shadow: none !important; /* REMOVED BLUR */
     border-top: 2px solid var(--accent-gold) !important;
 }
-
-/* SUB-HEADER STEEL BOXES */
-.steel-sub-header {
-    background: linear-gradient(145deg, #1a1f26, #2d343f);
-    padding: 10px 20px;
-    border-radius: 8px;
-    border: 1px solid #4a4f58;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-    margin-bottom: 15px;
+/* Force text color inside the selected tab */
+button[data-baseweb="tab"][aria-selected="true"] p {
+    color: #FFFFFF !important;
 }
 
-/* PREMIUM BADGES */
+/* TYPOGRAPHY */
+h1, h2, h3, h4, h5, h6 { color: var(--text-primary) !important; font-family: 'Inter', sans-serif; font-weight: 800; letter-spacing: -0.5px; text-transform: uppercase; }
+p, span, li, label { color: var(--text-secondary) !important; font-family: 'Inter', sans-serif; font-size: 14px; }
+
+/* BADGES & PILLS */
 .mini-badge { display: inline-block; padding: 4px 12px; border-radius: 12px; font-family: 'Fira Code', monospace; font-size: 11px; font-weight: bold; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); margin-left: 10px; vertical-align: middle; }
 .premium-pill { display: inline-block; padding: 4px 12px; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 800; color: #3b2c00; background: linear-gradient(135deg, #bf953f 0%, #fcf6ba 100%); box-shadow: 0 2px 5px rgba(0,0,0,0.2); margin-left: 5px; vertical-align: middle; letter-spacing: 1px; }
 
@@ -203,7 +210,7 @@ button[data-baseweb="tab"][aria-selected="true"] {
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. LOGIC ENGINE (FUNCTIONS)
+# 3. LOGIC ENGINE
 # ==========================================
 @st.cache_data(ttl=3600)
 def fetch_data():
@@ -280,16 +287,8 @@ def make_sparkline(data, color):
     return fig
 
 # ==========================================
-# 3. EXECUTION PHASE (Before UI Render)
+# 3. EXECUTION (DATA FETCH)
 # ==========================================
-# DEFAULT VALUES (Prevents NameError on Crash)
-status = "INITIALIZING"
-color = "#888888"
-reason = "System Boot..."
-full_data = None
-latest_monitor = None
-closes = None
-
 try:
     full_data = fetch_data()
     if full_data is not None and not full_data.empty:
@@ -299,14 +298,14 @@ try:
     else:
         status, color, reason = "DATA ERROR", "#ff0000", "Feed Unavailable"
 except Exception as e:
-    status, color, reason = "SYSTEM ERROR", "#ff0000", str(e)
+    status, color, reason = "SYSTEM ERROR", "#ff0000", "Connection Failed"
 
 # ==========================================
 # 4. THE UI RENDER
 # ==========================================
 
-# HEADER LAYOUT
-c_title, c_menu = st.columns([0.92, 0.08])
+# HEADER LAYOUT (Two Columns: Title Box | Menu Box)
+c_title, c_menu = st.columns([0.9, 0.1])
 
 with c_title:
     st.markdown(f"""
@@ -317,7 +316,8 @@ with c_title:
     """, unsafe_allow_html=True)
 
 with c_menu:
-    with st.popover("☰", use_container_width=False):
+    # This button now physically sits next to the title, matching its height via CSS
+    with st.popover("☰", use_container_width=True):
         st.caption("Settings & Links")
         is_dark = st.toggle("Dark Mode", value=st.session_state["dark_mode"])
         if is_dark != st.session_state["dark_mode"]:
@@ -331,7 +331,7 @@ with c_menu:
 
 # SUBHEADER (With Spacing Fix)
 st.markdown(f"""
-<div style="margin-bottom: 20px; margin-top: 25px;">
+<div style="margin-bottom: 20px; margin-top: 15px;">
     <span style="font-family: 'Inter'; font-weight: 600; font-size: 16px; color: var(--text-secondary);">Macro-Economic Intelligence: Global Market Command Center</span>
     <div class="mini-badge" style="background-color: {color};">{status}</div>
     <div class="premium-pill">PREMIUM</div>
@@ -340,15 +340,16 @@ st.markdown(f"""
 
 st.divider()
 
+# SAFE RENDERING: Only draw charts if data exists
 if full_data is not None and closes is not None:
-    # --- TAB NAVIGATION ---
+    
     tab1, tab2, tab3 = st.tabs(["Market Swarm", "Risk Governance", "Strategist View"])
 
     # ---------------------------
     # TAB 1: MARKET SWARM
     # ---------------------------
     with tab1:
-        st.markdown('<div class="steel-sub-header"><span class="steel-text">Global Asset Grid</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="steel-sub-header"><span class="steel-text" style="font-size: 20px !important;">Global Asset Grid</span></div>', unsafe_allow_html=True)
         
         assets = [
             {"name": "Dow Jones", "ticker": "^DJI", "color": "#00CC00"},
@@ -400,7 +401,7 @@ if full_data is not None and closes is not None:
         st.divider()
 
         # --- SWARM DEEP DIVE ---
-        st.markdown('<div class="steel-sub-header"><span class="steel-text">Swarm Deep Dive</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="steel-sub-header"><span class="steel-text" style="font-size: 20px !important;">Swarm Deep Dive</span></div>', unsafe_allow_html=True)
         
         spy_close = full_data['Close']['SPY']
         ppo, sig, hist = calculate_ppo(spy_close)
@@ -458,7 +459,7 @@ if full_data is not None and closes is not None:
     # TAB 2: GOVERNANCE
     # ---------------------------
     with tab2:
-        st.markdown('<div class="steel-sub-header"><span class="steel-text">Risk Governance & Compliance</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="steel-sub-header"><span class="steel-text" style="font-size: 20px !important;">Risk Governance & Compliance</span></div>', unsafe_allow_html=True)
         
         col1, col2 = st.columns([2, 1])
         with col1:
@@ -505,7 +506,7 @@ if full_data is not None and closes is not None:
     # TAB 3: STRATEGIST VIEW
     # ---------------------------
     with tab3:
-        st.markdown('<div class="steel-sub-header"><span class="steel-text">MacroEffects: Chief Strategist\'s View</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="steel-sub-header"><span class="steel-text" style="font-size: 20px !important;">MacroEffects: Chief Strategist\'s View</span></div>', unsafe_allow_html=True)
         
         try:
             SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT4ik-SBHr_ER_SyMHgwVAds3UaxRtPTA426qU_26TuHkHlyb5h6zl8_H9E-_Kw5FUO3W1mBU8CKiZP/pub?gid=0&single=true&output=csv" 
@@ -536,12 +537,12 @@ if full_data is not None and closes is not None:
         st.info("💡 **Analyst Note:** This commentary is pulled live from the Chief Strategist's desk via the Alpha Swarm CMS.")
 
 else:
-    st.error("Data connection offline. Please check network.")
+    st.error("Data connection initializing or offline. Please check network.")
 
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v19.5 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v20.0 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
