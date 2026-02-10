@@ -52,10 +52,10 @@ theme_config = {
 }
 current_theme = theme_config[st.session_state["dark_mode"]]
 
-# --- CRITICAL FIX: EXPOSE CHART VARIABLES GLOBALLY ---
-# This ensures the "Swarm Deep Dive" can see them.
+# --- CRITICAL FIX: EXPOSE ALL CHART VARIABLES GLOBALLY ---
 chart_template = current_theme['chart_template']
 chart_font_color = current_theme['chart_font_color']
+chart_bg = 'rgba(0,0,0,0)' # Transparent background for charts
 
 # ==========================================
 # 2. CSS STYLING
@@ -86,10 +86,10 @@ header {{visibility: hidden;}}
 div[data-testid="column"] {{ padding: 0px !important; }}
 div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
 
-/* HEADER CONTAINER (CENTERED CONTENT) */
+/* HEADER CONTAINER */
 .steel-header-container {{
     background: linear-gradient(145deg, #1a1f26, #2d343f);
-    padding: 0px 20px; /* Zero padding, flex does the work */
+    padding: 0px 20px;
     border-radius: 8px 0 0 8px; 
     border: 1px solid #4a4f58;
     border-right: none; 
@@ -98,8 +98,8 @@ div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
     height: 80px; 
     display: flex;
     flex-direction: column;
-    justify-content: center; /* VERTICAL CENTER */
-    gap: 4px; /* Space between Title and Tagline */
+    justify-content: center;
+    gap: 4px;
 }}
 
 .steel-text {{
@@ -111,7 +111,7 @@ div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
     text-transform: uppercase;
     letter-spacing: 1.5px;
     margin: 0;
-    line-height: 1; /* TIGHT LINE HEIGHT */
+    line-height: 1;
     font-size: 26px !important;
 }}
 
@@ -134,7 +134,7 @@ div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
     color: #C6A87C; 
     font-size: 28px !important;
     font-weight: bold;
-    height: 80px; /* Match Header Height Exactly */
+    height: 80px; 
     width: 100%;
     margin-top: 0px;
     border-radius: 0 8px 8px 0; 
@@ -156,10 +156,11 @@ button[data-baseweb="tab"] {{
     color: var(--text-secondary) !important;
     font-family: 'Inter', sans-serif;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 12px; /* Smaller font for mobile */
     text-transform: uppercase;
-    padding: 10px 20px;
-    margin-right: 4px;
+    padding: 10px 15px; /* Tighter padding */
+    margin-right: 2px;
+    flex-grow: 1; /* Stretch to fill space */
 }}
 
 button[data-baseweb="tab"][aria-selected="true"] {{
@@ -289,13 +290,13 @@ except Exception as e:
 # 5. UI LAYOUT
 # ==========================================
 
-# HEADER (90/10 Ratio for better Menu alignment)
+# HEADER (90/10 Ratio)
 c_title, c_menu = st.columns([0.9, 0.1])
 
 with c_title:
     st.markdown(f"""
     <div class="steel-header-container">
-        <span class="steel-text">MacroEffects</span>
+        <span class="steel-text">MacroEffects</span><br>
         <span class="tagline-text">AI INFERENCE FOCUSED ON STOCK MARKETS</span>
     </div>
     """, unsafe_allow_html=True)
@@ -326,9 +327,10 @@ st.divider()
 
 if full_data is not None and closes is not None:
     
-    tab1, tab2, tab3 = st.tabs(["Market Swarm", "Risk Governance", "Strategist View"])
+    # SHORTER TAB NAMES FOR MOBILE
+    tab1, tab2, tab3 = st.tabs(["Markets", "Risk", "Strategist"])
 
-    # --- TAB 1: MARKET SWARM ---
+    # --- TAB 1: MARKETS ---
     with tab1:
         try:
             st.markdown('<div class="steel-sub-header"><span class="steel-text" style="font-size: 20px !important;">Global Asset Grid</span></div>', unsafe_allow_html=True)
@@ -410,7 +412,7 @@ if full_data is not None and closes is not None:
         except Exception as e:
             st.error(f"Market Swarm Error: {e}")
 
-    # --- TAB 2: GOVERNANCE ---
+    # --- TAB 2: RISK ---
     with tab2:
         try:
             st.markdown('<div class="steel-sub-header"><span class="steel-text" style="font-size: 20px !important;">Risk Governance & Compliance</span></div>', unsafe_allow_html=True)
@@ -482,7 +484,7 @@ else:
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v24.0 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v25.0 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
