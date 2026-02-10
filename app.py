@@ -23,26 +23,22 @@ status = "SYSTEM BOOT"
 color = "#888888"
 
 # ==========================================
-# 2. THEME ENGINE (GLOBAL GREY SHIFT)
+# 2. THEME ENGINE (IRONCLAD)
 # ==========================================
 if st.session_state["dark_mode"]:
     # DARK MODE
     BG_COLOR = "#0e1117"
     CARD_BG = "rgba(22, 27, 34, 0.7)"
-    
-    # VALUES (Big Numbers) remain Bright White
-    TEXT_VALUE = "#FFFFFF" 
-    # EVERYTHING ELSE (Labels, Paragraphs, Headers) becomes Light Grey
-    TEXT_BODY = "#B0B8C1" 
-    
+    TEXT_PRIMARY = "#FFFFFF" # Values (White)
+    TEXT_SECONDARY = "#B0B8C1" # Labels (Light Grey) <-- TARGET COLOR
     CHART_TEMPLATE = "plotly_dark"
-    CHART_FONT = "#B0B8C1" # Charts match the grey text
+    CHART_FONT = "#B0B8C1"
 else:
     # LIGHT MODE
     BG_COLOR = "#ffffff"
     CARD_BG = "rgba(255, 255, 255, 0.9)"
-    TEXT_VALUE = "#000000"
-    TEXT_BODY = "#333333" # Standard Dark Grey
+    TEXT_PRIMARY = "#000000"
+    TEXT_SECONDARY = "#444444"
     CHART_TEMPLATE = "plotly_white"
     CHART_FONT = "#111111"
 
@@ -58,76 +54,49 @@ st.markdown(f"""
 :root {{
     --bg-color: {BG_COLOR};
     --card-bg: {CARD_BG};
-    --text-value: {TEXT_VALUE};
-    --text-body: {TEXT_BODY};
+    --text-primary: {TEXT_PRIMARY};
+    --text-secondary: {TEXT_SECONDARY};
     --accent-gold: {ACCENT_GOLD};
 }}
 
 .stApp {{ background-color: var(--bg-color) !important; font-family: 'Inter', sans-serif; }}
 
 /* ----------------------------------------------------
-   GLOBAL TEXT OVERRIDES (THE GREY SHIFT)
+   IRONCLAD OVERRIDES
 ---------------------------------------------------- */
 
-/* Force ALL standard text to use the Body Color (Light Grey in Dark Mode) */
-.stMarkdown p, .stMarkdown span, .stMarkdown li, .stMarkdown div {{
-    color: var(--text-body) !important;
+/* 1. METRIC LABELS: FORCE ALL CHILDREN TO SECONDARY COLOR */
+/* This catches the p, div, and label tags inside the metric label */
+div[data-testid="stMetricLabel"] * {{
+    color: {TEXT_SECONDARY} !important;
 }}
-
-/* Force Headers (H1-H6) to use Body Color */
-h1, h2, h3, h4, h5, h6 {{
-    color: var(--text-body) !important;
-    font-weight: 600 !important;
-}}
-
-/* ----------------------------------------------------
-   COMPONENT SPECIFIC OVERRIDES
----------------------------------------------------- */
-
-/* METRIC LABELS (Risk VIX, etc) -> Grey */
 div[data-testid="stMetricLabel"] {{
-    color: var(--text-body) !important;
-    font-size: 14px !important;
-    font-weight: 500 !important;
-}}
-div[data-testid="stMetricLabel"] p {{
-    color: var(--text-body) !important;
+    color: {TEXT_SECONDARY} !important;
 }}
 
-/* METRIC VALUES (The Numbers) -> Keep Bright/Dark */
-div[data-testid="stMetricValue"] {{
-    color: var(--text-value) !important;
+/* 2. METRIC VALUES: FORCE PRIMARY COLOR */
+div[data-testid="stMetricValue"] * {{
+    color: {TEXT_PRIMARY} !important;
 }}
 
-/* RADIO BUTTONS -> Grey */
-div[data-testid="stRadio"] > label {{
-    color: var(--text-body) !important;
-    font-weight: 600 !important;
-}}
-div[data-testid="stRadio"] div[role="radiogroup"] p {{
-    color: var(--text-body) !important;
-}}
-
-/* TOOLTIPS -> Grey */
+/* 3. TOOLTIP ICONS: FORCE SECONDARY COLOR */
 [data-testid="stTooltipIcon"] {{
-    color: var(--text-body) !important;
+    color: {TEXT_SECONDARY} !important;
     opacity: 0.9 !important;
 }}
 [data-testid="stTooltipIcon"] svg {{
-    fill: var(--text-body) !important;
+    fill: {TEXT_SECONDARY} !important;
 }}
 
-/* EXPANDER (Strategist) -> Grey */
-[data-testid="stExpander"] {{
-    background-color: transparent !important; 
-    border: 1px solid rgba(128,128,128,0.2) !important;
+/* 4. GLOBAL TEXT DEFAULT */
+.stMarkdown p, .stMarkdown span, .stMarkdown li {{
+    color: {TEXT_SECONDARY} !important; /* Default text is Grey */
 }}
-.streamlit-expanderHeader p {{
-    color: var(--text-body) !important; /* Title becomes Grey */
-    font-weight: 600;
-}}
-.streamlit-expanderContent p {{
-    color: var(--text-body) !important; /* Content becomes Grey */
+
+/* 5. HEADERS (H1-H6) */
+h1, h2, h3, h4, h5, h6 {{
+    color: {TEXT_SECONDARY} !important;
+    font-weight: 600 !important;
 }}
 
 /* ----------------------------------------------------
@@ -160,17 +129,7 @@ div[data-testid="stRadio"] div[role="radiogroup"] p {{
     font-size: 26px !important;
 }}
 
-/* TAGLINE: ALWAYS SILVER (Hardcoded) */
-.tagline-text {{
-    color: #C0C0C0 !important; 
-    font-family: 'Inter', sans-serif;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin: 0;
-    line-height: 1.1;
-}}
+/* TAGLINE IS NOW INLINE HTML - SEE BELOW */
 
 /* MENU BUTTON */
 [data-testid="stPopover"] button {{
@@ -197,7 +156,7 @@ button[data-baseweb="tab"] {{
     background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.05) 100%) !important;
     border: 1px solid rgba(128,128,128,0.2) !important;
     border-radius: 6px 6px 0 0 !important;
-    color: var(--text-body) !important; /* Tabs use Grey */
+    color: {TEXT_SECONDARY} !important;
     font-family: 'Inter', sans-serif;
     font-weight: 600;
     font-size: 14px;
@@ -219,10 +178,10 @@ button[data-baseweb="tab"][aria-selected="true"] {{
     border-top: 2px solid var(--accent-gold) !important;
 }}
 button[data-baseweb="tab"][aria-selected="true"] p {{
-    color: #FFFFFF !important; /* Active Tab uses White */
+    color: #FFFFFF !important;
 }}
 
-/* PILL & CARD */
+/* COMPONENTS */
 .gov-pill {{
     display: inline-block;
     padding: 4px 12px;
@@ -249,20 +208,21 @@ button[data-baseweb="tab"][aria-selected="true"] p {{
 }}
 
 .market-card {{ background: var(--card-bg); border: 1px solid rgba(128,128,128,0.2); border-radius: 6px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; margin-bottom: 10px; }}
-.market-ticker {{ color: var(--text-body); font-size: 11px; margin-bottom: 2px; }}
-.market-price {{ color: var(--text-value); font-family: 'Fira Code', monospace; font-size: 22px; font-weight: 700; margin: 2px 0; }}
+.market-ticker {{ color: {TEXT_SECONDARY}; font-size: 11px; margin-bottom: 2px; }}
+.market-price {{ color: {TEXT_PRIMARY}; font-family: 'Fira Code', monospace; font-size: 22px; font-weight: 700; margin: 2px 0; }}
 .market-delta {{ font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 600; }}
 
-/* FOOTER */
-.custom-footer {{
-    font-family: 'Fira Code', monospace;
-    font-size: 10px;
-    color: var(--text-body) !important;
-    text-align: center;
-    margin-top: 50px;
-    border-top: 1px solid #30363d;
-    padding-top: 20px;
-    text-transform: uppercase;
+/* EXPANDER */
+[data-testid="stExpander"] {{
+    background-color: transparent !important; 
+    border: 1px solid rgba(128,128,128,0.2) !important;
+}}
+.streamlit-expanderHeader p {{
+    color: {TEXT_SECONDARY} !important;
+    font-weight: 600;
+}}
+.streamlit-expanderContent p {{
+    color: {TEXT_SECONDARY} !important;
 }}
 
 /* REMOVE DEFAULT UI */
@@ -272,6 +232,18 @@ header {{visibility: hidden;}}
 .block-container {{ padding-top: 1rem !important; padding-bottom: 2rem !important; }}
 div[data-testid="column"] {{ padding: 0px !important; }}
 div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
+
+/* FOOTER */
+.custom-footer {{
+    font-family: 'Fira Code', monospace;
+    font-size: 10px;
+    color: {TEXT_SECONDARY} !important;
+    text-align: center;
+    margin-top: 50px;
+    border-top: 1px solid #30363d;
+    padding-top: 20px;
+    text-transform: uppercase;
+}}
 </style>
 """, unsafe_allow_html=True)
 
@@ -373,10 +345,11 @@ except Exception as e:
 c_title, c_menu = st.columns([0.85, 0.15])
 
 with c_title:
+    # --- TAGLINE COLOR FIXED HERE (Inline Style) ---
     st.markdown(f"""
     <div class="steel-header-container">
         <span class="steel-text">MacroEffects</span>
-        <span class="tagline-text" style="color: #C0C0C0 !important;">AI INFERENCE FOCUSED ON STOCK MARKETS</span>
+        <span class="tagline-text" style="color: #C0C0C0 !important; opacity: 1 !important; font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin: 0; line-height: 1.1;">AI INFERENCE FOCUSED ON STOCK MARKETS</span>
     </div>
     """, unsafe_allow_html=True)
 
@@ -396,7 +369,7 @@ with c_menu:
 # SUBHEADER WITH SMALL PILL
 st.markdown(f"""
 <div style="margin-bottom: 20px; margin-top: 15px;">
-    <span style="font-family: 'Inter'; font-weight: 600; font-size: 16px; color: var(--text-body);">Macro-Economic Intelligence: Global Market Command Center</span>
+    <span style="font-family: 'Inter'; font-weight: 600; font-size: 16px; color: {TEXT_SECONDARY};">Macro-Economic Intelligence: Global Market Command Center</span>
     <div class="gov-pill" style="background: linear-gradient(135deg, {color}, {color}88); border: 1px solid {color};">{status}</div>
     <div class="premium-pill">PREMIUM</div>
 </div>
@@ -565,7 +538,7 @@ else:
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v44.0 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v45.0 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
