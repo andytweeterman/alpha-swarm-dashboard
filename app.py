@@ -203,6 +203,18 @@ button[data-baseweb="tab"][aria-selected="true"] p {{
 
 [data-testid="stExpander"] {{ background-color: rgba(255,255,255,0.02) !important; border: 1px solid #30363d !important; border-radius: 4px; }}
 [data-testid="stExpander"] summary {{ color: var(--text-primary) !important; font-family: 'Fira Code', monospace; font-size: 13px; }}
+
+/* FOOTER FIX */
+.custom-footer {{
+    font-family: 'Fira Code', monospace;
+    font-size: 10px;
+    color: var(--text-secondary) !important; /* DYNAMIC COLOR FIX */
+    text-align: center;
+    margin-top: 50px;
+    border-top: 1px solid #30363d;
+    padding-top: 20px;
+    text-transform: uppercase;
+}}
 </style>
 """, unsafe_allow_html=True)
 
@@ -496,7 +508,7 @@ else:
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v29.0 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v30.0 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
