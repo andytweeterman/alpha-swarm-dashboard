@@ -67,19 +67,19 @@ st.markdown(f"""
 .stMarkdown p, .stMarkdown span, .stMarkdown li {{ color: var(--text-primary) !important; }}
 h3 {{ color: var(--text-secondary) !important; font-weight: 600 !important; }}
 
-/* --- HEADER CONTAINER (The Steel Bar) --- */
+/* --- HEADER CONTAINER (Seamless Black) --- */
 .header-bar {{
-    background: linear-gradient(145deg, #1a1f26, #2d343f);
-    height: 70px; /* Matched to Menu Button */
+    background: #000000; /* Pure Black to match Logo */
+    height: 70px;
     display: flex;
     align-items: center;
     padding-left: 20px;
     padding-right: 20px;
-    border: 1px solid #4a4f58;
+    border: 1px solid #333333; /* Darker Border */
     border-right: none;
     border-radius: 8px 0 0 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-    gap: 15px; /* Space between logo and text */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+    gap: 15px;
     white-space: nowrap;
     overflow: hidden;
 }}
@@ -98,25 +98,45 @@ h3 {{ color: var(--text-secondary) !important; font-weight: 600 !important; }}
     display: inline-block;
 }}
 
-/* MENU BUTTON STYLING */
+/* MENU BUTTON STYLING (Seamless Black) */
 [data-testid="stPopover"] button {{
-    border: 1px solid #4a4f58;
-    background: linear-gradient(145deg, #1a1f26, #2d343f);
+    border: 1px solid #333333;
+    background: #000000; /* Pure Black */
     color: #C6A87C; 
     font-size: 28px !important;
     font-weight: bold;
-    height: 70px; /* Match Header Height */
+    height: 70px; 
     width: 100%;
     margin-top: 0px;
-    border-radius: 0 8px 8px 0; /* Only round right corners */
-    border-left: 1px solid #4a4f58; /* Seamless join */
-    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    border-radius: 0 8px 8px 0; 
+    border-left: 1px solid #333333;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.5);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 100;
 }}
 [data-testid="stPopover"] button:hover {{ border-color: #C6A87C; color: #FFFFFF; }}
+
+/* TABS (Restored) */
+button[data-baseweb="tab"] {{
+    background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.05) 100%) !important;
+    border: 1px solid rgba(128,128,128,0.2) !important;
+    border-radius: 6px 6px 0 0 !important;
+    color: var(--text-secondary) !important;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    text-transform: uppercase;
+    padding: 10px 10px;
+    margin-right: 2px;
+    flex-grow: 1;
+}}
+button[data-baseweb="tab"][aria-selected="true"] {{
+    background: linear-gradient(180deg, #2d343f 0%, #1a1f26 100%) !important;
+    border-top: 2px solid var(--accent-gold) !important;
+}}
+button[data-baseweb="tab"][aria-selected="true"] p {{ color: #FFFFFF !important; }}
 
 /* COMPONENTS */
 .gov-pill {{
@@ -135,7 +155,11 @@ h3 {{ color: var(--text-secondary) !important; font-weight: 600 !important; }}
 /* METRICS & UTILS */
 div[data-testid="stMetricLabel"] {{ color: var(--text-secondary) !important; font-size: 14px !important; font-weight: 500 !important; }}
 div[data-testid="stMetricValue"] {{ color: var(--text-primary) !important; }}
-#MainMenu, footer, header {{ visibility: hidden; }}
+
+/* FIX: Target only the TOP header to hide, leaving Tabs visible */
+header[data-testid="stHeader"] {{ visibility: hidden; }}
+#MainMenu, footer {{ visibility: hidden; }}
+
 .block-container {{ padding-top: 1rem !important; padding-bottom: 2rem !important; }}
 div[data-testid="column"] {{ padding: 0px !important; }}
 div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
@@ -455,7 +479,7 @@ else:
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v51.0 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v52.0 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
