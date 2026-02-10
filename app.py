@@ -5,6 +5,7 @@ import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
+import os  # Added for file checking
 
 # ==========================================
 # 1. PAGE SETUP
@@ -30,7 +31,7 @@ if st.session_state["dark_mode"]:
     BG_COLOR = "#0e1117"
     CARD_BG = "rgba(22, 27, 34, 0.7)"
     TEXT_PRIMARY = "#FFFFFF"
-    TEXT_SECONDARY = "#E0E0E0" # Light Grey for Dark Mode Labels
+    TEXT_SECONDARY = "#E0E0E0"
     CHART_TEMPLATE = "plotly_dark"
     CHART_FONT = "#E6E6E6"
 else:
@@ -45,7 +46,7 @@ else:
 ACCENT_GOLD = "#C6A87C"
 
 # ==========================================
-# 3. CSS STYLING (THE JULES OVERRIDES)
+# 3. CSS STYLING
 # ==========================================
 st.markdown(f"""
 <style>
@@ -62,68 +63,48 @@ st.markdown(f"""
 .stApp {{ background-color: var(--bg-color) !important; font-family: 'Inter', sans-serif; }}
 
 /* --- TEXT ENFORCERS --- */
+.stMarkdown p, .stMarkdown span, .stMarkdown li {{ color: var(--text-primary) !important; }}
+h3 {{ color: var(--text-secondary) !important; font-weight: 600 !important; }}
 
-/* 1. Global Paragraphs */
-.stMarkdown p, .stMarkdown span, .stMarkdown li {{
-    color: var(--text-primary) !important;
-}}
+/* METRICS */
+div[data-testid="stMetricLabel"] {{ color: var(--text-secondary) !important; font-size: 14px !important; font-weight: 500 !important; }}
+div[data-testid="stMetricValue"] {{ color: var(--text-primary) !important; }}
+[data-testid="stTooltipIcon"] {{ color: var(--text-secondary) !important; opacity: 0.9 !important; }}
+[data-testid="stTooltipIcon"] svg {{ fill: var(--text-secondary) !important; }}
 
-/* 2. Headers (H3) */
-h3 {{
-    color: var(--text-secondary) !important;
-    font-weight: 600 !important;
-}}
+/* CONTROLS */
+div[data-testid="stRadio"] > label {{ color: var(--text-secondary) !important; font-weight: 600 !important; font-size: 14px !important; }}
+div[data-testid="stRadio"] div[role="radiogroup"] p {{ color: var(--text-secondary) !important; }}
+[data-testid="stExpander"] {{ background-color: transparent !important; border: 1px solid var(--card-border) !important; }}
+.streamlit-expanderHeader p {{ color: var(--text-primary) !important; font-weight: 600; }}
 
-/* 3. METRIC LABELS (Risk VIX, Credit Spreads) - FORCED TO SECONDARY COLOR */
-/* We target specific children to override Streamlit's defaults */
-div[data-testid="stMetricLabel"] {{
-    color: var(--text-secondary) !important;
-    font-size: 14px !important;
-    font-weight: 500 !important;
-}}
-div[data-testid="stMetricLabel"] p {{
-    color: var(--text-secondary) !important;
-}}
-div[data-testid="stMetricLabel"] div {{
-    color: var(--text-secondary) !important;
-}}
-
-/* 4. METRIC VALUES */
-div[data-testid="stMetricValue"] {{
-    color: var(--text-primary) !important;
-}}
-
-/* 5. TOOLTIP ICONS */
-[data-testid="stTooltipIcon"] {{
-    color: var(--text-secondary) !important;
-    opacity: 0.9 !important;
-}}
-[data-testid="stTooltipIcon"] svg {{
-    fill: var(--text-secondary) !important;
+/* --- HEADER STYLES (Restored for Fallback) --- */
+.steel-header-container {{
+    background: linear-gradient(145deg, #1a1f26, #2d343f);
+    padding: 0px 20px;
+    border-radius: 8px 0 0 8px; 
+    border: 1px solid #4a4f58;
+    border-right: none; 
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    margin-bottom: 5px; 
+    height: 80px; 
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }}
 
-/* 6. RADIO BUTTON LABELS */
-div[data-testid="stRadio"] > label {{
-    color: var(--text-secondary) !important;
-    font-weight: 600 !important;
-    font-size: 14px !important;
+.steel-text {{
+    background: linear-gradient(180deg, #FFFFFF 0%, #A0A0A0 50%, #E0E0E0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin: 0;
+    line-height: 1.1;
+    font-size: 26px !important;
 }}
-div[data-testid="stRadio"] div[role="radiogroup"] p {{
-    color: var(--text-secondary) !important;
-}}
-
-/* 7. EXPANDER HEADER */
-[data-testid="stExpander"] {{
-    background-color: transparent !important; 
-    border: 1px solid var(--card-border) !important;
-}}
-.streamlit-expanderHeader p {{
-    color: var(--text-primary) !important;
-    font-weight: 600;
-}}
-
-/* --- HEADER & TAGLINE --- */
-/* REMOVED OLD HEADER CSS */
 
 /* MENU BUTTON */
 [data-testid="stPopover"] button {{
@@ -159,84 +140,36 @@ button[data-baseweb="tab"] {{
     margin-right: 2px;
     flex-grow: 1;
 }}
-
-@media (max-width: 640px) {{
-    button[data-baseweb="tab"] {{
-        font-size: 11px !important;
-        padding: 8px 4px !important;
-    }}
-}}
-
 button[data-baseweb="tab"][aria-selected="true"] {{
     background: linear-gradient(180deg, #2d343f 0%, #1a1f26 100%) !important;
     border-top: 2px solid var(--accent-gold) !important;
 }}
-button[data-baseweb="tab"][aria-selected="true"] p {{
-    color: #FFFFFF !important;
-}}
+button[data-baseweb="tab"][aria-selected="true"] p {{ color: #FFFFFF !important; }}
 
 /* COMPONENTS */
 .gov-pill {{
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-family: 'Fira Code', monospace;
-    font-size: 11px;
-    font-weight: bold;
-    color: white;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    margin-left: 10px;
-    vertical-align: middle;
-    text-transform: uppercase;
+    display: inline-block; padding: 4px 12px; border-radius: 12px;
+    font-family: 'Fira Code', monospace; font-size: 11px; font-weight: bold;
+    color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); margin-left: 10px;
+    vertical-align: middle; text-transform: uppercase;
 }}
-
 .premium-pill {{ display: inline-block; padding: 4px 12px; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 800; color: #3b2c00; background: linear-gradient(135deg, #bf953f 0%, #fcf6ba 100%); box-shadow: 0 2px 5px rgba(0,0,0,0.2); margin-left: 5px; vertical-align: middle; letter-spacing: 1px; }}
-
-.steel-sub-header {{
-    background: linear-gradient(145deg, #1a1f26, #2d343f);
-    padding: 8px 15px;
-    border-radius: 6px;
-    border: 1px solid #4a4f58;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    margin-bottom: 15px;
-}}
-
-.steel-text {{
-    background: linear-gradient(180deg, #FFFFFF 0%, #A0A0A0 50%, #E0E0E0 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    font-family: 'Inter', sans-serif;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    margin: 0;
-    line-height: 1.1;
-    font-size: 26px !important;
-}}
+.steel-sub-header {{ background: linear-gradient(145deg, #1a1f26, #2d343f); padding: 8px 15px; border-radius: 6px; border: 1px solid #4a4f58; box-shadow: 0 2px 4px rgba(0,0,0,0.3); margin-bottom: 15px; }}
 
 .market-card {{ background: var(--card-bg); border: 1px solid rgba(128,128,128,0.2); border-radius: 6px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; margin-bottom: 10px; }}
 .market-ticker {{ color: var(--text-secondary); font-size: 11px; margin-bottom: 2px; }}
 .market-price {{ color: var(--text-primary); font-family: 'Fira Code', monospace; font-size: 22px; font-weight: 700; margin: 2px 0; }}
 .market-delta {{ font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 600; }}
 
-/* REMOVE DEFAULT UI */
-#MainMenu {{visibility: hidden;}}
-footer {{visibility: hidden;}}
-header {{visibility: hidden;}} 
+/* UTILS */
+#MainMenu, footer, header {{ visibility: hidden; }}
 .block-container {{ padding-top: 1rem !important; padding-bottom: 2rem !important; }}
 div[data-testid="column"] {{ padding: 0px !important; }}
 div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
 
-/* FOOTER */
 .custom-footer {{
-    font-family: 'Fira Code', monospace;
-    font-size: 10px;
-    color: var(--text-secondary) !important;
-    text-align: center;
-    margin-top: 50px;
-    border-top: 1px solid #30363d;
-    padding-top: 20px;
-    text-transform: uppercase;
+    font-family: 'Fira Code', monospace; font-size: 10px; color: var(--text-secondary) !important;
+    text-align: center; margin-top: 50px; border-top: 1px solid #30363d; padding-top: 20px; text-transform: uppercase;
 }}
 </style>
 """, unsafe_allow_html=True)
@@ -339,15 +272,22 @@ except Exception as e:
 c_title, c_menu = st.columns([0.85, 0.15])
 
 with c_title:
-    # --- FIXED BANNER IMPLEMENTATION ---
-    # This assumes 'banner.png' is in the same folder as your script.
-    # If it's in a subfolder like 'assets', change it to 'assets/banner.png'
-    st.image("banner.png", use_container_width=True) 
+    # --- SAFE BANNER LOADING (RESIZED TO 450px) ---
+    if os.path.exists("banner.png"):
+        # Fixed width of 450px ensures it fits the title bar area perfectly
+        st.image("banner.png", width=450)
+    else:
+        # Fallback to Text Header if file is missing (e.g. on Cloud)
+        st.markdown(f"""
+        <div class="steel-header-container">
+            <span class="steel-text">MacroEffects</span>
+            <span class="tagline-text" style="color: #C0C0C0 !important; font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin: 0; line-height: 1.1;">AI INFERENCE FOCUSED ON STOCK MARKETS</span>
+        </div>
+        """, unsafe_allow_html=True)
 
 with c_menu:
     with st.popover("☰", use_container_width=True):
         st.caption("Settings & Links")
-        # FIXED INDENTATION HERE:
         is_dark = st.toggle("Dark Mode", value=st.session_state["dark_mode"])
         if is_dark != st.session_state["dark_mode"]:
             st.session_state["dark_mode"] = is_dark
@@ -530,7 +470,7 @@ else:
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v46.0 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v48.0 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
