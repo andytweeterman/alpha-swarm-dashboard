@@ -30,9 +30,9 @@ current_theme = {
     "card_bg": "rgba(22, 27, 34, 0.7)" if st.session_state["dark_mode"] else "rgba(255, 255, 255, 0.9)",
     "card_border": "1px solid rgba(255, 255, 255, 0.08)" if st.session_state["dark_mode"] else "1px solid rgba(49, 51, 63, 0.1)",
     
-    # DARK MODE TUNING:
-    # Primary: White (for values)
-    # Secondary: Light Grey (#B0B8C1) for Labels/Headers per request
+    # COLORS
+    # Primary: White (Dark Mode) / Black (Light Mode)
+    # Secondary: Light Grey (Dark Mode) / Dark Grey (Light Mode)
     "text_primary": "#FFFFFF" if st.session_state["dark_mode"] else "#000000", 
     "text_secondary": "#B0B8C1" if st.session_state["dark_mode"] else "#666666", 
     
@@ -66,15 +66,27 @@ st.markdown(f"""
     color: var(--text-primary) !important;
 }}
 
-/* 2. Headers (H3) - Forced to Secondary (Light Grey) in Dark Mode */
+/* 2. Headers (H3) */
 h3 {{
     color: var(--text-secondary) !important;
     font-weight: 600 !important;
 }}
 
-/* 3. Metric Labels (Risk VIX, Credit Spreads) - Forced to Light Grey */
+/* 3. RADIO BUTTONS (Risk Tab Fix) */
+/* The Label "Select View Horizon:" */
+div[data-testid="stRadio"] > label {{
+    color: var(--text-secondary) !important; /* Force Light Grey */
+    font-weight: 600 !important;
+    font-size: 14px !important;
+}}
+/* The Options "Tactical", "Strategic" */
+div[data-testid="stRadio"] div[role="radiogroup"] p {{
+    color: var(--text-secondary) !important; /* Force Light Grey */
+}}
+
+/* 4. METRIC LABELS (Risk VIX, Credit Spreads) */
 div[data-testid="stMetricLabel"] {{
-    color: var(--text-secondary) !important; 
+    color: var(--text-secondary) !important; /* Force Light Grey */
     font-size: 14px !important;
     font-weight: 500 !important;
 }}
@@ -82,7 +94,7 @@ div[data-testid="stMetricValue"] {{
     color: var(--text-primary) !important;
 }}
 
-/* 4. Tooltip Icons */
+/* 5. Tooltip Icons */
 [data-testid="stTooltipIcon"] {{
     color: var(--text-secondary) !important;
     opacity: 0.8 !important;
@@ -91,7 +103,7 @@ div[data-testid="stMetricValue"] {{
     fill: var(--text-secondary) !important;
 }}
 
-/* 5. Expander Header (Strategist) */
+/* 6. Expander Header (Strategist) */
 [data-testid="stExpander"] {{
     background-color: transparent !important; 
     border: 1px solid var(--card-border) !important;
@@ -139,6 +151,7 @@ div[data-testid="stMetricValue"] {{
     text-transform: uppercase;
     margin: 0;
     line-height: 1.1;
+    opacity: 1 !important;
 }}
 
 /* MENU BUTTON */
@@ -486,7 +499,6 @@ if full_data is not None and closes is not None:
         st.markdown('<div class="steel-sub-header"><span class="steel-text" style="font-size: 20px !important;">Risk Governance & Compliance</span></div>', unsafe_allow_html=True)
         col1, col2 = st.columns([2, 1])
         with col1:
-            # THIS IS THE NEW PILL (REPLACING THE BADGE)
             st.markdown(f'<div class="gov-pill" style="background: linear-gradient(135deg, {color}, {color}88); border: 1px solid {color};">{status}</div>', unsafe_allow_html=True)
             st.caption(f"Reason: {reason}")
         with col2:
@@ -551,7 +563,7 @@ else:
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v36.0 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v37.0 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
