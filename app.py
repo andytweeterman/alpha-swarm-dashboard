@@ -123,32 +123,7 @@ div[data-testid="stRadio"] div[role="radiogroup"] p {{
 }}
 
 /* --- HEADER & TAGLINE --- */
-.steel-header-container {{
-    background: linear-gradient(145deg, #1a1f26, #2d343f);
-    padding: 0px 20px;
-    border-radius: 8px 0 0 8px; 
-    border: 1px solid #4a4f58;
-    border-right: none; 
-    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-    margin-bottom: 5px; 
-    height: 80px; 
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}}
-
-.steel-text {{
-    background: linear-gradient(180deg, #FFFFFF 0%, #A0A0A0 50%, #E0E0E0 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    font-family: 'Inter', sans-serif;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    margin: 0;
-    line-height: 1.1;
-    font-size: 26px !important;
-}}
+/* REMOVED OLD HEADER CSS */
 
 /* MENU BUTTON */
 [data-testid="stPopover"] button {{
@@ -224,6 +199,19 @@ button[data-baseweb="tab"][aria-selected="true"] p {{
     border: 1px solid #4a4f58;
     box-shadow: 0 2px 4px rgba(0,0,0,0.3);
     margin-bottom: 15px;
+}}
+
+.steel-text {{
+    background: linear-gradient(180deg, #FFFFFF 0%, #A0A0A0 50%, #E0E0E0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin: 0;
+    line-height: 1.1;
+    font-size: 26px !important;
 }}
 
 .market-card {{ background: var(--card-bg); border: 1px solid rgba(128,128,128,0.2); border-radius: 6px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; margin-bottom: 10px; }}
@@ -351,13 +339,11 @@ except Exception as e:
 c_title, c_menu = st.columns([0.85, 0.15])
 
 with c_title:
-    # INLINE STYLE: Force Silver Color on Tagline
-    st.markdown(f"""
-    <div class="steel-header-container">
-        <span class="steel-text">MacroEffects</span>
-        <span class="tagline-text" style="color: #C0C0C0 !important; font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin: 0; line-height: 1.1;">AI INFERENCE FOCUSED ON STOCK MARKETS</span>
-    </div>
-    """, unsafe_allow_html=True)
+    # --- NEW BANNER IMPLEMENTATION ---
+    # Using the generated shield banner. 
+    # Note: In production, download this image and host it locally or on your S3 bucket.
+    banner_url = "https://i.imgur.com/yYj7XyP.png" 
+    st.image(banner_url, use_container_width=True, output_format="PNG")
 
 with c_menu:
     with st.popover("☰", use_container_width=True):
