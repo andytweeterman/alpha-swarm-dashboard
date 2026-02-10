@@ -23,18 +23,18 @@ status = "SYSTEM BOOT"
 color = "#888888"
 
 # ==========================================
-# 2. THEME ENGINE
+# 2. THEME ENGINE (PRECISION TUNED)
 # ==========================================
 current_theme = {
     "bg_color": "#0e1117" if st.session_state["dark_mode"] else "#ffffff",
     "card_bg": "rgba(22, 27, 34, 0.7)" if st.session_state["dark_mode"] else "rgba(255, 255, 255, 0.9)",
     "card_border": "1px solid rgba(255, 255, 255, 0.08)" if st.session_state["dark_mode"] else "1px solid rgba(49, 51, 63, 0.1)",
     
-    # COLORS
-    # Dark Mode: Primary = White, Secondary = Light Grey (#A3AAB2)
-    # Light Mode: Primary = Black, Secondary = Dark Grey
+    # DARK MODE TUNING:
+    # Primary: White (for values)
+    # Secondary: Light Grey (#B0B8C1) for Labels/Headers per request
     "text_primary": "#FFFFFF" if st.session_state["dark_mode"] else "#000000", 
-    "text_secondary": "#A3AAB2" if st.session_state["dark_mode"] else "#444444", 
+    "text_secondary": "#B0B8C1" if st.session_state["dark_mode"] else "#666666", 
     
     "accent_gold": "#C6A87C",
     "chart_template": "plotly_dark" if st.session_state["dark_mode"] else "plotly_white",
@@ -59,50 +59,42 @@ st.markdown(f"""
 
 .stApp {{ background-color: var(--bg-color) !important; font-family: 'Inter', sans-serif; }}
 
-/* --- TEXT READABILITY ENFORCERS --- */
+/* --- TEXT ENFORCERS --- */
 
 /* 1. Global Paragraphs */
 .stMarkdown p, .stMarkdown span, .stMarkdown li {{
     color: var(--text-primary) !important;
 }}
 
-/* 2. Radio Button Labels */
-div[data-testid="stRadio"] > label {{
-    color: var(--text-primary) !important;
-    font-weight: 700 !important;
-}}
-div[data-testid="stRadio"] div[role="radiogroup"] p {{
-    color: var(--text-primary) !important;
+/* 2. Headers (H3) - Forced to Secondary (Light Grey) in Dark Mode */
+h3 {{
+    color: var(--text-secondary) !important;
+    font-weight: 600 !important;
 }}
 
-/* 3. Metric Labels (Risk VIX, Credit Spreads) - LIGHT GREY IN DARK MODE */
+/* 3. Metric Labels (Risk VIX, Credit Spreads) - Forced to Light Grey */
 div[data-testid="stMetricLabel"] {{
     color: var(--text-secondary) !important; 
-    font-weight: 500 !important;
     font-size: 14px !important;
+    font-weight: 500 !important;
 }}
 div[data-testid="stMetricValue"] {{
     color: var(--text-primary) !important;
 }}
 
-/* 4. Tooltip Icons - LIGHT GREY IN DARK MODE */
+/* 4. Tooltip Icons */
 [data-testid="stTooltipIcon"] {{
     color: var(--text-secondary) !important;
-    opacity: 1 !important;
+    opacity: 0.8 !important;
 }}
 [data-testid="stTooltipIcon"] svg {{
     fill: var(--text-secondary) !important;
-    color: var(--text-secondary) !important;
 }}
 
-/* 5. Expander Header (Strategist Date Fix) */
+/* 5. Expander Header (Strategist) */
 [data-testid="stExpander"] {{
     background-color: transparent !important; 
     border: 1px solid var(--card-border) !important;
-}}
-.streamlit-expanderHeader {{
-    background-color: var(--card-bg) !important; 
-    color: var(--text-primary) !important;
 }}
 .streamlit-expanderHeader p {{
     color: var(--text-primary) !important;
@@ -139,7 +131,7 @@ div[data-testid="stMetricValue"] {{
 
 /* TAGLINE (ALWAYS LIGHT GREY) */
 .tagline-text {{
-    color: #B0B0B0 !important; /* Explicit Light Grey */
+    color: #C0C0C0 !important; /* Silver/Light Grey */
     font-family: 'Inter', sans-serif;
     font-size: 10px;
     font-weight: 600;
@@ -147,7 +139,6 @@ div[data-testid="stMetricValue"] {{
     text-transform: uppercase;
     margin: 0;
     line-height: 1.1;
-    opacity: 1 !important;
 }}
 
 /* MENU BUTTON */
@@ -210,21 +201,21 @@ button[data-baseweb="tab"][aria-selected="true"] p {{
     margin-bottom: 15px;
 }}
 
-/* GOVERNANCE PILL */
+/* SMALL GOVERNANCE PILL */
 .gov-pill {{
     display: inline-block;
-    padding: 6px 16px;
-    border-radius: 20px;
-    font-family: 'Inter', sans-serif;
-    font-size: 12px;
-    font-weight: 800;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-family: 'Fira Code', monospace;
+    font-size: 11px;
+    font-weight: bold;
     color: white;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-    letter-spacing: 0.5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    margin-left: 10px;
+    vertical-align: middle;
     text-transform: uppercase;
 }}
 
-.mini-badge {{ display: inline-block; padding: 4px 12px; border-radius: 12px; font-family: 'Fira Code', monospace; font-size: 11px; font-weight: bold; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); margin-left: 10px; vertical-align: middle; }}
 .premium-pill {{ display: inline-block; padding: 4px 12px; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 800; color: #3b2c00; background: linear-gradient(135deg, #bf953f 0%, #fcf6ba 100%); box-shadow: 0 2px 5px rgba(0,0,0,0.2); margin-left: 5px; vertical-align: middle; letter-spacing: 1px; }}
 
 .premium-banner {{
@@ -387,7 +378,7 @@ with c_menu:
         st.link_button("About Us", "https://sixmonthstockmarketforecast.com/about") 
         st.link_button("Contact Analyst", "mailto:analyst@macroeffects.com")
 
-# SUBHEADER
+# SUBHEADER WITH SMALL PILL
 st.markdown(f"""
 <div style="margin-bottom: 20px; margin-top: 15px;">
     <span style="font-family: 'Inter'; font-weight: 600; font-size: 16px; color: var(--text-secondary);">Macro-Economic Intelligence: Global Market Command Center</span>
@@ -495,7 +486,8 @@ if full_data is not None and closes is not None:
         st.markdown('<div class="steel-sub-header"><span class="steel-text" style="font-size: 20px !important;">Risk Governance & Compliance</span></div>', unsafe_allow_html=True)
         col1, col2 = st.columns([2, 1])
         with col1:
-            st.markdown(f'<div class="big-badge" style="background: linear-gradient(135deg, {color}cc, {color}); border: 1px solid {color}; box-shadow: 0 0 20px {color}66;">GOVERNANCE STATUS: {status}</div>', unsafe_allow_html=True)
+            # THIS IS THE NEW PILL (REPLACING THE BADGE)
+            st.markdown(f'<div class="gov-pill" style="background: linear-gradient(135deg, {color}, {color}88); border: 1px solid {color};">{status}</div>', unsafe_allow_html=True)
             st.caption(f"Reason: {reason}")
         with col2:
             if '^VIX' in closes:
@@ -559,7 +551,7 @@ else:
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v35.0 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v36.0 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
