@@ -17,91 +17,126 @@ with st.sidebar:
     st.divider()
     st.caption("Powered by Alpha Swarm v17.0")
     st.caption("Status: INSTITUTIONAL ACCESS")
+    st.divider()
+    dark_mode = st.toggle("Dark Mode", value=False)
+
+# THEME CONFIGURATION
+theme_config = {
+    True: { # Dark Mode
+        "bg_color": "#0e1117",
+        "card_bg": "rgba(22, 27, 34, 0.7)",
+        "card_border": "1px solid rgba(255, 255, 255, 0.08)",
+        "text_primary": "#e6e6e6",
+        "text_secondary": "#8b949e",
+        "accent_gold": "#C6A87C",
+        "accent_blue": "#00f2ff",
+        "glass_shadow": "0 4px 30px rgba(0, 0, 0, 0.3)",
+        "sidebar_bg": "#090c10",
+        "sidebar_border": "#30363d",
+        "chart_template": "plotly_dark",
+        "chart_font_color": "#e6e6e6"
+    },
+    False: { # Light Mode
+        "bg_color": "#ffffff",
+        "card_bg": "rgba(255, 255, 255, 0.9)",
+        "card_border": "1px solid rgba(49, 51, 63, 0.1)",
+        "text_primary": "#31333F",
+        "text_secondary": "#555555",
+        "accent_gold": "#b08d55",
+        "accent_blue": "#007bff",
+        "glass_shadow": "0 4px 10px rgba(0, 0, 0, 0.1)",
+        "sidebar_bg": "#f8f9fa",
+        "sidebar_border": "#dee2e6",
+        "chart_template": "plotly_white",
+        "chart_font_color": "#31333F"
+    }
+}
+current_theme = theme_config[dark_mode]
 
 # --- INSTITUTIONAL API DATA HOSE CSS ---
-st.markdown("""
+st.markdown(f"""
 <style>
 /* FONT IMPORTS (Fallbacks to system fonts) */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Fira+Code:wght@300;500;700&display=swap');
 
 /* GLOBAL VARIABLES */
-:root {
-    --bg-color: #0e1117;
-    --card-bg: rgba(22, 27, 34, 0.7);
-    --card-border: 1px solid rgba(255, 255, 255, 0.08);
-    --text-primary: #e6e6e6;
-    --text-secondary: #8b949e;
-    --accent-gold: #C6A87C;
-    --accent-blue: #00f2ff;
+:root {{
+    --bg-color: {current_theme['bg_color']};
+    --card-bg: {current_theme['card_bg']};
+    --card-border: {current_theme['card_border']};
+    --text-primary: {current_theme['text_primary']};
+    --text-secondary: {current_theme['text_secondary']};
+    --accent-gold: {current_theme['accent_gold']};
+    --accent-blue: {current_theme['accent_blue']};
     --success: #00d26a;
     --danger: #f93e3e;
-    --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
-}
+    --glass-shadow: {current_theme['glass_shadow']};
+}}
 
 /* HIDE DEFAULT STREAMLIT ELEMENTS */
-#MainMenu {visibility: hidden;}
-footer {visibility: hidden;}
-header {visibility: hidden;}
+#MainMenu {{visibility: hidden;}}
+footer {{visibility: hidden;}}
+header {{visibility: hidden;}}
 
 /* APP BACKGROUND */
-.stApp {
+.stApp {{
     background-color: var(--bg-color) !important;
     font-family: 'Inter', sans-serif;
-}
+}}
 
 /* TYPOGRAPHY OVERRIDES */
-h1, h2, h3, h4, h5, h6 {
+h1, h2, h3, h4, h5, h6 {{
     color: var(--text-primary) !important;
     font-family: 'Inter', sans-serif;
     font-weight: 800;
     letter-spacing: -0.5px;
     text-transform: uppercase;
-}
+}}
 
-h1 {
+h1 {{
     background: linear-gradient(90deg, #FFFFFF 0%, #888888 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     border-bottom: 1px solid var(--accent-blue);
     padding-bottom: 10px;
     display: inline-block;
-}
+}}
 
-p, span, li, label {
+p, span, li, label {{
     color: var(--text-secondary) !important;
     font-family: 'Inter', sans-serif;
-}
+}}
 
 /* SIDEBAR STYLING */
-section[data-testid="stSidebar"] {
-    background-color: #090c10 !important;
-    border-right: 1px solid #30363d;
-}
+section[data-testid="stSidebar"] {{
+    background-color: {current_theme['sidebar_bg']} !important;
+    border-right: 1px solid {current_theme['sidebar_border']};
+}}
 
-section[data-testid="stSidebar"] h2 {
+section[data-testid="stSidebar"] h2 {{
     color: var(--accent-gold) !important;
     -webkit-text-fill-color: var(--accent-gold) !important;
     font-size: 1.2rem !important;
-}
+}}
 
 /* METRICS & DATA (Monospace for Numbers) */
-div[data-testid="stMetricValue"] {
+div[data-testid="stMetricValue"] {{
     font-family: 'Fira Code', monospace !important;
     font-size: 28px !important;
-    color: #FFFFFF !important;
+    color: {current_theme['text_primary']} !important;
     font-weight: 700;
-}
+}}
 
-div[data-testid="stMetricLabel"] {
+div[data-testid="stMetricLabel"] {{
     font-family: 'Inter', sans-serif;
     color: var(--text-secondary) !important;
     font-size: 14px;
     text-transform: uppercase;
     letter-spacing: 1px;
-}
+}}
 
 /* MARKET CARDS (Glassmorphism) */
-.market-card {
+.market-card {{
     background: var(--card-bg);
     border: var(--card-border);
     border-radius: 4px; /* Sharper corners for "Tech" feel */
@@ -112,37 +147,37 @@ div[data-testid="stMetricLabel"] {
     text-align: center;
     transition: transform 0.2s ease, border-color 0.2s ease;
     margin-bottom: 15px;
-}
+}}
 
-.market-card:hover {
+.market-card:hover {{
     border-color: var(--accent-blue);
     transform: translateY(-2px);
-}
+}}
 
-.market-ticker {
+.market-ticker {{
     color: var(--text-secondary);
     font-family: 'Fira Code', monospace;
     font-size: 12px;
     letter-spacing: 1px;
     margin-bottom: 5px;
-}
+}}
 
-.market-price {
-    color: #FFFFFF;
+.market-price {{
+    color: {current_theme['text_primary']};
     font-family: 'Fira Code', monospace;
     font-size: 24px;
     font-weight: 700;
     margin: 5px 0;
-}
+}}
 
-.market-delta {
+.market-delta {{
     font-family: 'Fira Code', monospace;
     font-size: 14px;
     font-weight: 500;
-}
+}}
 
 /* TABS */
-button[data-baseweb="tab"] {
+button[data-baseweb="tab"] {{
     background-color: transparent !important;
     color: var(--text-secondary) !important;
     font-family: 'Inter', sans-serif;
@@ -151,27 +186,27 @@ button[data-baseweb="tab"] {
     letter-spacing: 1px;
     border-radius: 0 !important;
     border-bottom: 2px solid transparent;
-}
+}}
 
-button[data-baseweb="tab"][aria-selected="true"] {
+button[data-baseweb="tab"][aria-selected="true"] {{
     color: var(--accent-blue) !important;
     border-bottom: 2px solid var(--accent-blue) !important;
-}
+}}
 
 /* EXPANDER */
-[data-testid="stExpander"] {
+[data-testid="stExpander"] {{
     background-color: rgba(255,255,255,0.02) !important;
     border: 1px solid #30363d !important;
     border-radius: 4px;
-}
+}}
 
-[data-testid="stExpander"] summary {
+[data-testid="stExpander"] summary {{
     color: var(--text-primary) !important;
     font-family: 'Fira Code', monospace;
-}
+}}
 
 /* ALERTS & BADGES */
-.big-badge {
+.big-badge {{
     font-family: 'Inter', sans-serif;
     font-size: 18px;
     font-weight: 800;
@@ -183,10 +218,10 @@ button[data-baseweb="tab"][aria-selected="true"] {
     letter-spacing: 2px;
     position: relative;
     overflow: hidden;
-}
+}}
 
 /* Shine Effect for Badge */
-.big-badge::after {
+.big-badge::after {{
     content: '';
     position: absolute;
     top: 0;
@@ -195,13 +230,13 @@ button[data-baseweb="tab"][aria-selected="true"] {
     height: 100%;
     background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
     animation: shine 3s infinite;
-}
+}}
 
-@keyframes shine {
-    100% { left: 100%; }
-}
+@keyframes shine {{
+    100% {{ left: 100%; }}
+}}
 
-.premium-banner {
+.premium-banner {{
     background: linear-gradient(90deg, #090c10 0%, #161b22 100%);
     border: 1px solid #30363d;
     border-left: 4px solid var(--accent-gold);
@@ -213,10 +248,10 @@ button[data-baseweb="tab"][aria-selected="true"] {
     font-family: 'Fira Code', monospace;
     font-size: 12px;
     text-transform: uppercase;
-}
+}}
 
 /* FOOTER */
-.custom-footer {
+.custom-footer {{
     font-family: 'Fira Code', monospace;
     font-size: 10px;
     color: #484f58 !important;
@@ -225,13 +260,13 @@ button[data-baseweb="tab"][aria-selected="true"] {
     border-top: 1px solid #30363d;
     padding-top: 30px;
     text-transform: uppercase;
-}
+}}
 </style>
 """, unsafe_allow_html=True)
 
-chart_template = "plotly_dark"
+chart_template = current_theme['chart_template']
 chart_bg = 'rgba(0,0,0,0)'
-chart_font_color = '#e6e6e6'
+chart_font_color = current_theme['chart_font_color']
 
 # ==========================================
 # 2. THE ENGINE
