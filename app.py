@@ -7,7 +7,7 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. PAGE SETUP
+# 1. PAGE CONFIGURATION
 # ==========================================
 st.set_page_config(page_title="MacroEffects | Global Command", page_icon="M", layout="wide")
 
@@ -15,9 +15,7 @@ st.set_page_config(page_title="MacroEffects | Global Command", page_icon="M", la
 if "dark_mode" not in st.session_state:
     st.session_state["dark_mode"] = False
 
-# ==========================================
-# 2. GLOBAL THEME & VARIABLES (DEFINED FIRST TO PREVENT CRASHES)
-# ==========================================
+# THEME CONFIGURATION
 theme_config = {
     True: { # Dark Mode
         "bg_color": "#0e1117",
@@ -27,13 +25,8 @@ theme_config = {
         "text_secondary": "#b0b8c1",
         "accent_gold": "#C6A87C",
         "accent_blue": "#00f2ff",
-        "glass_shadow": "0 4px 30px rgba(0, 0, 0, 0.3)",
-        "sidebar_bg": "#090c10",
-        "sidebar_border": "#30363d",
         "chart_template": "plotly_dark",
-        "chart_font_color": "#e6e6e6",
-        "glass_bg": "rgba(255, 255, 255, 0.05)",
-        "steel_gradient": "linear-gradient(180deg, #E6E6E6 0%, #A4A4A4 48%, #E6E6E6 50%, #B8B8B8 100%)"
+        "chart_font_color": "#e6e6e6"
     },
     False: { # Light Mode
         "bg_color": "#ffffff",
@@ -43,32 +36,19 @@ theme_config = {
         "text_secondary": "#555555",
         "accent_gold": "#b08d55",
         "accent_blue": "#007bff",
-        "glass_shadow": "0 4px 10px rgba(0, 0, 0, 0.1)",
-        "sidebar_bg": "#f8f9fa",
-        "sidebar_border": "#dee2e6",
         "chart_template": "plotly_white",
-        "chart_font_color": "#31333F",
-        "glass_bg": "rgba(0, 0, 0, 0.05)",
-        "steel_gradient": "linear-gradient(180deg, #555555 0%, #222222 48%, #555555 50%, #333333 100%)"
+        "chart_font_color": "#31333F"
     }
 }
-
-# --- GLOBAL VARIABLES (Must be defined here to prevent NameError) ---
 current_theme = theme_config[st.session_state["dark_mode"]]
-chart_template = current_theme['chart_template']
-chart_font_color = current_theme['chart_font_color']
-chart_bg = 'rgba(0,0,0,0)' # Transparent
 
-# SAFE DEFAULTS
-status = "SYSTEM BOOT"
-color = "#888888"
-reason = "Initializing..."
-full_data = None
-closes = None
-latest_monitor = None
+# --- GLOBAL CHART VARIABLES (Passed explicitly later) ---
+G_CHART_TEMPLATE = current_theme['chart_template']
+G_CHART_FONT = current_theme['chart_font_color']
+G_CHART_BG = 'rgba(0,0,0,0)'
 
 # ==========================================
-# 3. CSS STYLING
+# 2. CSS STYLING
 # ==========================================
 st.markdown(f"""
 <style>
@@ -81,12 +61,11 @@ st.markdown(f"""
     --text-primary: {current_theme['text_primary']};
     --text-secondary: {current_theme['text_secondary']};
     --accent-gold: {current_theme['accent_gold']};
-    --steel-gradient: {current_theme['steel_gradient']};
 }}
 
 .stApp {{ background-color: var(--bg-color) !important; font-family: 'Inter', sans-serif; }}
 
-/* REMOVE STREAMLIT BRANDING */
+/* HIDE STREAMLIT UI */
 #MainMenu {{visibility: hidden;}}
 footer {{visibility: hidden;}}
 header {{visibility: hidden;}} 
@@ -96,7 +75,7 @@ header {{visibility: hidden;}}
 div[data-testid="column"] {{ padding: 0px !important; }}
 div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
 
-/* HEADER CONTAINER (CENTERED) */
+/* HEADER CONTAINER */
 .steel-header-container {{
     background: linear-gradient(145deg, #1a1f26, #2d343f);
     padding: 0px 20px;
@@ -105,11 +84,11 @@ div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
     border-right: none; 
     box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     margin-bottom: 5px; 
-    height: 80px; 
+    height: 60px; /* FIXED HEIGHT */
     display: flex;
     flex-direction: column;
-    justify-content: center; /* VERTICAL CENTER */
-    gap: 2px; /* Tight gap */
+    justify-content: center;
+    gap: 0px;
 }}
 
 .steel-text {{
@@ -119,22 +98,23 @@ div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
     font-family: 'Inter', sans-serif;
     font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 1.5px;
+    letter-spacing: 1px;
     margin: 0;
-    line-height: 1.1;
-    font-size: 26px !important;
+    line-height: 1;
+    font-size: 22px !important;
 }}
 
 .tagline-text {{
     color: #F0F0F0 !important; 
     font-family: 'Inter', sans-serif;
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 500;
-    letter-spacing: 2px;
+    letter-spacing: 1.5px;
     text-transform: uppercase;
     margin: 0;
     line-height: 1;
     opacity: 0.8;
+    padding-top: 3px;
 }}
 
 /* MENU BUTTON INTEGRATION */
@@ -142,9 +122,9 @@ div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
     border: 1px solid #4a4f58;
     background: linear-gradient(145deg, #1a1f26, #2d343f);
     color: #C6A87C; 
-    font-size: 28px !important;
+    font-size: 24px !important;
     font-weight: bold;
-    height: 80px; 
+    height: 60px; /* MATCH HEADER HEIGHT */
     width: 100%;
     margin-top: 0px;
     border-radius: 0 8px 8px 0; 
@@ -166,9 +146,9 @@ button[data-baseweb="tab"] {{
     color: var(--text-secondary) !important;
     font-family: 'Inter', sans-serif;
     font-weight: 600;
-    font-size: 12px; /* Mobile Friendly */
+    font-size: 12px;
     text-transform: uppercase;
-    padding: 10px 10px; /* Tighter padding */
+    padding: 10px 10px;
     margin-right: 2px;
     flex-grow: 1;
 }}
@@ -181,7 +161,7 @@ button[data-baseweb="tab"][aria-selected="true"] p {{
     color: #FFFFFF !important;
 }}
 
-/* COMPONENT STYLES */
+/* COMPONENTS */
 .steel-sub-header {{
     background: linear-gradient(145deg, #1a1f26, #2d343f);
     padding: 8px 15px;
@@ -205,7 +185,7 @@ button[data-baseweb="tab"][aria-selected="true"] p {{
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 4. HELPER FUNCTIONS
+# 3. HELPER FUNCTIONS (WITH EXPLICIT ARGS)
 # ==========================================
 @st.cache_data(ttl=3600)
 def fetch_data():
@@ -268,15 +248,26 @@ def generate_forecast(start_date, last_price, last_std, days=30):
         future_lower.append(future_mean[i-1] - width)
     return future_dates, future_mean, future_upper, future_lower
 
-def make_sparkline(data, color):
+# UPDATED: Now accepts styling arguments explicitly
+def make_sparkline(data, color, bg_color):
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=data.index, y=data, mode='lines', line=dict(color=color, width=2), hoverinfo='skip'))
-    fig.update_layout(height=40, margin=dict(l=0,r=0,t=0,b=0), xaxis=dict(visible=False), yaxis=dict(visible=False), plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)')
+    fig.update_layout(
+        height=40, margin=dict(l=0,r=0,t=0,b=0), 
+        xaxis=dict(visible=False), yaxis=dict(visible=False), 
+        plot_bgcolor=bg_color, paper_bgcolor=bg_color
+    )
     return fig
 
 # ==========================================
-# 5. EXECUTION PHASE (DATA LOADING)
+# 4. EXECUTION PHASE (DATA LOADING)
 # ==========================================
+status = "INITIALIZING"
+color = "#888888"
+full_data = None
+closes = None
+latest_monitor = None
+
 try:
     with st.spinner("Connecting to Global Swarm..."):
         full_data = fetch_data()
@@ -291,10 +282,10 @@ except Exception as e:
     status, color, reason = "SYSTEM ERROR", "#ff0000", "Connection Failed"
 
 # ==========================================
-# 6. UI LAYOUT
+# 5. UI LAYOUT
 # ==========================================
 
-# HEADER (85/15 Ratio for better mobile fit)
+# HEADER (85/15 Ratio)
 c_title, c_menu = st.columns([0.85, 0.15])
 
 with c_title:
@@ -356,7 +347,8 @@ if full_data is not None and closes is not None:
                             current = series.iloc[-1]; prev = series.iloc[-2]; delta = current - prev; pct = (delta / prev) * 100
                             delta_color = "#00d26a" if delta >= 0 else "#f93e3e"
                             st.markdown(f"""<div class="market-card"><div class="market-ticker">{asset['name']}</div><div class="market-price">{current:,.2f}</div><div class="market-delta" style="color: {delta_color};">{delta:+.2f} ({pct:+.2f}%)</div></div>""", unsafe_allow_html=True)
-                            st.plotly_chart(make_sparkline(series.tail(30), asset['color']), use_container_width=True, config={'displayModeBar': False})
+                            # EXPLICIT ARGS PASSED HERE
+                            st.plotly_chart(make_sparkline(series.tail(30), asset['color'], G_CHART_BG), use_container_width=True, config={'displayModeBar': False})
             st.markdown("---")
             c4, c5, c6 = st.columns(3)
             for i, col in enumerate([c4, c5, c6]):
@@ -368,7 +360,7 @@ if full_data is not None and closes is not None:
                             current = series.iloc[-1]; prev = series.iloc[-2]; delta = current - prev; pct = (delta / prev) * 100
                             delta_color = "#00d26a" if delta >= 0 else "#f93e3e"
                             st.markdown(f"""<div class="market-card"><div class="market-ticker">{asset['name']}</div><div class="market-price">{current:,.2f}</div><div class="market-delta" style="color: {delta_color};">{delta:+.2f} ({pct:+.2f}%)</div></div>""", unsafe_allow_html=True)
-                            st.plotly_chart(make_sparkline(series.tail(30), asset['color']), use_container_width=True, config={'displayModeBar': False})
+                            st.plotly_chart(make_sparkline(series.tail(30), asset['color'], G_CHART_BG), use_container_width=True, config={'displayModeBar': False})
             
             st.divider()
             
@@ -400,7 +392,7 @@ if full_data is not None and closes is not None:
                 if show_forecast:
                     fig.add_trace(go.Scatter(x=f_dates, y=f_lower, line=dict(width=0), showlegend=False, hoverinfo='skip'), row=1, col=1)
                     fig.add_trace(go.Scatter(x=f_dates, y=f_upper, fill='tonexty', fillcolor='rgba(200, 0, 255, 0.15)', line=dict(width=0), name="Proj. Uncertainty", hoverinfo='skip'), row=1, col=1)
-                    fig.add_trace(go.Scatter(x=f_dates, y=f_mean, name="Swarm Forecast", line=dict(color=chart_font_color, width=2, dash='dot')), row=1, col=1)
+                    fig.add_trace(go.Scatter(x=f_dates, y=f_mean, name="Swarm Forecast", line=dict(color=G_CHART_FONT, width=2, dash='dot')), row=1, col=1)
 
                 subset_ppo = ppo[ppo.index >= chart_data.index[0]]; subset_sig = sig[sig.index >= chart_data.index[0]]; subset_hist = hist[hist.index >= chart_data.index[0]]
                 fig.add_trace(go.Scatter(x=chart_data.index, y=subset_ppo, name="Swarm Trend", line=dict(color='cyan', width=1)), row=2, col=1)
@@ -408,7 +400,8 @@ if full_data is not None and closes is not None:
                 colors = ['#00ff00' if val >= 0 else '#ff0000' for val in subset_hist]
                 fig.add_trace(go.Bar(x=chart_data.index, y=subset_hist, name="Velocity", marker_color=colors), row=2, col=1)
 
-                fig.update_layout(height=500, template=chart_template, margin=dict(l=0, r=0, t=0, b=0), showlegend=False, plot_bgcolor=chart_bg, paper_bgcolor=chart_bg, font=dict(color=chart_font_color), xaxis_rangeslider_visible=False)
+                # EXPLICIT ARGS PASSED HERE
+                fig.update_layout(height=500, template=G_CHART_TEMPLATE, margin=dict(l=0, r=0, t=0, b=0), showlegend=False, plot_bgcolor=G_CHART_BG, paper_bgcolor=G_CHART_BG, font=dict(color=G_CHART_FONT), xaxis_rangeslider_visible=False)
                 fig.update_xaxes(showgrid=False); fig.update_yaxes(showgrid=False)
                 st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
                 
@@ -488,7 +481,7 @@ else:
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v26.0 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v27.0 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
