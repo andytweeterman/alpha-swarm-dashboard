@@ -7,7 +7,7 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. PAGE SETUP & GLOBAL VARIABLES
+# 1. PAGE SETUP
 # ==========================================
 st.set_page_config(page_title="MacroEffects | Global Command", page_icon="M", layout="wide")
 
@@ -15,14 +15,16 @@ st.set_page_config(page_title="MacroEffects | Global Command", page_icon="M", la
 if "dark_mode" not in st.session_state:
     st.session_state["dark_mode"] = False
 
-# THEME CONFIGURATION (Updated for better dark mode contrast)
+# ==========================================
+# 2. GLOBAL THEME & VARIABLES (DEFINED FIRST TO PREVENT CRASHES)
+# ==========================================
 theme_config = {
     True: { # Dark Mode
         "bg_color": "#0e1117",
         "card_bg": "rgba(22, 27, 34, 0.7)",
         "card_border": "1px solid rgba(255, 255, 255, 0.08)",
-        "text_primary": "#f0f2f6", # BRIGHTER TEXT
-        "text_secondary": "#b0b8c1", # BRIGHTER TEXT
+        "text_primary": "#f0f2f6",
+        "text_secondary": "#b0b8c1",
         "accent_gold": "#C6A87C",
         "accent_blue": "#00f2ff",
         "glass_shadow": "0 4px 30px rgba(0, 0, 0, 0.3)",
@@ -50,15 +52,23 @@ theme_config = {
         "steel_gradient": "linear-gradient(180deg, #555555 0%, #222222 48%, #555555 50%, #333333 100%)"
     }
 }
-current_theme = theme_config[st.session_state["dark_mode"]]
 
-# --- CRITICAL FIX: EXPOSE ALL CHART VARIABLES GLOBALLY ---
+# --- GLOBAL VARIABLES (Must be defined here to prevent NameError) ---
+current_theme = theme_config[st.session_state["dark_mode"]]
 chart_template = current_theme['chart_template']
 chart_font_color = current_theme['chart_font_color']
-chart_bg = 'rgba(0,0,0,0)' # Transparent background for charts
+chart_bg = 'rgba(0,0,0,0)' # Transparent
+
+# SAFE DEFAULTS
+status = "SYSTEM BOOT"
+color = "#888888"
+reason = "Initializing..."
+full_data = None
+closes = None
+latest_monitor = None
 
 # ==========================================
-# 2. CSS STYLING
+# 3. CSS STYLING
 # ==========================================
 st.markdown(f"""
 <style>
@@ -86,7 +96,7 @@ header {{visibility: hidden;}}
 div[data-testid="column"] {{ padding: 0px !important; }}
 div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
 
-/* HEADER CONTAINER */
+/* HEADER CONTAINER (CENTERED) */
 .steel-header-container {{
     background: linear-gradient(145deg, #1a1f26, #2d343f);
     padding: 0px 20px;
@@ -98,8 +108,8 @@ div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
     height: 80px; 
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    gap: 4px;
+    justify-content: center; /* VERTICAL CENTER */
+    gap: 2px; /* Tight gap */
 }}
 
 .steel-text {{
@@ -111,7 +121,7 @@ div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
     text-transform: uppercase;
     letter-spacing: 1.5px;
     margin: 0;
-    line-height: 1;
+    line-height: 1.1;
     font-size: 26px !important;
 }}
 
@@ -156,11 +166,11 @@ button[data-baseweb="tab"] {{
     color: var(--text-secondary) !important;
     font-family: 'Inter', sans-serif;
     font-weight: 600;
-    font-size: 12px; /* Smaller font for mobile */
+    font-size: 12px; /* Mobile Friendly */
     text-transform: uppercase;
-    padding: 10px 15px; /* Tighter padding */
+    padding: 10px 10px; /* Tighter padding */
     margin-right: 2px;
-    flex-grow: 1; /* Stretch to fill space */
+    flex-grow: 1;
 }}
 
 button[data-baseweb="tab"][aria-selected="true"] {{
@@ -195,7 +205,7 @@ button[data-baseweb="tab"][aria-selected="true"] p {{
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 3. HELPER FUNCTIONS
+# 4. HELPER FUNCTIONS
 # ==========================================
 @st.cache_data(ttl=3600)
 def fetch_data():
@@ -265,14 +275,8 @@ def make_sparkline(data, color):
     return fig
 
 # ==========================================
-# 4. EXECUTION PHASE (DATA LOADING)
+# 5. EXECUTION PHASE (DATA LOADING)
 # ==========================================
-status = "INITIALIZING"
-color = "#888888"
-full_data = None
-closes = None
-latest_monitor = None
-
 try:
     with st.spinner("Connecting to Global Swarm..."):
         full_data = fetch_data()
@@ -287,11 +291,11 @@ except Exception as e:
     status, color, reason = "SYSTEM ERROR", "#ff0000", "Connection Failed"
 
 # ==========================================
-# 5. UI LAYOUT
+# 6. UI LAYOUT
 # ==========================================
 
-# HEADER (90/10 Ratio)
-c_title, c_menu = st.columns([0.9, 0.1])
+# HEADER (85/15 Ratio for better mobile fit)
+c_title, c_menu = st.columns([0.85, 0.15])
 
 with c_title:
     st.markdown(f"""
@@ -484,7 +488,7 @@ else:
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v25.1 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v26.0 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
