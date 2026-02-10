@@ -7,7 +7,7 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. PAGE SETUP (v19.3 - SHARP TABS & BIG MENU)
+# 1. PAGE SETUP (v19.4 - STABLE GOLD MASTER)
 # ==========================================
 st.set_page_config(page_title="MacroEffects | Global Command", page_icon="M", layout="wide")
 
@@ -202,13 +202,16 @@ button[data-baseweb="tab"][aria-selected="true"] {
 </style>
 """, unsafe_allow_html=True)
 
-chart_template = current_theme['chart_template']
-chart_bg = 'rgba(0,0,0,0)'
-chart_font_color = current_theme['chart_font_color']
-
 # ==========================================
 # 2. DATA ENGINE
 # ==========================================
+# DEFENSIVE INITIALIZATION (Prevents NameError if fetch fails)
+status = "INITIALIZING"
+color = "#888888"
+reason = "System Boot..."
+full_data = None
+latest_monitor = None
+
 @st.cache_data(ttl=3600)
 def fetch_data():
     with st.spinner('Accessing Global Market Data...'):
@@ -282,6 +285,18 @@ def make_sparkline(data, color):
         plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)'
     )
     return fig
+
+# ==========================================
+# 3. DATA FETCHING (EXECUTION)
+# ==========================================
+try:
+    full_data = fetch_data()
+    closes = full_data['Close']
+    gov_df, status, color, reason = calculate_governance_history(full_data)
+    latest_monitor = gov_df.iloc[-1]
+except Exception as e:
+    status, color, reason = "OFFLINE", "#888888", "Data connection failed"
+    full_data = None
 
 # ==========================================
 # 4. THE UI RENDER
@@ -528,7 +543,7 @@ else:
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v19.3 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v19.4 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
