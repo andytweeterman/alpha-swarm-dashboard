@@ -7,18 +7,9 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. PAGE SETUP & GLOBAL SAFETY
+# 1. PAGE SETUP & SAFE STATE INITIALIZATION
 # ==========================================
 st.set_page_config(page_title="MacroEffects | Global Command", page_icon="M", layout="wide")
-
-# --- GLOBAL SAFETY VARIABLES (PREVENTS CRASHES) ---
-# These are defined BEFORE anything else runs.
-status = "SYSTEM BOOT"
-color = "#888888"
-reason = "Initializing Protocol..."
-full_data = None
-closes = None
-latest_monitor = None
 
 # INITIALIZE SESSION STATE
 if "dark_mode" not in st.session_state:
@@ -64,7 +55,6 @@ current_theme = theme_config[st.session_state["dark_mode"]]
 # ==========================================
 # 2. VISUAL ARCHITECTURE (CSS)
 # ==========================================
-# PART 1: DYNAMIC VARIABLES
 st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Fira+Code:wght@300;500;700&display=swap');
@@ -81,45 +71,36 @@ st.markdown(f"""
 
 .stApp {{ background-color: var(--bg-color) !important; font-family: 'Inter', sans-serif; }}
 .market-price {{ color: {current_theme['text_primary']}; font-family: 'Fira Code', monospace; font-size: 22px; font-weight: 700; margin: 2px 0; }}
-</style>
-""", unsafe_allow_html=True)
 
-# PART 2: STATIC LAYOUT
-st.markdown("""
-<style>
 /* REMOVE STREAMLIT BRANDING */
-#MainMenu {visibility: hidden;}
-footer {visibility: hidden;}
-header {visibility: hidden;} 
+#MainMenu {{visibility: hidden;}}
+footer {{visibility: hidden;}}
+header {{visibility: hidden;}} 
 
 /* TIGHTEN SPACING */
-.block-container { padding-top: 1rem !important; padding-bottom: 2rem !important; }
+.block-container {{ padding-top: 1rem !important; padding-bottom: 2rem !important; }}
 
-/* GAP REMOVAL (Key Fix for Title/Menu Integration) */
-div[data-testid="column"] {
-    padding: 0px !important;
-}
-div[data-testid="stHorizontalBlock"] {
-    gap: 0rem !important;
-}
+/* GAP REMOVAL (Zero space between Title and Menu) */
+div[data-testid="column"] {{ padding: 0px !important; }}
+div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
 
 /* STEEL HEADER BOX */
-.steel-header-container {
+.steel-header-container {{
     background: linear-gradient(145deg, #1a1f26, #2d343f);
     padding: 10px 20px;
     border-radius: 8px 0 0 8px; /* Rounded Left only */
     border: 1px solid #4a4f58;
-    border-right: none; /* Connect to Menu */
+    border-right: none; 
     box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     margin-bottom: 5px; 
     height: 70px; 
     display: flex;
     flex-direction: column;
     justify-content: center;
-}
+}}
 
-/* MAIN TITLE TEXT */
-.steel-text {
+/* STEEL TEXT (Main Title) */
+.steel-text {{
     background: linear-gradient(180deg, #FFFFFF 0%, #A0A0A0 50%, #E0E0E0 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -129,20 +110,10 @@ div[data-testid="stHorizontalBlock"] {
     letter-spacing: 1.5px;
     margin: 0;
     font-size: 24px !important;
-}
-
-/* SUB-HEADER STEEL BOXES */
-.steel-sub-header {
-    background: linear-gradient(145deg, #1a1f26, #2d343f);
-    padding: 8px 15px;
-    border-radius: 6px;
-    border: 1px solid #4a4f58;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    margin-bottom: 15px;
-}
+}}
 
 /* TAGLINE */
-.tagline-text {
+.tagline-text {{
     color: #F0F0F0 !important; 
     font-family: 'Inter', sans-serif;
     font-size: 10px;
@@ -152,32 +123,31 @@ div[data-testid="stHorizontalBlock"] {
     margin-top: -2px;
     display: block;
     opacity: 0.9;
-}
+}}
 
-/* --- MENU INTEGRATION FIX --- */
-/* Target the Popover Button to look like a Unified Header Element */
-[data-testid="stPopover"] button {
+/* MENU INTEGRATION (Seamless Box) */
+[data-testid="stPopover"] button {{
     border: 1px solid #4a4f58;
     background: linear-gradient(145deg, #1a1f26, #2d343f);
-    color: #C6A87C; /* Gold Token */
-    font-size: 24px !important;
+    color: #C6A87C; 
+    font-size: 28px !important;
     font-weight: bold;
-    height: 70px; /* Match Header Height */
+    height: 70px; /* Exact match to header */
     width: 100%;
     margin-top: 0px;
     border-radius: 0 8px 8px 0; /* Rounded Right only */
-    border-left: 1px solid #4a4f58; /* Subtle divider */
+    border-left: 1px solid #4a4f58;
     display: flex;
     align-items: center;
     justify-content: center;
-}
-[data-testid="stPopover"] button:hover {
+}}
+[data-testid="stPopover"] button:hover {{
     border-color: #C6A87C;
     color: #FFFFFF;
-}
+}}
 
-/* TABS CONFIGURATION */
-button[data-baseweb="tab"] {
+/* TABS */
+button[data-baseweb="tab"] {{
     background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.05) 100%) !important;
     border: 1px solid rgba(128,128,128,0.2) !important;
     border-radius: 6px 6px 0 0 !important;
@@ -188,40 +158,44 @@ button[data-baseweb="tab"] {
     text-transform: uppercase;
     padding: 10px 20px;
     margin-right: 4px;
-}
+}}
 
 /* SELECTED TAB (BRIGHT WHITE FIX) */
-button[data-baseweb="tab"][aria-selected="true"] {
+button[data-baseweb="tab"][aria-selected="true"] {{
     background: linear-gradient(180deg, #2d343f 0%, #1a1f26 100%) !important;
     border-top: 2px solid var(--accent-gold) !important;
-}
-/* Force text color inside the selected tab */
-button[data-baseweb="tab"][aria-selected="true"] p {
+}}
+button[data-baseweb="tab"][aria-selected="true"] p {{
     color: #FFFFFF !important;
-}
+}}
 
-/* TYPOGRAPHY */
-h1, h2, h3, h4, h5, h6 { color: var(--text-primary) !important; font-family: 'Inter', sans-serif; font-weight: 800; letter-spacing: -0.5px; text-transform: uppercase; }
-p, span, li, label { color: var(--text-secondary) !important; font-family: 'Inter', sans-serif; font-size: 14px; }
+/* SUB-HEADERS */
+.steel-sub-header {{
+    background: linear-gradient(145deg, #1a1f26, #2d343f);
+    padding: 8px 15px;
+    border-radius: 6px;
+    border: 1px solid #4a4f58;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    margin-bottom: 15px;
+}}
 
-/* BADGES & PILLS */
-.mini-badge { display: inline-block; padding: 4px 12px; border-radius: 12px; font-family: 'Fira Code', monospace; font-size: 11px; font-weight: bold; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); margin-left: 10px; vertical-align: middle; }
-.premium-pill { display: inline-block; padding: 4px 12px; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 800; color: #3b2c00; background: linear-gradient(135deg, #bf953f 0%, #fcf6ba 100%); box-shadow: 0 2px 5px rgba(0,0,0,0.2); margin-left: 5px; vertical-align: middle; letter-spacing: 1px; }
+/* BADGES */
+.mini-badge {{ display: inline-block; padding: 4px 12px; border-radius: 12px; font-family: 'Fira Code', monospace; font-size: 11px; font-weight: bold; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); margin-left: 10px; vertical-align: middle; }}
+.premium-pill {{ display: inline-block; padding: 4px 12px; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 800; color: #3b2c00; background: linear-gradient(135deg, #bf953f 0%, #fcf6ba 100%); box-shadow: 0 2px 5px rgba(0,0,0,0.2); margin-left: 5px; vertical-align: middle; letter-spacing: 1px; }}
 
 /* MARKET CARDS */
-.market-card { background: var(--card-bg); border: var(--card-border); border-radius: 6px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; margin-bottom: 10px; }
-.market-ticker { color: var(--text-secondary); font-size: 11px; margin-bottom: 2px; }
-.market-delta { font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 600; }
+.market-card {{ background: var(--card-bg); border: var(--card-border); border-radius: 6px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; margin-bottom: 10px; }}
+.market-ticker {{ color: var(--text-secondary); font-size: 11px; margin-bottom: 2px; }}
+.market-delta {{ font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 600; }}
 
 /* EXPANDER */
-[data-testid="stExpander"] { background-color: rgba(255,255,255,0.02) !important; border: 1px solid #30363d !important; border-radius: 4px; }
-[data-testid="stExpander"] summary { color: var(--text-primary) !important; font-family: 'Fira Code', monospace; font-size: 13px; }
-
+[data-testid="stExpander"] {{ background-color: rgba(255,255,255,0.02) !important; border: 1px solid #30363d !important; border-radius: 4px; }}
+[data-testid="stExpander"] summary {{ color: var(--text-primary) !important; font-family: 'Fira Code', monospace; font-size: 13px; }}
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 3. LOGIC ENGINE
+# 3. LOGIC ENGINE (SAFE)
 # ==========================================
 @st.cache_data(ttl=3600)
 def fetch_data():
@@ -298,25 +272,42 @@ def make_sparkline(data, color):
     return fig
 
 # ==========================================
-# 3. EXECUTION (DATA FETCH)
+# 4. EXECUTION (STATE DICTIONARY)
 # ==========================================
+# Safe State Dictionary (The Crash Proofing)
+market_state = {
+    'data': None,
+    'closes': None,
+    'status': 'INITIALIZING',
+    'color': '#888888',
+    'reason': 'Booting...',
+    'monitor': None
+}
+
 try:
     full_data = fetch_data()
     if full_data is not None and not full_data.empty:
-        closes = full_data['Close']
         gov_df, status, color, reason = calculate_governance_history(full_data)
-        latest_monitor = gov_df.iloc[-1]
+        market_state.update({
+            'data': full_data,
+            'closes': full_data['Close'],
+            'status': status,
+            'color': color,
+            'reason': reason,
+            'monitor': gov_df.iloc[-1]
+        })
     else:
-        status, color, reason = "DATA ERROR", "#ff0000", "Feed Unavailable"
+        market_state['status'] = "DATA OFFLINE"
 except Exception as e:
-    status, color, reason = "SYSTEM ERROR", "#ff0000", "Connection Failed"
+    market_state['status'] = "SYSTEM ERROR"
+    # st.error(f"Debug: {e}") # Uncomment to see error
 
 # ==========================================
-# 4. THE UI RENDER
+# 5. THE UI RENDER
 # ==========================================
 
-# HEADER LAYOUT (Two Columns: Title Box | Menu Box)
-c_title, c_menu = st.columns([0.92, 0.08]) # Tight ratio
+# HEADER LAYOUT
+c_title, c_menu = st.columns([0.85, 0.15]) # 85/15 ratio for better menu spacing
 
 with c_title:
     st.markdown(f"""
@@ -327,7 +318,6 @@ with c_title:
     """, unsafe_allow_html=True)
 
 with c_menu:
-    # This button now physically sits next to the title, matching its height via CSS
     with st.popover("☰", use_container_width=True):
         st.caption("Settings & Links")
         is_dark = st.toggle("Dark Mode", value=st.session_state["dark_mode"])
@@ -340,19 +330,20 @@ with c_menu:
         st.link_button("About Us", "https://sixmonthstockmarketforecast.com/about") 
         st.link_button("Contact Analyst", "mailto:analyst@macroeffects.com")
 
-# SUBHEADER (With Spacing Fix)
+# SUBHEADER (Uses Safe State)
 st.markdown(f"""
 <div style="margin-bottom: 20px; margin-top: 15px;">
     <span style="font-family: 'Inter'; font-weight: 600; font-size: 16px; color: var(--text-secondary);">Macro-Economic Intelligence: Global Market Command Center</span>
-    <div class="mini-badge" style="background-color: {color};">{status}</div>
+    <div class="mini-badge" style="background-color: {market_state['color']};">{market_state['status']}</div>
     <div class="premium-pill">PREMIUM</div>
 </div>
 """, unsafe_allow_html=True)
 
 st.divider()
 
-# SAFE RENDERING: Only draw charts if data exists
-if full_data is not None and closes is not None:
+# SAFE CONTENT RENDER
+if market_state['data'] is not None:
+    closes = market_state['closes'] # Local var for ease
     
     tab1, tab2, tab3 = st.tabs(["Market Swarm", "Risk Governance", "Strategist View"])
 
@@ -414,7 +405,7 @@ if full_data is not None and closes is not None:
         # --- SWARM DEEP DIVE ---
         st.markdown('<div class="steel-sub-header"><span class="steel-text" style="font-size: 20px !important;">Swarm Deep Dive</span></div>', unsafe_allow_html=True)
         
-        spy_close = full_data['Close']['SPY']
+        spy_close = closes['SPY']
         ppo, sig, hist = calculate_ppo(spy_close)
         sma, std, upper_cone, lower_cone = calculate_cone(spy_close)
         last_date = spy_close.index[-1]; last_val = spy_close.iloc[-1]; last_dev = std.iloc[-1]
@@ -431,7 +422,7 @@ if full_data is not None and closes is not None:
         else:
             start_filter = (datetime.now() - timedelta(days=730)).strftime('%Y-%m-%d'); show_forecast = False
             
-        chart_data = full_data[full_data.index >= start_filter]
+        chart_data = market_state['data'][market_state['data'].index >= start_filter]
         chart_lower = lower_cone[lower_cone.index >= start_filter]
         chart_upper = upper_cone[upper_cone.index >= start_filter]
 
@@ -444,10 +435,6 @@ if full_data is not None and closes is not None:
             fig.add_trace(go.Scatter(x=f_dates, y=f_lower, line=dict(width=0), showlegend=False, hoverinfo='skip'), row=1, col=1)
             fig.add_trace(go.Scatter(x=f_dates, y=f_upper, fill='tonexty', fillcolor='rgba(200, 0, 255, 0.15)', line=dict(width=0), name="Proj. Uncertainty", hoverinfo='skip'), row=1, col=1)
             fig.add_trace(go.Scatter(x=f_dates, y=f_mean, name="Swarm Forecast", line=dict(color=chart_font_color, width=2, dash='dot')), row=1, col=1)
-
-        if view_mode == "Strategic (2-Year History)":
-            start_date = chart_data.index[0]; mask = (gov_df['Level_7']) & (gov_df.index >= start_date); emergency_days = gov_df.index[mask]
-            for date in emergency_days: fig.add_vrect(x0=date - timedelta(hours=12), x1=date + timedelta(hours=12), fillcolor="red", opacity=0.1, layer="below", line_width=0, row=1, col=1)
 
         subset_ppo = ppo[ppo.index >= chart_data.index[0]]; subset_sig = sig[sig.index >= chart_data.index[0]]; subset_hist = hist[hist.index >= chart_data.index[0]]
         fig.add_trace(go.Scatter(x=chart_data.index, y=subset_ppo, name="Swarm Trend", line=dict(color='cyan', width=1)), row=2, col=1)
@@ -474,39 +461,44 @@ if full_data is not None and closes is not None:
         
         col1, col2 = st.columns([2, 1])
         with col1:
-            st.markdown(f'<div class="big-badge" style="background: linear-gradient(135deg, {color}cc, {color}); border: 1px solid {color}; box-shadow: 0 0 20px {color}66;">GOVERNANCE STATUS: {status}</div>', unsafe_allow_html=True)
-            st.caption(f"Reason: {reason}")
+            st.markdown(f'<div class="big-badge" style="background: linear-gradient(135deg, {market_state["color"]}cc, {market_state["color"]}); border: 1px solid {market_state["color"]}; box-shadow: 0 0 20px {market_state["color"]}66;">GOVERNANCE STATUS: {market_state["status"]}</div>', unsafe_allow_html=True)
+            st.caption(f"Reason: {market_state['reason']}")
         with col2:
-            latest_vix = full_data['Close']['^VIX'].iloc[-1]
+            latest_vix = closes['^VIX'].iloc[-1]
             st.metric("Risk (VIX)", f"{latest_vix:.2f}", delta_color="inverse")
 
         st.subheader("⏱️ Tactical Horizons")
+        # Use cached metric data
+        latest_hist = calculate_ppo(closes['SPY'])[2].iloc[-1]
+        latest_ppo = calculate_ppo(closes['SPY'])[0].iloc[-1]
+        
         h1, h2, h3 = st.columns(3)
-        with h1: st.info("**1 WEEK (Momentum)**"); st.markdown("🟢 **RISING**" if hist.iloc[-1] > 0 else "🔴 **WEAKENING**")
-        with h2: st.info("**1 MONTH (Trend)**"); st.markdown("🟢 **BULLISH**" if ppo.iloc[-1] > 0 else "🔴 **BEARISH**")
-        with h3: st.info("**6 MONTH (Structural)**"); st.markdown("🟢 **SAFE**" if status == "NORMAL OPS" else f"🔴 **{status}**")
+        with h1: st.info("**1 WEEK (Momentum)**"); st.markdown("🟢 **RISING**" if latest_hist > 0 else "🔴 **WEAKENING**")
+        with h2: st.info("**1 MONTH (Trend)**"); st.markdown("🟢 **BULLISH**" if latest_ppo > 0 else "🔴 **BEARISH**")
+        with h3: st.info("**6 MONTH (Structural)**"); st.markdown("🟢 **SAFE**" if market_state['status'] == "NORMAL OPS" else f"🔴 **{market_state['status']}**")
 
         st.divider()
         st.subheader("📡 Active Monitor Feed (Live Logic)")
         
-        if latest_monitor is not None:
+        if market_state['monitor'] is not None:
+            mon = market_state['monitor']
             m1, m2, m3 = st.columns(3)
             
-            credit_val = latest_monitor['Credit_Delta']
+            credit_val = mon['Credit_Delta']
             credit_status = "STRESS" if credit_val < -0.015 else "NOMINAL"
             m1.metric("Credit Spreads", f"{credit_val:.2%}", 
                      delta="STABLE" if credit_status=="NOMINAL" else "WIDENING", 
                      delta_color="normal" if credit_status=="NOMINAL" else "inverse",
                      help="Tracks High Yield bonds vs Treasuries.")
 
-            dxy_val = latest_monitor['DXY_Delta']
+            dxy_val = mon['DXY_Delta']
             dxy_status = "SPIKE" if dxy_val > 0.02 else "STABLE"
             m2.metric("US Dollar", f"{dxy_val:.2%}", 
                      delta="STABLE" if dxy_status=="STABLE" else "SPIKING", 
                      delta_color="inverse",
                      help="Tracks value of USD.")
 
-            breadth_val = latest_monitor['Breadth_Delta']
+            breadth_val = mon['Breadth_Delta']
             breadth_status = "NARROWING" if breadth_val < -0.025 else "HEALTHY"
             m3.metric("Market Breadth", f"{breadth_val:.2%}", 
                      delta=breadth_status, 
@@ -548,12 +540,12 @@ if full_data is not None and closes is not None:
         st.info("💡 **Analyst Note:** This commentary is pulled live from the Chief Strategist's desk via the Alpha Swarm CMS.")
 
 else:
-    st.error("Data connection offline. Please check network.")
+    st.error("Data connection initializing or offline. Please check network.")
 
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v19.5 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v22.0 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
