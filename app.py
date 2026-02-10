@@ -246,10 +246,10 @@ def calculate_governance_history(data):
     df['Level_4'] = (df['Breadth_Delta'] < BREADTH_TRIG) | (df['VIX'] > VIX_PANIC)
     
     latest = df.iloc[-1]
-    if latest['Level_7']: status, color, reason = "EMERGENCY", "#c0392b", "Structural/Policy Failure"
-    elif latest['Level_5']: status, color, reason = "CAUTION", "#d35400", "Market Divergence"
-    elif latest['Level_4']: status, color, reason = "WATCHLIST", "#b38600", "Elevated Risk Monitors"
-    else: status, color, reason = "NORMAL OPS", "#1f7a1f", "System Integrity Nominal"
+    if latest['Level_7']: status, color, reason = "EMERGENCY", "red", "Structural/Policy Failure"
+    elif latest['Level_5']: status, color, reason = "CAUTION", "orange", "Market Divergence"
+    elif latest['Level_4']: status, color, reason = "WATCHLIST", "yellow", "Elevated Risk Monitors"
+    else: status, color, reason = "NORMAL OPS", "#00CC00", "System Integrity Nominal"
         
     return df, status, color, reason
 
@@ -267,23 +267,6 @@ def make_sparkline(data, color):
 # ==========================================
 # 3. THE UI RENDER
 # ==========================================
-def render_market_card(col, asset, closes):
-    with col:
-        series = closes[asset['ticker']].dropna()
-        if not series.empty:
-            current = series.iloc[-1]; prev = series.iloc[-2]; delta = current - prev; pct = (delta / prev) * 100
-            # Use accessible green (#008000) for better contrast on light backgrounds
-            delta_color = "#008000" if delta >= 0 else "#c0392b"
-
-            st.markdown(f"""
-            <div class="market-card" role="group" aria-label="Market Data for {asset['name']}: {current:,.2f} ({delta:+.2f})">
-                <div style="font-size: 14px; opacity: 0.8; font-weight: bold;">{asset['name']}</div>
-                <div style="font-size: 22px; font-weight: bold; margin: 5px 0;">{current:,.2f}</div>
-                <div style="color: {delta_color}; font-size: 14px; font-weight: 600;">{delta:+.2f} ({pct:+.2f}%)</div>
-            </div>
-            """, unsafe_allow_html=True)
-            st.plotly_chart(make_sparkline(series.tail(30), asset['color']), use_container_width=True, config={'displayModeBar': False})
-
 st.title("🏛️ TIEDEMAN RESEARCH")
 st.markdown("### Alpha Swarm Intelligence: Global Market Command Center")
 st.caption(f"Governance Protocol Active: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
@@ -317,13 +300,41 @@ try:
         
         c1, c2, c3 = st.columns(3)
         for i, col in enumerate([c1, c2, c3]):
-            render_market_card(col, assets[i], closes)
+            asset = assets[i]
+            with col:
+                series = closes[asset['ticker']].dropna()
+                if not series.empty:
+                    current = series.iloc[-1]; prev = series.iloc[-2]; delta = current - prev; pct = (delta / prev) * 100
+                    delta_color = "#00CC00" if delta >= 0 else "#FF5500"
+
+                    st.markdown(f"""
+                    <div class="market-card">
+                        <div style="font-size: 14px; opacity: 0.8; font-weight: bold;">{asset['name']}</div>
+                        <div style="font-size: 22px; font-weight: bold; margin: 5px 0;">{current:,.2f}</div>
+                        <div style="color: {delta_color}; font-size: 14px; font-weight: 600;">{delta:+.2f} ({pct:+.2f}%)</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    st.plotly_chart(make_sparkline(series.tail(30), asset['color']), use_container_width=True, config={'displayModeBar': False})
         
         st.markdown("---")
         
         c4, c5, c6 = st.columns(3)
         for i, col in enumerate([c4, c5, c6]):
-            render_market_card(col, assets[i+3], closes)
+            asset = assets[i+3]
+            with col:
+                series = closes[asset['ticker']].dropna()
+                if not series.empty:
+                    current = series.iloc[-1]; prev = series.iloc[-2]; delta = current - prev; pct = (delta / prev) * 100
+                    delta_color = "#00CC00" if delta >= 0 else "#FF5500"
+
+                    st.markdown(f"""
+                    <div class="market-card">
+                        <div style="font-size: 14px; opacity: 0.8; font-weight: bold;">{asset['name']}</div>
+                        <div style="font-size: 22px; font-weight: bold; margin: 5px 0;">{current:,.2f}</div>
+                        <div style="color: {delta_color}; font-size: 14px; font-weight: 600;">{delta:+.2f} ({pct:+.2f}%)</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    st.plotly_chart(make_sparkline(series.tail(30), asset['color']), use_container_width=True, config={'displayModeBar': False})
 
         st.divider()
 

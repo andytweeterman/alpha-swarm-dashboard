@@ -42,7 +42,7 @@ def test_governance_calculation():
     gov_df, status, color, reason = calculate_governance_history(full_data)
 
     assert status in ["EMERGENCY", "CAUTION", "WATCHLIST", "NORMAL OPS"]
-    assert color in ["#c0392b", "#d35400", "#b38600", "#1f7a1f"]
+    assert color in ["red", "orange", "yellow", "#00CC00"]
     assert reason in ["Structural/Policy Failure", "Market Divergence", "Elevated Risk Monitors", "System Integrity Nominal"]
 
 def test_ppo_calculation():
