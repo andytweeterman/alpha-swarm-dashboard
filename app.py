@@ -23,18 +23,18 @@ status = "SYSTEM BOOT"
 color = "#888888"
 
 # ==========================================
-# 2. THEME ENGINE (HIGH CONTRAST TUNED)
+# 2. THEME ENGINE (PRECISION CONTRAST)
 # ==========================================
 current_theme = {
     "bg_color": "#0e1117" if st.session_state["dark_mode"] else "#ffffff",
     "card_bg": "rgba(22, 27, 34, 0.7)" if st.session_state["dark_mode"] else "rgba(255, 255, 255, 0.9)",
     "card_border": "1px solid rgba(255, 255, 255, 0.08)" if st.session_state["dark_mode"] else "1px solid rgba(49, 51, 63, 0.1)",
     
-    # TEXT COLORS
-    # Dark Mode: Bright White / Light Grey
-    # Light Mode: Near Black / Dark Grey (Darkened per request)
-    "text_primary": "#FFFFFF" if st.session_state["dark_mode"] else "#111111", 
-    "text_secondary": "#DEE2E6" if st.session_state["dark_mode"] else "#333333",
+    # COLORS
+    # Dark Mode: Primary = White, Secondary = Bright Grey
+    # Light Mode: Primary = Black, Secondary = Dark Grey
+    "text_primary": "#FFFFFF" if st.session_state["dark_mode"] else "#000000", 
+    "text_secondary": "#E0E0E0" if st.session_state["dark_mode"] else "#444444", 
     
     "accent_gold": "#C6A87C",
     "chart_template": "plotly_dark" if st.session_state["dark_mode"] else "plotly_white",
@@ -59,65 +59,53 @@ st.markdown(f"""
 
 .stApp {{ background-color: var(--bg-color) !important; font-family: 'Inter', sans-serif; }}
 
-/* --- 1. GLOBAL TEXT CONTRAST --- */
-.stMarkdown p, .stMarkdown span, .stMarkdown li {{
+/* --- TEXT READABILITY ENFORCERS --- */
+
+/* 1. Global Paragraphs & Headers */
+.stMarkdown p, .stMarkdown span, .stMarkdown li, h1, h2, h3, h4, h5, h6 {{
     color: var(--text-primary) !important;
 }}
 
-/* --- 2. RADIO BUTTON LABELS (Scope / Horizon) --- */
-/* The Label "Market Scope (Premium):" */
+/* 2. Radio Button Labels */
 div[data-testid="stRadio"] > label {{
     color: var(--text-primary) !important;
     font-weight: 700 !important;
 }}
-/* The Options */
 div[data-testid="stRadio"] div[role="radiogroup"] p {{
     color: var(--text-primary) !important;
 }}
 
-/* --- 3. METRICS (Risk, Spreads, etc.) --- */
+/* 3. Metric Labels (Risk VIX, Credit Spreads) - FORCED VISIBILITY */
 div[data-testid="stMetricLabel"] {{
-    color: var(--text-secondary) !important; /* Forces Light Grey in Dark Mode */
-    font-weight: 500 !important;
+    color: var(--text-secondary) !important; 
+    font-weight: 600 !important;
+    font-size: 14px !important;
 }}
 div[data-testid="stMetricValue"] {{
     color: var(--text-primary) !important;
 }}
 
-/* --- 4. TOOLTIP ICONS --- */
+/* 4. Tooltip Icons */
 [data-testid="stTooltipIcon"] {{
     color: var(--text-secondary) !important;
     opacity: 1 !important;
 }}
 
-/* --- 5. EXPANDER HEADER (Strategist Date) --- */
-/* Fixes White-on-White issues */
-[data-testid="stExpander"] summary p {{
+/* 5. Expander Header (Strategist Date Fix) */
+[data-testid="stExpander"] {{
+    background-color: transparent !important; /* Fixes white block */
+    border: 1px solid var(--card-border) !important;
+}}
+.streamlit-expanderHeader {{
+    background-color: var(--card-bg) !important; /* Dark in dark mode */
     color: var(--text-primary) !important;
-    font-weight: 600 !important;
-    font-size: 14px !important;
 }}
-[data-testid="stExpander"] summary:hover p {{
-    color: var(--accent-gold) !important;
-}}
-
-/* --- 6. PREMIUM BANNER (Lock/Institutional) --- */
-.premium-banner {{
-    background: linear-gradient(90deg, rgba(200,200,200,0.1) 0%, rgba(200,200,200,0.05) 100%);
-    border: 1px solid var(--card-border);
-    border-left: 4px solid var(--accent-gold);
-    color: var(--text-primary) !important; /* Force readable color */
-    padding: 10px;
-    border-radius: 4px;
-    text-align: center;
-    margin: 15px 0;
-    font-family: 'Fira Code', monospace;
-    font-size: 11px;
-    text-transform: uppercase;
-    font-weight: 700;
+.streamlit-expanderHeader p {{
+    color: var(--text-primary) !important;
+    font-weight: 600;
 }}
 
-/* --- HEADER & MENU --- */
+/* --- HEADER & TAGLINE --- */
 .steel-header-container {{
     background: linear-gradient(145deg, #1a1f26, #2d343f);
     padding: 0px 20px;
@@ -145,8 +133,9 @@ div[data-testid="stMetricValue"] {{
     font-size: 26px !important;
 }}
 
+/* TAGLINE (ALWAYS LIGHT - FIXED) */
 .tagline-text {{
-    color: #FFFFFF !important; 
+    color: #E0E0E0 !important; /* Force Light Grey even in Light Mode */
     font-family: 'Inter', sans-serif;
     font-size: 10px;
     font-weight: 600;
@@ -154,9 +143,10 @@ div[data-testid="stMetricValue"] {{
     text-transform: uppercase;
     margin: 0;
     line-height: 1.1;
+    opacity: 1 !important;
 }}
 
-/* MENU BUTTON (Shadow Fixed) */
+/* MENU BUTTON */
 [data-testid="stPopover"] button {{
     border: 1px solid #4a4f58;
     background: linear-gradient(145deg, #1a1f26, #2d343f);
@@ -168,7 +158,7 @@ div[data-testid="stMetricValue"] {{
     margin-top: 0px;
     border-radius: 0 8px 8px 0; 
     border-left: 1px solid #4a4f58;
-    box-shadow: 4px 4px 6px rgba(0,0,0,0.3); /* SHADOW APPLIED */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -176,7 +166,7 @@ div[data-testid="stMetricValue"] {{
 }}
 [data-testid="stPopover"] button:hover {{ border-color: #C6A87C; color: #FFFFFF; }}
 
-/* --- UI ELEMENTS --- */
+/* TABS */
 button[data-baseweb="tab"] {{
     background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.05) 100%) !important;
     border: 1px solid rgba(128,128,128,0.2) !important;
@@ -206,6 +196,7 @@ button[data-baseweb="tab"][aria-selected="true"] p {{
     color: #FFFFFF !important;
 }}
 
+/* COMPONENTS */
 .steel-sub-header {{
     background: linear-gradient(145deg, #1a1f26, #2d343f);
     padding: 8px 15px;
@@ -215,8 +206,37 @@ button[data-baseweb="tab"][aria-selected="true"] p {{
     margin-bottom: 15px;
 }}
 
+/* GOVERNANCE PILL (New Small Style) */
+.gov-pill {{
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 800;
+    color: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}}
+
 .mini-badge {{ display: inline-block; padding: 4px 12px; border-radius: 12px; font-family: 'Fira Code', monospace; font-size: 11px; font-weight: bold; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); margin-left: 10px; vertical-align: middle; }}
 .premium-pill {{ display: inline-block; padding: 4px 12px; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 800; color: #3b2c00; background: linear-gradient(135deg, #bf953f 0%, #fcf6ba 100%); box-shadow: 0 2px 5px rgba(0,0,0,0.2); margin-left: 5px; vertical-align: middle; letter-spacing: 1px; }}
+
+.premium-banner {{
+    background: linear-gradient(90deg, rgba(200,200,200,0.1) 0%, rgba(200,200,200,0.05) 100%);
+    border: 1px solid var(--card-border);
+    border-left: 4px solid var(--accent-gold);
+    color: var(--text-primary) !important; 
+    padding: 10px;
+    border-radius: 4px;
+    text-align: center;
+    margin: 15px 0;
+    font-family: 'Fira Code', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 700;
+}}
 
 .market-card {{ background: var(--card-bg); border: var(--card-border); border-radius: 6px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; margin-bottom: 10px; }}
 .market-ticker {{ color: var(--text-secondary); font-size: 11px; margin-bottom: 2px; }}
@@ -471,7 +491,8 @@ if full_data is not None and closes is not None:
         st.markdown('<div class="steel-sub-header"><span class="steel-text" style="font-size: 20px !important;">Risk Governance & Compliance</span></div>', unsafe_allow_html=True)
         col1, col2 = st.columns([2, 1])
         with col1:
-            st.markdown(f'<div class="big-badge" style="background: linear-gradient(135deg, {color}cc, {color}); border: 1px solid {color}; box-shadow: 0 0 20px {color}66;">GOVERNANCE STATUS: {status}</div>', unsafe_allow_html=True)
+            # NEW PILL IMPLEMENTATION
+            st.markdown(f'<div class="gov-pill" style="background: linear-gradient(135deg, {color}, {color}88); border: 1px solid {color};">{status}</div>', unsafe_allow_html=True)
             st.caption(f"Reason: {reason}")
         with col2:
             if '^VIX' in closes:
@@ -535,7 +556,7 @@ else:
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v33.0 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v34.0 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
