@@ -23,26 +23,26 @@ status = "SYSTEM BOOT"
 color = "#888888"
 
 # ==========================================
-# 2. THEME ENGINE (VISIBILITY TUNED)
+# 2. THEME ENGINE (HIGH CONTRAST TUNED)
 # ==========================================
 current_theme = {
     "bg_color": "#0e1117" if st.session_state["dark_mode"] else "#ffffff",
     "card_bg": "rgba(22, 27, 34, 0.7)" if st.session_state["dark_mode"] else "rgba(255, 255, 255, 0.9)",
     "card_border": "1px solid rgba(255, 255, 255, 0.08)" if st.session_state["dark_mode"] else "1px solid rgba(49, 51, 63, 0.1)",
     
-    # DARK MODE TEXT TUNING:
-    # Primary: Bright White
-    # Secondary: Very Light Grey (Fixes Risk/Credit Spreads visibility)
-    "text_primary": "#FFFFFF" if st.session_state["dark_mode"] else "#31333F", 
-    "text_secondary": "#DEE2E6" if st.session_state["dark_mode"] else "#555555", 
+    # TEXT COLORS
+    # Dark Mode: Bright White / Light Grey
+    # Light Mode: Near Black / Dark Grey (Darkened per request)
+    "text_primary": "#FFFFFF" if st.session_state["dark_mode"] else "#111111", 
+    "text_secondary": "#DEE2E6" if st.session_state["dark_mode"] else "#333333",
     
     "accent_gold": "#C6A87C",
     "chart_template": "plotly_dark" if st.session_state["dark_mode"] else "plotly_white",
-    "chart_font": "#E6E6E6" if st.session_state["dark_mode"] else "#31333F"
+    "chart_font": "#E6E6E6" if st.session_state["dark_mode"] else "#111111"
 }
 
 # ==========================================
-# 3. CSS STYLING
+# 3. CSS STYLING (THE ENFORCER)
 # ==========================================
 st.markdown(f"""
 <style>
@@ -59,50 +59,65 @@ st.markdown(f"""
 
 .stApp {{ background-color: var(--bg-color) !important; font-family: 'Inter', sans-serif; }}
 
-/* --- TEXT READABILITY ENFORCERS --- */
-
-/* 1. General Text */
+/* --- 1. GLOBAL TEXT CONTRAST --- */
 .stMarkdown p, .stMarkdown span, .stMarkdown li {{
     color: var(--text-primary) !important;
 }}
 
-/* 2. Radio Button Labels */
-div[role="radiogroup"] label p {{
+/* --- 2. RADIO BUTTON LABELS (Scope / Horizon) --- */
+/* The Label "Market Scope (Premium):" */
+div[data-testid="stRadio"] > label {{
     color: var(--text-primary) !important;
-    font-weight: 600 !important;
+    font-weight: 700 !important;
+}}
+/* The Options */
+div[data-testid="stRadio"] div[role="radiogroup"] p {{
+    color: var(--text-primary) !important;
 }}
 
-/* 3. Metric Labels (Risk, Spreads, etc) - Uses Lighter Secondary Color now */
+/* --- 3. METRICS (Risk, Spreads, etc.) --- */
 div[data-testid="stMetricLabel"] {{
-    color: var(--text-secondary) !important;
+    color: var(--text-secondary) !important; /* Forces Light Grey in Dark Mode */
     font-weight: 500 !important;
 }}
 div[data-testid="stMetricValue"] {{
     color: var(--text-primary) !important;
 }}
 
-/* 4. Tooltip Icons (Question Marks) */
+/* --- 4. TOOLTIP ICONS --- */
 [data-testid="stTooltipIcon"] {{
     color: var(--text-secondary) !important;
-    opacity: 0.9 !important;
+    opacity: 1 !important;
 }}
 
-/* 5. Headers */
-h1, h2, h3, h4, h5, h6 {{
+/* --- 5. EXPANDER HEADER (Strategist Date) --- */
+/* Fixes White-on-White issues */
+[data-testid="stExpander"] summary p {{
     color: var(--text-primary) !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+}}
+[data-testid="stExpander"] summary:hover p {{
+    color: var(--accent-gold) !important;
 }}
 
-/* REMOVE DEFAULT UI */
-#MainMenu {{visibility: hidden;}}
-footer {{visibility: hidden;}}
-header {{visibility: hidden;}} 
+/* --- 6. PREMIUM BANNER (Lock/Institutional) --- */
+.premium-banner {{
+    background: linear-gradient(90deg, rgba(200,200,200,0.1) 0%, rgba(200,200,200,0.05) 100%);
+    border: 1px solid var(--card-border);
+    border-left: 4px solid var(--accent-gold);
+    color: var(--text-primary) !important; /* Force readable color */
+    padding: 10px;
+    border-radius: 4px;
+    text-align: center;
+    margin: 15px 0;
+    font-family: 'Fira Code', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 700;
+}}
 
-/* LAYOUT TWEAKS */
-.block-container {{ padding-top: 1rem !important; padding-bottom: 2rem !important; }}
-div[data-testid="column"] {{ padding: 0px !important; }}
-div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
-
-/* HEADER CONTAINER */
+/* --- HEADER & MENU --- */
 .steel-header-container {{
     background: linear-gradient(145deg, #1a1f26, #2d343f);
     padding: 0px 20px;
@@ -130,7 +145,6 @@ div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
     font-size: 26px !important;
 }}
 
-/* TAGLINE FIX (Pure White, No Opacity) */
 .tagline-text {{
     color: #FFFFFF !important; 
     font-family: 'Inter', sans-serif;
@@ -140,10 +154,9 @@ div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
     text-transform: uppercase;
     margin: 0;
     line-height: 1.1;
-    opacity: 1 !important; /* Force Full Visibility */
 }}
 
-/* MENU BUTTON INTEGRATION */
+/* MENU BUTTON (Shadow Fixed) */
 [data-testid="stPopover"] button {{
     border: 1px solid #4a4f58;
     background: linear-gradient(145deg, #1a1f26, #2d343f);
@@ -155,14 +168,15 @@ div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
     margin-top: 0px;
     border-radius: 0 8px 8px 0; 
     border-left: 1px solid #4a4f58;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    box-shadow: 4px 4px 6px rgba(0,0,0,0.3); /* SHADOW APPLIED */
     display: flex;
     align-items: center;
     justify-content: center;
+    z-index: 100;
 }}
 [data-testid="stPopover"] button:hover {{ border-color: #C6A87C; color: #FFFFFF; }}
 
-/* TABS */
+/* --- UI ELEMENTS --- */
 button[data-baseweb="tab"] {{
     background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.05) 100%) !important;
     border: 1px solid rgba(128,128,128,0.2) !important;
@@ -192,7 +206,6 @@ button[data-baseweb="tab"][aria-selected="true"] p {{
     color: #FFFFFF !important;
 }}
 
-/* COMPONENT STYLES */
 .steel-sub-header {{
     background: linear-gradient(145deg, #1a1f26, #2d343f);
     padding: 8px 15px;
@@ -205,39 +218,18 @@ button[data-baseweb="tab"][aria-selected="true"] p {{
 .mini-badge {{ display: inline-block; padding: 4px 12px; border-radius: 12px; font-family: 'Fira Code', monospace; font-size: 11px; font-weight: bold; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); margin-left: 10px; vertical-align: middle; }}
 .premium-pill {{ display: inline-block; padding: 4px 12px; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 800; color: #3b2c00; background: linear-gradient(135deg, #bf953f 0%, #fcf6ba 100%); box-shadow: 0 2px 5px rgba(0,0,0,0.2); margin-left: 5px; vertical-align: middle; letter-spacing: 1px; }}
 
-.premium-banner {{
-    background: linear-gradient(90deg, #090c10 0%, #161b22 100%);
-    border: 1px solid #30363d;
-    border-left: 4px solid var(--accent-gold);
-    color: var(--text-primary) !important; 
-    padding: 10px;
-    border-radius: 4px;
-    text-align: center;
-    margin: 15px 0;
-    font-family: 'Fira Code', monospace;
-    font-size: 11px;
-    text-transform: uppercase;
-}}
-
 .market-card {{ background: var(--card-bg); border: var(--card-border); border-radius: 6px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; margin-bottom: 10px; }}
 .market-ticker {{ color: var(--text-secondary); font-size: 11px; margin-bottom: 2px; }}
 .market-price {{ color: {current_theme['text_primary']}; font-family: 'Fira Code', monospace; font-size: 22px; font-weight: 700; margin: 2px 0; }}
 .market-delta {{ font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 600; }}
 
-/* EXPANDER FIX (White on White Resolution) */
-[data-testid="stExpander"] {{
-    background-color: var(--card-bg) !important; /* Force Card BG */
-    border: 1px solid #30363d !important;
-    border-radius: 4px;
-}}
-[data-testid="stExpander"] summary {{
-    color: var(--text-primary) !important; /* Bright Text */
-    font-family: 'Fira Code', monospace;
-    font-size: 13px;
-}}
-[data-testid="stExpander"] summary:hover {{
-    color: var(--accent-gold) !important;
-}}
+/* REMOVE DEFAULT UI */
+#MainMenu {{visibility: hidden;}}
+footer {{visibility: hidden;}}
+header {{visibility: hidden;}} 
+.block-container {{ padding-top: 1rem !important; padding-bottom: 2rem !important; }}
+div[data-testid="column"] {{ padding: 0px !important; }}
+div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
 
 /* FOOTER */
 .custom-footer {{
@@ -543,7 +535,7 @@ else:
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v32.0 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v33.0 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
