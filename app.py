@@ -339,16 +339,15 @@ except Exception as e:
 c_title, c_menu = st.columns([0.85, 0.15])
 
 with c_title:
-    # --- NEW BANNER IMPLEMENTATION ---
-    # Using the generated shield banner. 
-    # Note: In production, download this image and host it locally or on your S3 bucket.
-    banner_url = "https://i.imgur.com/yYj7XyP.png" 
-    st.image(banner_url, use_container_width=True) 
+    # --- FIXED BANNER IMPLEMENTATION ---
+    # This assumes 'banner.png' is in the same folder as your script.
+    # If it's in a subfolder like 'assets', change it to 'assets/banner.png'
+    st.image("banner.png", use_container_width=True) 
 
 with c_menu:
     with st.popover("☰", use_container_width=True):
         st.caption("Settings & Links")
-        is_dark = st.toggle("Dark Mode", value=st.session_state["dark_mode"])
+             is_dark = st.toggle("Dark Mode", value=st.session_state["dark_mode"])
         if is_dark != st.session_state["dark_mode"]:
             st.session_state["dark_mode"] = is_dark
             st.rerun()
