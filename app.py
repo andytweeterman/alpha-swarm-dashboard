@@ -306,25 +306,25 @@ with c_title:
     
     if img_b64:
         st.markdown(f"""
-        <div class="header-bar">
-            <img src="data:image/png;base64,{img_b64}" style="height: 50px; width: auto; flex-shrink: 0; object-fit: contain;">
-            
-            <div class="header-text-col">
-                <span class="steel-text-main">MacroEffects</span>
-                <span class="steel-text-sub">AI Inference & Risk Intelligence</span>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+<div class="header-bar">
+    <img src="data:image/png;base64,{img_b64}" style="height: 50px; width: auto; flex-shrink: 0; object-fit: contain;">
+    
+    <div class="header-text-col">
+        <span class="steel-text-main">MacroEffects</span>
+        <span class="steel-text-sub">AI Inference & Risk Intelligence</span>
+    </div>
+</div>
+""", unsafe_allow_html=True)
     else:
         # Fallback Text if image missing
         st.markdown(f"""
-        <div class="header-bar">
-            <div class="header-text-col">
-                <span class="steel-text-main">MacroEffects</span>
-                <span class="steel-text-sub">AI Inference & Risk Intelligence</span>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+<div class="header-bar">
+    <div class="header-text-col">
+        <span class="steel-text-main">MacroEffects</span>
+        <span class="steel-text-sub">AI Inference & Risk Intelligence</span>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 with c_menu:
     with st.popover("☰", use_container_width=True):
@@ -511,7 +511,7 @@ else:
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v53.0 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v54.0 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
