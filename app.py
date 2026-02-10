@@ -23,7 +23,7 @@ status = "SYSTEM BOOT"
 color = "#888888"
 
 # ==========================================
-# 2. THEME ENGINE
+# 2. THEME ENGINE (FORCE OVERRIDES)
 # ==========================================
 current_theme = {
     "bg_color": "#0e1117" if st.session_state["dark_mode"] else "#ffffff",
@@ -31,10 +31,10 @@ current_theme = {
     "card_border": "1px solid rgba(255, 255, 255, 0.08)" if st.session_state["dark_mode"] else "1px solid rgba(49, 51, 63, 0.1)",
     
     # COLORS
-    # Dark Mode: Primary=White, Secondary=Light Grey (#B0B8C1 - Fixed for visibility)
-    # Light Mode: Primary=Black, Secondary=Dark Grey
+    # Dark Mode: Primary = White, Secondary = Light Grey (#D3D3D3)
+    # Light Mode: Primary = Black, Secondary = Dark Grey
     "text_primary": "#FFFFFF" if st.session_state["dark_mode"] else "#000000", 
-    "text_secondary": "#B0B8C1" if st.session_state["dark_mode"] else "#666666", 
+    "text_secondary": "#D3D3D3" if st.session_state["dark_mode"] else "#666666", 
     
     "accent_gold": "#C6A87C",
     "chart_template": "plotly_dark" if st.session_state["dark_mode"] else "plotly_white",
@@ -42,7 +42,7 @@ current_theme = {
 }
 
 # ==========================================
-# 3. CSS STYLING
+# 3. CSS STYLING (NUCLEAR OPTION)
 # ==========================================
 st.markdown(f"""
 <style>
@@ -72,7 +72,7 @@ h3 {{
     font-weight: 600 !important;
 }}
 
-/* 3. Radio Button Labels */
+/* 3. RADIO BUTTONS */
 div[data-testid="stRadio"] > label {{
     color: var(--text-secondary) !important;
     font-weight: 600 !important;
@@ -82,27 +82,34 @@ div[data-testid="stRadio"] div[role="radiogroup"] p {{
     color: var(--text-secondary) !important;
 }}
 
-/* 4. METRIC LABELS (The "Risk (VIX)" Fix) */
+/* 4. METRIC LABELS (NUCLEAR FIX) */
+/* Target every possible container for the label */
 div[data-testid="stMetricLabel"] {{
-    color: var(--text-secondary) !important; /* Forces Light Grey in Dark Mode */
+    color: var(--text-secondary) !important; 
     font-size: 14px !important;
     font-weight: 500 !important;
 }}
+div[data-testid="stMetricLabel"] p {{
+    color: var(--text-secondary) !important;
+}}
+div[data-testid="stMetricLabel"] div {{
+    color: var(--text-secondary) !important;
+}}
+
 div[data-testid="stMetricValue"] {{
     color: var(--text-primary) !important;
 }}
 
-/* 5. TOOLTIPS (The Question Mark Fix) */
+/* 5. Tooltip Icons */
 [data-testid="stTooltipIcon"] {{
-    color: var(--text-secondary) !important; /* Forces Light Grey */
+    color: var(--text-secondary) !important;
     opacity: 0.9 !important;
 }}
 [data-testid="stTooltipIcon"] svg {{
     fill: var(--text-secondary) !important;
-    color: var(--text-secondary) !important;
 }}
 
-/* 6. Expander Header (Strategist) */
+/* 6. Expander Header */
 [data-testid="stExpander"] {{
     background-color: transparent !important; 
     border: 1px solid var(--card-border) !important;
@@ -140,19 +147,7 @@ div[data-testid="stMetricValue"] {{
     font-size: 26px !important;
 }}
 
-/* TAGLINE (THE SILVER FIX) */
-/* This ensures it is ALWAYS Silver, even in Light Mode */
-.tagline-text {{
-    color: #C0C0C0 !important; 
-    font-family: 'Inter', sans-serif;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin: 0;
-    line-height: 1.1;
-    opacity: 1 !important;
-}}
+/* TAGLINE IS NOW HANDLED INLINE IN HTML TO FORCE COLOR */
 
 /* MENU BUTTON */
 [data-testid="stPopover"] button {{
@@ -214,7 +209,7 @@ button[data-baseweb="tab"][aria-selected="true"] p {{
     margin-bottom: 15px;
 }}
 
-/* GOVERNANCE PILL */
+/* SMALL GOVERNANCE PILL */
 .gov-pill {{
     display: inline-block;
     padding: 4px 12px;
@@ -371,10 +366,11 @@ except Exception as e:
 c_title, c_menu = st.columns([0.85, 0.15])
 
 with c_title:
+    # NUCLEAR OPTION: Inline Style for Tagline Color
     st.markdown(f"""
     <div class="steel-header-container">
         <span class="steel-text">MacroEffects</span>
-        <span class="tagline-text">AI INFERENCE FOCUSED ON STOCK MARKETS</span>
+        <span class="tagline-text" style="color: #C0C0C0 !important;">AI INFERENCE FOCUSED ON STOCK MARKETS</span>
     </div>
     """, unsafe_allow_html=True)
 
@@ -391,7 +387,7 @@ with c_menu:
         st.link_button("About Us", "https://sixmonthstockmarketforecast.com/about") 
         st.link_button("Contact Analyst", "mailto:analyst@macroeffects.com")
 
-# SUBHEADER
+# SUBHEADER WITH SMALL PILL
 st.markdown(f"""
 <div style="margin-bottom: 20px; margin-top: 15px;">
     <span style="font-family: 'Inter'; font-weight: 600; font-size: 16px; color: var(--text-secondary);">Macro-Economic Intelligence: Global Market Command Center</span>
@@ -563,7 +559,7 @@ else:
 # FOOTER
 st.markdown("""
 <div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v38.0 | INSTITUTIONAL RISK GOVERNANCE<br>
+MACROEFFECTS | ALPHA SWARM PROTOCOL v39.0 | INSTITUTIONAL RISK GOVERNANCE<br>
 Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
 <br>
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
