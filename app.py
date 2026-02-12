@@ -299,6 +299,16 @@ def render_sparkline(data, line_color):
     )
     return fig
 
+def render_market_card(name, price, delta, pct):
+    delta_color = "#00d26a" if delta >= 0 else "#f93e3e"
+    return f"""
+<div class="market-card" role="group" aria-label="{name} Market Data">
+<div class="market-ticker">{name}</div>
+<div class="market-price">{price:,.2f}</div>
+<div class="market-delta" style="color: {delta_color};">{delta:+.2f} ({pct:+.2f}%)</div>
+</div>
+""".strip()
+
 # ==========================================
 # 5. EXECUTION PHASE
 # ==========================================
@@ -330,7 +340,7 @@ with c_title:
     if img_b64:
         header_html = f"""
 <div class="header-bar">
-<img src="data:image/png;base64,{img_b64}" style="height: 50px; width: auto; flex-shrink: 0; object-fit: contain;">
+<img src="data:image/png;base64,{img_b64}" alt="MacroEffects Shield Logo" style="height: 50px; width: auto; flex-shrink: 0; object-fit: contain;">
 <div class="header-text-col">
 <span class="steel-text-main">MacroEffects</span>
 <span class="steel-text-sub">AI Inference & Risk Intelligence</span>
@@ -396,8 +406,7 @@ if full_data is not None and closes is not None:
                     series = closes[asset['ticker']].dropna()
                     if not series.empty:
                         current = series.iloc[-1]; prev = series.iloc[-2]; delta = current - prev; pct = (delta / prev) * 100
-                        delta_color = "#00d26a" if delta >= 0 else "#f93e3e"
-                        st.markdown(f"""<div class="market-card"><div class="market-ticker">{asset['name']}</div><div class="market-price">{current:,.2f}</div><div class="market-delta" style="color: {delta_color};">{delta:+.2f} ({pct:+.2f}%)</div></div>""", unsafe_allow_html=True)
+                        st.markdown(render_market_card(asset['name'], current, delta, pct), unsafe_allow_html=True)
                         st.plotly_chart(render_sparkline(series.tail(30), asset['color']), use_container_width=True, config={'displayModeBar': False})
         st.markdown("---")
         c4, c5, c6 = st.columns(3)
@@ -408,8 +417,7 @@ if full_data is not None and closes is not None:
                     series = closes[asset['ticker']].dropna()
                     if not series.empty:
                         current = series.iloc[-1]; prev = series.iloc[-2]; delta = current - prev; pct = (delta / prev) * 100
-                        delta_color = "#00d26a" if delta >= 0 else "#f93e3e"
-                        st.markdown(f"""<div class="market-card"><div class="market-ticker">{asset['name']}</div><div class="market-price">{current:,.2f}</div><div class="market-delta" style="color: {delta_color};">{delta:+.2f} ({pct:+.2f}%)</div></div>""", unsafe_allow_html=True)
+                        st.markdown(render_market_card(asset['name'], current, delta, pct), unsafe_allow_html=True)
                         st.plotly_chart(render_sparkline(series.tail(30), asset['color']), use_container_width=True, config={'displayModeBar': False})
         
         st.divider()
