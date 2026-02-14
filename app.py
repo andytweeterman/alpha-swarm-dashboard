@@ -330,7 +330,7 @@ with c_title:
     if img_b64:
         header_html = f"""
 <div class="header-bar">
-<img src="data:image/png;base64,{img_b64}" style="height: 50px; width: auto; flex-shrink: 0; object-fit: contain;">
+<img src="data:image/png;base64,{img_b64}" alt="MacroEffects Shield Logo" style="height: 50px; width: auto; flex-shrink: 0; object-fit: contain;">
 <div class="header-text-col">
 <span class="steel-text-main">MacroEffects</span>
 <span class="steel-text-sub">AI Inference & Risk Intelligence</span>
@@ -424,8 +424,8 @@ if full_data is not None and closes is not None:
             f_dates, f_mean, f_upper, f_lower = generate_forecast(last_date, last_val, last_dev, days=30)
             
             c1, c2 = st.columns(2)
-            with c1: view_mode = st.radio("Select View Horizon:", ["Tactical (60-Day Zoom)", "Strategic (2-Year History)"], horizontal=True)
-            with c2: st.radio("Market Scope (Premium):", ["US Market (Active)", "Global Swarm 🔒", "Sector Rotation 🔒"], index=0, horizontal=True, disabled=True)
+            with c1: view_mode = st.radio("Select View Horizon:", ["Tactical (60-Day Zoom)", "Strategic (2-Year History)"], horizontal=True, help="Tactical view zooms in on the last 60 days. Strategic view shows the full 2-year history.")
+            with c2: st.radio("Market Scope (Premium):", ["US Market (Active)", "Global Swarm 🔒", "Sector Rotation 🔒"], index=0, horizontal=True, disabled=True, help="Institutional access required to unlock Global Swarm and Sector Rotation models.")
 
             if view_mode == "Tactical (60-Day Zoom)": start_filter = (datetime.now() - timedelta(days=60)).strftime('%Y-%m-%d'); show_forecast = True
             else: start_filter = (datetime.now() - timedelta(days=730)).strftime('%Y-%m-%d'); show_forecast = False
