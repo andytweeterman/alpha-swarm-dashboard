@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 import sys
 import os
+import tempfile
+from unittest.mock import MagicMock
 
 # Add repo root to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -50,7 +52,6 @@ sys.modules["streamlit"].tabs = MagicMock(side_effect=mock_tabs)
 from app import calc_governance, calc_ppo, calc_cone
 
 def test_governance_calculation():
-    # Create dummy data
     dates = pd.date_range("2020-01-01", periods=100)
     data = pd.DataFrame(index=dates)
     data["HYG"] = np.random.rand(100) * 100
@@ -60,11 +61,8 @@ def test_governance_calculation():
     data["SPY"] = np.random.rand(100) * 400
     data["DX-Y.NYB"] = np.random.rand(100) * 100
 
-    # Needs a MultiIndex or just columns named 'Close'?
-    # The function does: closes = data['Close']
-
-    df_close = data.copy()
-    full_data = pd.concat([df_close], axis=1, keys=['Close'])
+    tuples = [('Close', col) for col in data.columns]
+    data.columns = pd.MultiIndex.from_tuples(tuples)
 
     gov_df, status, color, reason = calc_governance(full_data)
 
@@ -91,6 +89,36 @@ def test_cone_calculation():
     assert len(sma) == 100
     assert len(upper) == 100
 
-    # Check simple logic: Upper > Lower (where defined, first 20 might be NaN)
     valid = upper.dropna()
     assert (valid > lower[valid.index]).all()
+
+def test_get_base64_image_security():
+    with tempfile.NamedTemporaryFile(mode='w+', delete=False) as tmp:
+        tmp.write("secret")
+        tmp_path = tmp.name
+
+    try:
+        # Test 1: Absolute path outside allowed dir
+        result = get_base64_image(tmp_path)
+        # Should be None in secured version
+        assert result is None, "Should reject absolute path outside base directory"
+
+        # Test 2: Relative path traversal
+        rel_path = os.path.relpath(tmp_path, os.getcwd())
+        result_rel = get_base64_image(rel_path)
+        assert result_rel is None, "Should reject relative path traversal"
+
+        # Test 3: Valid file
+        with open("dummy_test_image.png", "wb") as f:
+            f.write(b"dummy image content")
+
+        try:
+            result_valid = get_base64_image("dummy_test_image.png")
+            assert result_valid is not None, "Should accept valid file in base directory"
+        finally:
+            if os.path.exists("dummy_test_image.png"):
+                os.remove("dummy_test_image.png")
+
+    finally:
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
