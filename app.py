@@ -205,6 +205,7 @@ div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
 </style>
 """, unsafe_allow_html=True)
 
+
 def get_base64_image(image_path):
     try:
         # Prevent path traversal: limit access to app directory
@@ -248,15 +249,14 @@ def calc_governance(data):
 
 @st.cache_data(ttl=3600)
 def load_strategist_data():
-    """Ingests the Strategist's Forecast CSV (^GSPC.csv)"""
+    """Ingests the Strategist's Forecast CSV (data/strategist_forecast.csv)"""
     try:
-        # Look for the file in the current directory
-        # You can rename your uploaded file to '^GSPC.csv' to make this work automatically
-        possible_files = [f for f in os.listdir() if "GSPC" in f and f.endswith(".csv")]
-        if not possible_files:
+        # Look for the file in the data directory
+        filename = os.path.join("data", "strategist_forecast.csv")
+
+        if not os.path.exists(filename):
             return None
         
-        filename = possible_files[0] # Pick the first match
         df = pd.read_csv(filename)
         
         # Ensure we have the right columns
@@ -356,6 +356,8 @@ def render_market_card(name, price, delta, pct):
 # ==========================================
 # 5. EXECUTION PHASE
 # ==========================================
+full_data = None
+closes = None
 try:
     with st.spinner("Connecting to Global Swarm..."):
         full_data = fetch_market_data()
