@@ -11,9 +11,11 @@ def get_base64_image(image_path):
         return None
 
 def apply_theme():
+    # Ensure session state is initialized
     if "dark_mode" not in st.session_state:
         st.session_state["dark_mode"] = False
 
+    # Define Theme Palettes
     if st.session_state["dark_mode"]:
         theme = {
             "BG_COLOR": "#0e1117",
@@ -35,6 +37,7 @@ def apply_theme():
             "ACCENT_GOLD": "#C6A87C"
         }
 
+    # Inject CSS
     st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Fira+Code:wght@300;500;700&display=swap');
@@ -57,6 +60,26 @@ def apply_theme():
         padding-right: 2rem !important;
         max-width: 100% !important;
     }}
+
+    /* --- TABS (Restored in v56.2) --- */
+    button[data-baseweb="tab"] {{
+        background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.05) 100%) !important;
+        border: 1px solid rgba(128,128,128,0.2) !important;
+        border-radius: 6px 6px 0 0 !important;
+        color: var(--text-secondary) !important;
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        font-size: 14px;
+        text-transform: uppercase;
+        padding: 10px 10px;
+        margin-right: 2px;
+        flex-grow: 1;
+    }}
+    button[data-baseweb="tab"][aria-selected="true"] {{
+        background: linear-gradient(180deg, #2d343f 0%, #1a1f26 100%) !important;
+        border-top: 2px solid var(--accent-gold) !important;
+    }}
+    button[data-baseweb="tab"][aria-selected="true"] p {{ color: #FFFFFF !important; }}
 
     /* --- TEXT ENFORCERS --- */
     .stMarkdown p, .stMarkdown span, .stMarkdown li {{ color: var(--text-primary) !important; }}
