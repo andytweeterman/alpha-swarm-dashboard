@@ -11,6 +11,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 # Mock streamlit before import
 sys.modules["streamlit"] = MagicMock()
+mock_st = sys.modules["streamlit"]
 
 def mock_cache_data(*args, **kwargs):
     # If called as decorator without parens: @st.cache_data
@@ -31,7 +32,7 @@ mock_st.sidebar = MagicMock()
 mock_st.toggle.return_value = False
 mock_st.sidebar.toggle.return_value = False
 # Mock session state
-mock_st.session_state = {}
+mock_st.session_state = {"dark_mode": False}
 
 # Mock yfinance BEFORE importing app to avoid network calls
 sys.modules["yfinance"] = MagicMock()
@@ -56,7 +57,7 @@ def mock_tabs(tabs):
 sys.modules["streamlit"].tabs = MagicMock(side_effect=mock_tabs)
 
 # Import functions from app.py
-from app import calc_governance, calc_ppo, calc_cone
+from app import calc_governance, calc_ppo, calc_cone, get_base64_image
 
 def test_governance_calculation():
     dates = pd.date_range("2020-01-01", periods=100)
@@ -77,8 +78,11 @@ def test_governance_calculation():
     # but based on app.py: closes = full_data['Close']
     # If full_data is a MultiIndex DF with top level 'Price', 'Ticker', then full_data['Close'] returns a DF with tickers as columns.
 
-    tuples = [('Close', col) for col in data.columns]
-    data.columns = pd.MultiIndex.from_tuples(tuples)
+    full_data = pd.DataFrame(closes.values, index=closes.index, columns=closes.columns)
+    # Simulate data['Close'] access
+    # We can just make full_data have 'Close' key access to return closes
+    # Or properly construct MultiIndex
+    full_data = pd.concat([closes], axis=1, keys=['Close'])
 
     gov_df, status, color, reason = calc_governance(full_data)
 

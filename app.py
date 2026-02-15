@@ -205,16 +205,6 @@ div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
 </style>
 """, unsafe_allow_html=True)
 
-    # ==========================================
-    # 5. EXECUTION PHASE
-    # ==========================================
-    try:
-        tickers = ["SPY", "^DJI", "^IXIC", "HYG", "IEF", "^VIX", "RSP", "DX-Y.NYB", "GC=F", "CL=F"]
-        start = (datetime.now() - timedelta(days=1825)).strftime('%Y-%m-%d')
-        data = yf.download(tickers, start=start, progress=False)
-        return data
-    except Exception:
-        return None
 
 def get_base64_image(image_path):
     try:
@@ -365,6 +355,8 @@ def render_market_card(name, price, delta, pct):
 # ==========================================
 # 5. EXECUTION PHASE
 # ==========================================
+full_data = None
+closes = None
 try:
     with st.spinner("Connecting to Global Swarm..."):
         full_data = fetch_market_data()
