@@ -55,6 +55,21 @@ def mock_tabs(tabs):
 
 sys.modules["streamlit"].tabs = MagicMock(side_effect=mock_tabs)
 
+# Mock st.columns to return a list of mocks based on the input
+def mock_columns(spec, gap="small"):
+    if isinstance(spec, int):
+        return [MagicMock() for _ in range(spec)]
+    elif isinstance(spec, list):
+        return [MagicMock() for _ in range(len(spec))]
+    return [MagicMock()]
+
+sys.modules["streamlit"].columns.side_effect = mock_columns
+
+# Mock st.tabs
+def mock_tabs(tabs):
+    return [MagicMock() for _ in range(len(tabs))]
+sys.modules["streamlit"].tabs.side_effect = mock_tabs
+
 # Import functions from app.py
 from app import calc_governance, calc_ppo, calc_cone
 
