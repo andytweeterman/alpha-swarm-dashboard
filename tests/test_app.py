@@ -22,8 +22,20 @@ sys.modules["streamlit"].sidebar = MagicMock()
 sys.modules["streamlit"].toggle.return_value = False
 sys.modules["streamlit"].sidebar.toggle.return_value = False # In case I used st.sidebar.toggle
 
+# Mock st.columns to return a list of mocks based on input
+def mock_columns(spec, gap="small"):
+    if isinstance(spec, int):
+        return [MagicMock() for _ in range(spec)]
+    elif isinstance(spec, list):
+        return [MagicMock() for _ in range(len(spec))]
+    return [MagicMock()] # Fallback
+
+sys.modules["streamlit"].columns = MagicMock(side_effect=mock_columns)
+sys.modules["streamlit"].tabs = MagicMock(side_effect=mock_columns) # tabs works similarly
+
 # Import functions from app.py
-from app import calculate_governance_history, calculate_ppo, calculate_cone
+from app import calc_governance, calc_ppo, calc_cone, load_strategist_data
+from unittest.mock import patch
 
 def test_governance_calculation():
     # Create dummy data
@@ -42,7 +54,7 @@ def test_governance_calculation():
     df_close = data.copy()
     full_data = pd.concat([df_close], axis=1, keys=['Close'])
 
-    gov_df, status, color, reason = calculate_governance_history(full_data)
+    gov_df, status, color, reason = calc_governance(full_data)
 
     assert status in ["EMERGENCY", "CAUTION", "WATCHLIST", "NORMAL OPS"]
     assert color in ["#f93e3e", "#ffaa00", "#f1c40f", "#00d26a"]
@@ -52,7 +64,7 @@ def test_ppo_calculation():
     dates = pd.date_range("2020-01-01", periods=100)
     price = pd.Series(np.random.rand(100) * 100, index=dates)
 
-    ppo, sig, hist = calculate_ppo(price)
+    ppo, sig, hist = calc_ppo(price)
 
     assert len(ppo) == 100
     assert len(sig) == 100
@@ -62,7 +74,7 @@ def test_cone_calculation():
     dates = pd.date_range("2020-01-01", periods=100)
     price = pd.Series(np.random.rand(100) * 100, index=dates)
 
-    sma, std, upper, lower = calculate_cone(price)
+    sma, std, upper, lower = calc_cone(price)
 
     assert len(sma) == 100
     assert len(upper) == 100
@@ -70,3 +82,34 @@ def test_cone_calculation():
     # Check simple logic: Upper > Lower (where defined, first 20 might be NaN)
     valid = upper.dropna()
     assert (valid > lower[valid.index]).all()
+
+def test_load_strategist_data():
+    # Test case 1: No file found
+    with patch("os.listdir", return_value=["other_file.txt"]):
+        assert load_strategist_data() is None
+
+    # Test case 2: File found but missing columns
+    with patch("os.listdir", return_value=["^GSPC.csv"]):
+        with patch("pandas.read_csv", return_value=pd.DataFrame({"Date": ["2020-01-01"]})):
+             assert load_strategist_data() is None
+
+    # Test case 3: Success
+    valid_df = pd.DataFrame({
+        "Date": ["2020-01-01"],
+        "Tstk_Adj": [100],
+        "FP1": [0.01],
+        "FP3": [0.02],
+        "FP6": [0.03]
+    })
+    with patch("os.listdir", return_value=["^GSPC.csv"]):
+        with patch("pandas.read_csv", return_value=valid_df):
+            result = load_strategist_data()
+            assert result is not None
+            assert "Date" in result.columns
+            # Ensure Date is datetime
+            assert pd.api.types.is_datetime64_any_dtype(result["Date"])
+
+    # Test case 4: Exception during read
+    with patch("os.listdir", return_value=["^GSPC.csv"]):
+        with patch("pandas.read_csv", side_effect=Exception("Error")):
+            assert load_strategist_data() is None
