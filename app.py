@@ -332,6 +332,17 @@ def generate_forecast(start_date, last_price, last_std, days=30):
         future_lower.append(future_mean[i-1] - width)
     return future_dates, future_mean, future_upper, future_lower
 
+def render_market_card(name, price, delta, pct, delta_color):
+    """Generates accessible HTML for a market card."""
+    aria_label = f"{name}: {price:,.2f}, {delta:+.2f} ({pct:+.2f}%)"
+    return f"""
+    <div class="market-card" role="group" aria-label="{aria_label}">
+        <div class="market-ticker" aria-hidden="true">{name}</div>
+        <div class="market-price" aria-hidden="true">{price:,.2f}</div>
+        <div class="market-delta" style="color: {delta_color};" aria-hidden="true">{delta:+.2f} ({pct:+.2f}%)</div>
+    </div>
+    """
+
 def render_sparkline(data, line_color):
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=data.index, y=data, mode='lines', line=dict(color=line_color, width=2), hoverinfo='skip'))

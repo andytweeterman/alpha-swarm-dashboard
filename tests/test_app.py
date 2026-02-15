@@ -10,7 +10,6 @@ from unittest.mock import MagicMock
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Mock streamlit before import
-from unittest.mock import MagicMock
 sys.modules["streamlit"] = MagicMock()
 
 def mock_cache_data(*args, **kwargs):
