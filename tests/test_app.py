@@ -10,8 +10,8 @@ from unittest.mock import MagicMock
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Mock streamlit before import
-mock_st = MagicMock()
-sys.modules["streamlit"] = mock_st
+sys.modules["streamlit"] = MagicMock()
+mock_st = sys.modules["streamlit"]
 
 def mock_cache_data(*args, **kwargs):
     # If called as decorator without parens: @st.cache_data
@@ -120,9 +120,11 @@ def test_governance_calculation():
     # app.py: closes = full_data['Close']
     # So full_data needs a 'Close' column which returns the closes DF.
 
-    # Create full_data with 'Close' as top-level column in MultiIndex
-    full_data = closes.copy()
-    full_data.columns = pd.MultiIndex.from_product([['Close'], closes.columns])
+    full_data = pd.DataFrame(closes.values, index=closes.index, columns=closes.columns)
+    # Simulate data['Close'] access
+    # We can just make full_data have 'Close' key access to return closes
+    # Or properly construct MultiIndex
+    full_data = pd.concat([closes], axis=1, keys=['Close'])
 
     gov_df, status, color, reason = calc_governance(full_data)
 
