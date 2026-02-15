@@ -36,6 +36,9 @@ def calc_governance(data):
 # ==========================================
 # 2. THEME ENGINE
 # ==========================================
+if "dark_mode" not in st.session_state:
+    st.session_state["dark_mode"] = False
+
 if st.session_state["dark_mode"]:
     # DARK MODE
     BG_COLOR = "#0e1117"
