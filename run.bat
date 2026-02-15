@@ -27,6 +27,6 @@ echo ✅ Configuration complete. Starting Streamlit...
 echo 📊 Dashboard available at: http://localhost:8501
 echo.
 
-streamlit run src\app.py
+streamlit run app.py
 
 pause
