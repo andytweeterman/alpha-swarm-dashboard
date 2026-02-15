@@ -22,8 +22,25 @@ sys.modules["streamlit"].sidebar = MagicMock()
 sys.modules["streamlit"].toggle.return_value = False
 sys.modules["streamlit"].sidebar.toggle.return_value = False # In case I used st.sidebar.toggle
 
+# Mock columns to return a list of mocks
+def mock_columns(spec, gap="small"):
+    if isinstance(spec, int):
+        return [MagicMock() for _ in range(spec)]
+    elif isinstance(spec, list):
+        return [MagicMock() for _ in range(len(spec))]
+    return [MagicMock(), MagicMock()]
+
+sys.modules["streamlit"].columns.side_effect = mock_columns
+
+# Mock tabs
+def mock_tabs(tabs):
+    return [MagicMock() for _ in range(len(tabs))]
+
+sys.modules["streamlit"].tabs.side_effect = mock_tabs
+
+
 # Import functions from app.py
-from app import calculate_governance_history, calculate_ppo, calculate_cone
+from app import calc_governance as calculate_governance_history, calc_ppo as calculate_ppo, calc_cone as calculate_cone
 
 def test_governance_calculation():
     # Create dummy data
