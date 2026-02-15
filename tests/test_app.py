@@ -10,10 +10,18 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 # Mock streamlit before import
 from unittest.mock import MagicMock
 sys.modules["streamlit"] = MagicMock()
+
+def mock_cache_data(*args, **kwargs):
+    # If called as decorator without parens: @st.cache_data
+    if len(args) == 1 and callable(args[0]):
+        return args[0]
+    # If called with parens: @st.cache_data(ttl=...)
+    def decorator(func):
+        return func
+    return decorator
+
 # Mock cache_data decorator
-sys.modules["streamlit"].cache_data = lambda func: func
-# Mock st.cache_data for use
-sys.modules["streamlit"].cache_data = lambda ttl=3600: lambda func: func
+sys.modules["streamlit"].cache_data = mock_cache_data
 # Mock page config so set_page_config doesn't crash if called
 sys.modules["streamlit"].set_page_config = MagicMock()
 # Mock sidebar
@@ -21,6 +29,22 @@ sys.modules["streamlit"].sidebar = MagicMock()
 # Mock toggle return value to avoid KeyError in theme_config
 sys.modules["streamlit"].toggle.return_value = False
 sys.modules["streamlit"].sidebar.toggle.return_value = False # In case I used st.sidebar.toggle
+
+# Configure columns to return a list of mocks when called
+def mock_columns(spec, gap="small"):
+    if isinstance(spec, int):
+        count = spec
+    else:
+        count = len(spec)
+    return [MagicMock() for _ in range(count)]
+
+sys.modules["streamlit"].columns = MagicMock(side_effect=mock_columns)
+
+# Configure tabs to return a list of mocks when called
+def mock_tabs(tabs):
+    return [MagicMock() for _ in range(len(tabs))]
+
+sys.modules["streamlit"].tabs = MagicMock(side_effect=mock_tabs)
 
 # Import functions from app.py
 from app import calc_governance, calc_ppo, calc_cone
