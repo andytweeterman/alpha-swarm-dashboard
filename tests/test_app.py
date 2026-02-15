@@ -3,28 +3,26 @@ import pandas as pd
 import numpy as np
 import sys
 import os
-from unittest.mock import MagicMock, patch
+import tempfile
+from unittest.mock import MagicMock
 
 # Add repo root to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-# --- MOCKING SETUP ---
-# Create a robust mock for Streamlit
-mock_st = MagicMock()
-sys.modules["streamlit"] = mock_st
+# Mock streamlit before import
+sys.modules["streamlit"] = MagicMock()
 
-# Configure st.columns and st.tabs to return lists of mocks
-def side_effect_columns(spec, **kwargs):
-    if isinstance(spec, int):
-        return [MagicMock() for _ in range(spec)]
-    elif isinstance(spec, list):
-        return [MagicMock() for _ in range(len(spec))]
-    return [MagicMock()]
+def mock_cache_data(*args, **kwargs):
+    # If called as decorator without parens: @st.cache_data
+    if len(args) == 1 and callable(args[0]):
+        return args[0]
+    # If called with parens: @st.cache_data(ttl=...)
+    def decorator(func):
+        return func
+    return decorator
 
-mock_st.columns.side_effect = side_effect_columns
-mock_st.tabs.side_effect = lambda tabs: [MagicMock() for _ in tabs]
-# Mock st.cache_data decorator to just execute function
-mock_st.cache_data = lambda **kwargs: lambda func: func
+# Mock cache_data decorator
+sys.modules["streamlit"].cache_data = mock_cache_data
 # Mock page config so set_page_config doesn't crash if called
 mock_st.set_page_config = MagicMock()
 # Mock sidebar
@@ -41,14 +39,26 @@ sys.modules["yfinance"] = MagicMock()
 sys.modules["plotly.graph_objects"] = MagicMock()
 sys.modules["plotly.subplots"] = MagicMock()
 
-# --- IMPORT APP ---
-# Now we can import app safely
+# Configure columns to return a list of mocks when called
+def mock_columns(spec, gap="small"):
+    if isinstance(spec, int):
+        count = spec
+    else:
+        count = len(spec)
+    return [MagicMock() for _ in range(count)]
+
+sys.modules["streamlit"].columns = MagicMock(side_effect=mock_columns)
+
+# Configure tabs to return a list of mocks when called
+def mock_tabs(tabs):
+    return [MagicMock() for _ in range(len(tabs))]
+
+sys.modules["streamlit"].tabs = MagicMock(side_effect=mock_tabs)
+
+# Import functions from app.py
 from app import calc_governance, calc_ppo, calc_cone
 
-# --- TESTS ---
-
 def test_governance_calculation():
-    # Create dummy data
     dates = pd.date_range("2020-01-01", periods=100)
     # Create a MultiIndex DataFrame as expected by calc_governance accessing data['Close']
     # Wait, calc_governance does: closes = data['Close']
@@ -67,12 +77,8 @@ def test_governance_calculation():
     # but based on app.py: closes = full_data['Close']
     # If full_data is a MultiIndex DF with top level 'Price', 'Ticker', then full_data['Close'] returns a DF with tickers as columns.
 
-    # Let's construct full_data such that full_data['Close'] returns our closes DF.
-    full_data = pd.concat([closes], axis=1, keys=['Close'])
-
-    # Verify structure matches expectation
-    assert 'Close' in full_data.columns
-    assert 'HYG' in full_data['Close'].columns
+    tuples = [('Close', col) for col in data.columns]
+    data.columns = pd.MultiIndex.from_tuples(tuples)
 
     gov_df, status, color, reason = calc_governance(full_data)
 
@@ -81,6 +87,7 @@ def test_governance_calculation():
     assert reason in ["Structural/Policy Failure", "Market Divergence", "Elevated Risk Monitors", "System Integrity Nominal"]
 
 def test_ppo_calculation():
+    """Test PPO calculation."""
     dates = pd.date_range("2020-01-01", periods=100)
     price = pd.Series(np.random.rand(100) * 100, index=dates)
 
@@ -91,6 +98,7 @@ def test_ppo_calculation():
     assert len(hist) == 100
 
 def test_cone_calculation():
+    """Test Volatility Cone calculation."""
     dates = pd.date_range("2020-01-01", periods=100)
     price = pd.Series(np.random.rand(100) * 100, index=dates)
 
@@ -99,8 +107,36 @@ def test_cone_calculation():
     assert len(sma) == 100
     assert len(upper) == 100
 
-    # Check simple logic: Upper > Lower (where defined, first 20 might be NaN)
     valid = upper.dropna()
-    # Align indices just in case
-    lower_valid = lower[valid.index]
-    assert (valid > lower_valid).all()
+    assert (valid > lower[valid.index]).all()
+
+def test_get_base64_image_security():
+    with tempfile.NamedTemporaryFile(mode='w+', delete=False) as tmp:
+        tmp.write("secret")
+        tmp_path = tmp.name
+
+    try:
+        # Test 1: Absolute path outside allowed dir
+        result = get_base64_image(tmp_path)
+        # Should be None in secured version
+        assert result is None, "Should reject absolute path outside base directory"
+
+        # Test 2: Relative path traversal
+        rel_path = os.path.relpath(tmp_path, os.getcwd())
+        result_rel = get_base64_image(rel_path)
+        assert result_rel is None, "Should reject relative path traversal"
+
+        # Test 3: Valid file
+        with open("dummy_test_image.png", "wb") as f:
+            f.write(b"dummy image content")
+
+        try:
+            result_valid = get_base64_image("dummy_test_image.png")
+            assert result_valid is not None, "Should accept valid file in base directory"
+        finally:
+            if os.path.exists("dummy_test_image.png"):
+                os.remove("dummy_test_image.png")
+
+    finally:
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
