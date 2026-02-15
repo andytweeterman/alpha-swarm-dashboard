@@ -65,23 +65,26 @@ def analyze_vix():
             target_date = date + timedelta(days=90)
 
             # Find nearest trading day at or after target_date
-            # We look at the full dataset to find the date
-            # Slice from target_date
-            future_data = df[df.index >= target_date]
+            # Using searchsorted for efficient binary search on the index
+            idx_pos = df.index.searchsorted(target_date)
 
-            if future_data.empty:
+            if idx_pos >= len(df):
                 print(f"Skipping {date.date()}: Not enough future data (less than 3 months left).")
                 continue
 
-            date_t3m = future_data.index[0]
-            price_t3m = future_data.iloc[0]['SP500']
+            date_t3m = df.index[idx_pos]
+            price_t3m = df.iloc[idx_pos]['SP500']
 
             # Calculate return
             pct_return = (price_t3m - price_t0) / price_t0
 
             # Calculate Max Drawdown in the 3 month period
             # Period from date (exclusive) to date_t3m (inclusive)
-            period_data = df[(df.index > date) & (df.index <= date_t3m)]
+            # Find the start index (first date > date)
+            start_idx = df.index.searchsorted(date, side='right')
+            # End index is idx_pos (inclusive), so slice up to idx_pos + 1
+            period_data = df.iloc[start_idx : idx_pos + 1]
+
             if period_data.empty:
                 max_drawdown = 0.0
             else:
