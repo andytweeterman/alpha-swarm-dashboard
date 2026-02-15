@@ -205,16 +205,6 @@ div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
 </style>
 """, unsafe_allow_html=True)
 
-    # ==========================================
-    # 5. EXECUTION PHASE
-    # ==========================================
-    try:
-        tickers = ["SPY", "^DJI", "^IXIC", "HYG", "IEF", "^VIX", "RSP", "DX-Y.NYB", "GC=F", "CL=F"]
-        start = (datetime.now() - timedelta(days=1825)).strftime('%Y-%m-%d')
-        data = yf.download(tickers, start=start, progress=False)
-        return data
-    except Exception:
-        return None
 
 def get_base64_image(image_path):
     try:
@@ -259,15 +249,20 @@ def calc_governance(data):
 
 @st.cache_data(ttl=3600)
 def load_strategist_data():
-    """Ingests the Strategist's Forecast CSV (data/strategist_forecast.csv)"""
+    """Ingests the Strategist's Forecast CSV (^GSPC.csv in root or data/strategist_forecast.csv)"""
     try:
-        # Look for the file in the data directory
-        filename = os.path.join("data", "strategist_forecast.csv")
-
-        if not os.path.exists(filename):
-            return None
+        # Priority 1: Check for ^GSPC.csv in root (User Workflow)
+        root_dir = os.path.dirname(os.path.abspath(__file__))
+        root_file = os.path.join(root_dir, "^GSPC.csv")
         
-        df = pd.read_csv(filename)
+        if os.path.exists(root_file):
+            df = pd.read_csv(root_file)
+        else:
+            # Priority 2: Look for the file in the data directory
+            filename = os.path.join("data", "strategist_forecast.csv")
+            if not os.path.exists(filename):
+                return None
+            df = pd.read_csv(filename)
         
         # Ensure we have the right columns
         required_cols = ['Date', 'Tstk_Adj', 'FP1', 'FP3', 'FP6']

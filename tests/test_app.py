@@ -10,7 +10,8 @@ from unittest.mock import MagicMock
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Mock streamlit before import
-sys.modules["streamlit"] = MagicMock()
+mock_st = MagicMock()
+sys.modules["streamlit"] = mock_st
 
 def mock_cache_data(*args, **kwargs):
     # If called as decorator without parens: @st.cache_data
@@ -31,10 +32,12 @@ mock_st.sidebar = MagicMock()
 mock_st.toggle.return_value = False
 mock_st.sidebar.toggle.return_value = False
 # Mock session state
-mock_st.session_state = {}
+mock_st.session_state = {"dark_mode": False}
 
 # Mock yfinance BEFORE importing app to avoid network calls
-sys.modules["yfinance"] = MagicMock()
+mock_yf = MagicMock()
+sys.modules["yfinance"] = mock_yf
+mock_yf.download.return_value = None
 # Also mock plotly to avoid any plotting overhead if imported
 sys.modules["plotly.graph_objects"] = MagicMock()
 sys.modules["plotly.subplots"] = MagicMock()
@@ -99,13 +102,10 @@ sys.modules["streamlit"].columns = MagicMock(side_effect=mock_columns)
 sys.modules["streamlit"].tabs = MagicMock(side_effect=mock_columns) # tabs works similarly
 
 # Import functions from app.py
-from app import calc_governance, calc_ppo, calc_cone
+from app import calc_governance, calc_ppo, calc_cone, get_base64_image
 
 def test_governance_calculation():
     dates = pd.date_range("2020-01-01", periods=100)
-    # Create a MultiIndex DataFrame as expected by calc_governance accessing data['Close']
-    # Wait, calc_governance does: closes = data['Close']
-    # So data needs to have a 'Close' column which is a DataFrame or Series with columns like HYG, IEF, etc.
 
     # We'll create a DataFrame for 'Close' prices
     closes = pd.DataFrame(index=dates)
@@ -117,11 +117,12 @@ def test_governance_calculation():
     closes["DX-Y.NYB"] = np.random.rand(100) * 100
 
     # Combine into a MultiIndex DataFrame if that's what yf.download returns,
-    # but based on app.py: closes = full_data['Close']
-    # If full_data is a MultiIndex DF with top level 'Price', 'Ticker', then full_data['Close'] returns a DF with tickers as columns.
+    # app.py: closes = full_data['Close']
+    # So full_data needs a 'Close' column which returns the closes DF.
 
-    tuples = [('Close', col) for col in data.columns]
-    data.columns = pd.MultiIndex.from_tuples(tuples)
+    # Create full_data with 'Close' as top-level column in MultiIndex
+    full_data = closes.copy()
+    full_data.columns = pd.MultiIndex.from_product([['Close'], closes.columns])
 
     gov_df, status, color, reason = calc_governance(full_data)
 
