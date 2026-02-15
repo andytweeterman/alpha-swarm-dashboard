@@ -1,54 +1,71 @@
-# Alpha Swarm User Guide
+# MacroEffects | User Guide
 
 ## Introduction
-Alpha Swarm is a comprehensive market intelligence dashboard designed for institutional investors and financial analysts. It provides real-time data, technical analysis, and governance status for global markets.
+**MacroEffects** is a risk-aware market intelligence platform designed to help investors "Outthink the Market." It combines institutional-grade quantitative swarms with human strategic insight to provide a clear, comforting view of market conditions.
 
 ## Getting Started
-To access Alpha Swarm, simply navigate to the application URL. The dashboard is optimized for both desktop and mobile viewing.
+The dashboard is optimized for both desktop (wide view) and mobile devices.
+* **Theme:** Toggle between **Dark Mode** (Institutional) and **Light Mode** (Standard) using the menu in the top right.
 
-### Dark Mode
-Toggle between **Institutional Dark Mode** and **Standard Light Mode** using the switch in the sidebar. Dark Mode is recommended for low-light environments and extended viewing sessions.
+---
 
-## Dashboard Overview
+## 1. Global Asset Grid
+The top section provides an immediate "Pulse Check" on the major asset classes.
+* **Indices:** S&P 500 (SPY), Dow Jones (^DJI), Nasdaq (^IXIC).
+* **Risk Monitors:** VIX Index (Market Fear), Gold, and Crude Oil.
+* **Sparklines:** Mini-charts showing the last 30 days of price action to highlight immediate trends.
 
-### 1. Market Grid
-The top section displays key market indices and assets with real-time price updates, percentage changes, and sparklines for quick trend visualization.
-- **Indices**: S&P 500 (SPY), Dow Jones (^DJI), Nasdaq (^IXIC)
-- **Volatility**: VIX Index (^VIX)
-- **Commodities**: Gold (GC=F), Crude Oil (CL=F)
+## 2. Swarm Deep Dive (The Chart)
+This is the core engine of the platform. It visualizes where the market *is* versus where the swarm models predict it *should be*.
 
-### 2. Swarm Deep Dive
-This interactive chart provides a detailed view of market trends and forecasts.
-- **Fair Value Cone**: Represents the expected price range based on historical volatility (±1.28 standard deviations).
-- **Forecast**: A 30-day projection of potential price movement, visualized with a confidence interval.
-- **View Modes**:
-    - **Tactical (60-Day Zoom)**: Focuses on short-term price action and immediate trends.
-    - **Strategic (2-Year History)**: Provides a longer-term perspective, highlighting major market events.
+* **Fair Value Cone (Blue):** Represents the "Normal" price range based on historical volatility (±1.28 standard deviations). If price stays inside the cone, the market is behaving normally.
+* **Strategist Forecast (Gold Dotted Line):** Represents the proprietary "Alpha Swarm" prediction for the next 1–6 months.
+* **View Modes:**
+    * **Tactical (60-Day Zoom):** Best for short-term trading. Focuses on the 30-day forecast.
+    * **Strategic (2-Year History):** Best for long-term perspective. Highlights major macro trends.
 
-### 3. Governance Status
-The Governance Status indicator monitors systemic risk based on four key metrics:
-- **Credit Ratio (HYG/IEF)**: Measures credit market stress.
-- **VIX**: Tracks market volatility.
-- **Market Breadth (RSP/SPY)**: Assesses the health of the broader market vs. large caps.
-- **DXY**: Monitors the strength of the US Dollar.
+## 3. Safety & Stress Tests (Governance)
+Instead of a "Black Box," MacroEffects uses a transparent "Traffic Light" system to monitor systemic risk.
 
-**Status Levels:**
-- **NORMAL OPS (Green)**: System integrity is nominal.
-- **WATCHLIST (Yellow)**: Elevated risk monitors triggered.
-- **CAUTION (Orange)**: Significant market divergence detected.
-- **EMERGENCY (Red)**: Structural or policy failure imminent.
+### **The Safety Levels**
+* 🟢 **COMFORT ZONE (Green):** System integrity is nominal. Markets are functioning normally. Standard allocations apply.
+* 🟡 **CAUTION (Yellow):** Elevated risk detected. Monitors (VIX or Credit) are flashing warnings. Review leverage.
+* 🔴 **DEFENSIVE MODE (Red):** Structural stress detected. The swarm recommends moving to cash or hedged positions.
 
-### 4. Tactical Horizons
-Provides actionable insights across different timeframes:
-- **1 WEEK (Momentum)**: Based on the PPO Histogram. Indicates if momentum is rising or weakening.
-- **1 MONTH (Trend)**: Based on the PPO Line. Indicates if the trend is bullish or bearish.
-- **6 MONTH (Structural)**: Aligns with the overall Governance Status.
+### **The Monitors**
+* **Risk (VIX):** Measures market calmness. A spike >24.0 triggers a warning.
+* **Credit Spreads:** Monitors the bond market (HYG/IEF). Widening spreads indicate economic stress.
+* **Market Breadth:** Compares the "Average Stock" (RSP) to the "Giants" (SPY). Narrowing breadth is an early warning sign of a top.
+* **US Dollar (DXY):** significant spikes in the dollar often correlate with risk-off events.
 
-### 5. Strategist View
-Displays the latest market commentary and forecasts from the Chief Strategist. This section pulls data directly from a connected Google Sheet or a local backup file, ensuring up-to-date analysis.
+## 4. Tactical Horizons
+Actionable momentum signals based on the **PPO (Percentage Price Oscillator)**:
+* **1 WEEK (Momentum):** Is the immediate buying pressure rising or falling?
+* **1 MONTH (Trend):** Is the medium-term trend Bullish or Bearish?
+* **6 MONTH (Structural):** Aligns with the overall Safety Level.
 
-## Data Sources
-Market data is sourced from `yfinance`, providing reliable and timely information for all tracked assets.
+---
 
-## Disclaimer
-This tool provides market analysis for informational purposes only. It does not constitute financial advice. Always conduct your own due diligence before making investment decisions.
+## 5. Strategist View
+This tab displays the latest market commentary and forecasts from the Chief Strategist. It explains the *Why* behind the numbers.
+
+---
+
+## Operator's Manual (Admin Only)
+*Instructions for updating the forecast data.*
+
+**How to Update the Swarm:**
+1.  **Generate Data:** Run your weekly models in Excel.
+2.  **Save as CSV:** Save the forecast sheet as a CSV file named **`^GSPC.csv`**.
+    * *Required Columns:* `Date`, `Tstk_Adj`, `FP1`, `FP3`, `FP6`.
+3.  **Upload:** Drag and drop the file into the main `alpha-swarm-dashboard` folder (overwrite the old file).
+4.  **Verify:** The "Deep Dive" chart and "Strategist" tab will update automatically.
+
+**Publishing to WordPress:**
+* Use the "Snipping Tool" to screenshot the **Deep Dive Chart**.
+* Paste the image into your blog post to support your narrative.
+
+---
+
+### Disclaimer
+*MacroEffects provides market analysis for informational purposes only. It does not constitute financial advice. Always conduct your own due diligence before making investment decisions.*
