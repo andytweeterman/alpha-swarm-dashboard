@@ -10,7 +10,8 @@ from unittest.mock import MagicMock
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Mock streamlit before import
-sys.modules["streamlit"] = MagicMock()
+mock_st = MagicMock()
+sys.modules["streamlit"] = mock_st
 
 def mock_cache_data(*args, **kwargs):
     # If called as decorator without parens: @st.cache_data
@@ -22,7 +23,7 @@ def mock_cache_data(*args, **kwargs):
     return decorator
 
 # Mock cache_data decorator
-sys.modules["streamlit"].cache_data = mock_cache_data
+mock_st.cache_data = mock_cache_data
 # Mock page config so set_page_config doesn't crash if called
 mock_st.set_page_config = MagicMock()
 # Mock sidebar
@@ -47,67 +48,21 @@ def mock_columns(spec, gap="small"):
         count = len(spec)
     return [MagicMock() for _ in range(count)]
 
-sys.modules["streamlit"].columns = MagicMock(side_effect=mock_columns)
+mock_st.columns.side_effect = mock_columns
 
 # Configure tabs to return a list of mocks when called
 def mock_tabs(tabs):
     return [MagicMock() for _ in range(len(tabs))]
 
-sys.modules["streamlit"].tabs = MagicMock(side_effect=mock_tabs)
+mock_st.tabs.side_effect = mock_tabs
 
-# Mock st.columns to return a list of mocks based on the input
-def mock_columns(spec, gap="small"):
-    if isinstance(spec, int):
-        return [MagicMock() for _ in range(spec)]
-    elif isinstance(spec, list):
-        return [MagicMock() for _ in range(len(spec))]
-    return [MagicMock()]
-
-sys.modules["streamlit"].columns.side_effect = mock_columns
-
-# Mock st.tabs
-def mock_tabs(tabs):
-    return [MagicMock() for _ in range(len(tabs))]
-sys.modules["streamlit"].tabs.side_effect = mock_tabs
-
-# Mock columns to return a list of mocks
-def mock_columns(spec, gap="small"):
-    if isinstance(spec, int):
-        return [MagicMock() for _ in range(spec)]
-    elif isinstance(spec, list):
-        return [MagicMock() for _ in range(len(spec))]
-    return [MagicMock(), MagicMock()]
-
-sys.modules["streamlit"].columns.side_effect = mock_columns
-
-# Mock tabs
-def mock_tabs(tabs):
-    return [MagicMock() for _ in range(len(tabs))]
-
-sys.modules["streamlit"].tabs.side_effect = mock_tabs
-
-
-# Mock st.columns to return a list of mocks based on input
-def mock_columns(spec, gap="small"):
-    if isinstance(spec, int):
-        return [MagicMock() for _ in range(spec)]
-    elif isinstance(spec, list):
-        return [MagicMock() for _ in range(len(spec))]
-    return [MagicMock()] # Fallback
-
-sys.modules["streamlit"].columns = MagicMock(side_effect=mock_columns)
-sys.modules["streamlit"].tabs = MagicMock(side_effect=mock_columns) # tabs works similarly
-
-# Import functions from app.py
-from app import calc_governance, calc_ppo, calc_cone
+# Import functions from logic and styles
+from logic import calc_governance, calc_ppo, calc_cone
+from styles import get_base64_image
 
 def test_governance_calculation():
     dates = pd.date_range("2020-01-01", periods=100)
-    # Create a MultiIndex DataFrame as expected by calc_governance accessing data['Close']
-    # Wait, calc_governance does: closes = data['Close']
-    # So data needs to have a 'Close' column which is a DataFrame or Series with columns like HYG, IEF, etc.
-
-    # We'll create a DataFrame for 'Close' prices
+    # Create a DataFrame for 'Close' prices
     closes = pd.DataFrame(index=dates)
     closes["HYG"] = np.random.rand(100) * 100
     closes["IEF"] = np.random.rand(100) * 100
@@ -116,14 +71,21 @@ def test_governance_calculation():
     closes["SPY"] = np.random.rand(100) * 400
     closes["DX-Y.NYB"] = np.random.rand(100) * 100
 
-    # Combine into a MultiIndex DataFrame if that's what yf.download returns,
-    # but based on app.py: closes = full_data['Close']
-    # If full_data is a MultiIndex DF with top level 'Price', 'Ticker', then full_data['Close'] returns a DF with tickers as columns.
+    # Combine into a DataFrame structure that calc_governance expects.
+    # calc_governance expects `data['Close']`.
+    # So we create a mock object or a DataFrame that has a 'Close' column which returns our closes DataFrame.
+    # Or, simpler: passing a DataFrame with 'Close' as a key/column.
 
-    tuples = [('Close', col) for col in data.columns]
-    data.columns = pd.MultiIndex.from_tuples(tuples)
+    # But yfinance download with multi-tickers usually returns a MultiIndex columns if group_by='ticker' (default) is not used?
+    # Wait, yf.download returns MultiIndex (Price, Ticker) by default in recent versions, or just Ticker columns if single price.
+    # app.py code: closes = data['Close']
+    # So `data` should be a DataFrame where `data['Close']` returns the `closes` DataFrame.
 
-    gov_df, status, color, reason = calc_governance(full_data)
+    # We can simulate this with a dictionary or a DataFrame with a MultiIndex.
+    # Let's use a dictionary-like object since data['Close'] is what matters.
+    data = {'Close': closes}
+
+    gov_df, status, color, reason = calc_governance(data)
 
     assert status in ["EMERGENCY", "CAUTION", "WATCHLIST", "NORMAL OPS"]
     assert color in ["#f93e3e", "#ffaa00", "#f1c40f", "#00d26a"]
@@ -170,15 +132,25 @@ def test_get_base64_image_security():
         assert result_rel is None, "Should reject relative path traversal"
 
         # Test 3: Valid file
-        with open("dummy_test_image.png", "wb") as f:
+        # Create a dummy image in the current directory (which is base_dir when running tests from root?
+        # No, get_base64_image uses __file__ of styles.py).
+        # styles.py is in root. Tests are in tests/.
+        # os.getcwd() is root.
+        # styles.py __file__ will be ./styles.py.
+
+        # We need to create a file in the same directory as styles.py for it to be considered "valid".
+        # Since styles.py is in root, we create it in root.
+
+        dummy_img = "dummy_test_image.png"
+        with open(dummy_img, "wb") as f:
             f.write(b"dummy image content")
 
         try:
-            result_valid = get_base64_image("dummy_test_image.png")
+            result_valid = get_base64_image(dummy_img)
             assert result_valid is not None, "Should accept valid file in base directory"
         finally:
-            if os.path.exists("dummy_test_image.png"):
-                os.remove("dummy_test_image.png")
+            if os.path.exists(dummy_img):
+                os.remove(dummy_img)
 
     finally:
         if os.path.exists(tmp_path):
