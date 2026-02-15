@@ -12,7 +12,7 @@ gatherUsageStats = false
 level = "info"
 
 [client]
-showErrorDetails = true
+showErrorDetails = false
 
 [server]
 maxUploadSize = 200
