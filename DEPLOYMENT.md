@@ -78,8 +78,9 @@ server {
 ## Configuration
 
 1. **Environment Variables** (.env or .streamlit/secrets.toml):
+   See `.env.example` for a template.
    ```
-   SHEET_URL=https://docs.google.com/spreadsheets/...
+   STRATEGIST_SHEET_URL=https://docs.google.com/spreadsheets/...
    LOG_LEVEL=info
    ```
 
