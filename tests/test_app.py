@@ -10,8 +10,8 @@ from unittest.mock import MagicMock
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Mock streamlit before import
-mock_st = MagicMock()
-sys.modules["streamlit"] = mock_st
+sys.modules["streamlit"] = MagicMock()
+mock_st = sys.modules["streamlit"]
 
 def mock_cache_data(*args, **kwargs):
     # If called as decorator without parens: @st.cache_data
@@ -32,37 +32,43 @@ mock_st.sidebar = MagicMock()
 mock_st.toggle.return_value = False
 mock_st.sidebar.toggle.return_value = False
 # Mock session state
-mock_st.session_state = {}
+mock_st.session_state = {"dark_mode": False}
 
 # Mock yfinance BEFORE importing app to avoid network calls
-sys.modules["yfinance"] = MagicMock()
+mock_yf = MagicMock()
+sys.modules["yfinance"] = mock_yf
+mock_yf.download.return_value = None
 # Also mock plotly to avoid any plotting overhead if imported
 sys.modules["plotly.graph_objects"] = MagicMock()
 sys.modules["plotly.subplots"] = MagicMock()
 
-# Configure columns to return a list of mocks when called
+# Mock st.columns to return a list of mocks based on input
 def mock_columns(spec, gap="small"):
     if isinstance(spec, int):
-        count = spec
-    else:
-        count = len(spec)
-    return [MagicMock() for _ in range(count)]
+        return [MagicMock() for _ in range(spec)]
+    elif isinstance(spec, list):
+        return [MagicMock() for _ in range(len(spec))]
+    return [MagicMock()]
 
-mock_st.columns.side_effect = mock_columns
+sys.modules["streamlit"].columns = MagicMock(side_effect=mock_columns)
 
-# Configure tabs to return a list of mocks when called
+# Mock st.tabs
 def mock_tabs(tabs):
     return [MagicMock() for _ in range(len(tabs))]
 
-mock_st.tabs.side_effect = mock_tabs
+sys.modules["streamlit"].tabs = MagicMock(side_effect=mock_tabs)
 
-# Import functions from logic and styles
-from logic import calc_governance, calc_ppo, calc_cone
-from styles import get_base64_image
+# Mock st.spinner as context manager before importing app
+mock_st.spinner.return_value.__enter__ = MagicMock()
+mock_st.spinner.return_value.__exit__ = MagicMock()
+
+# Import functions from app.py
+from app import calc_governance, calc_ppo, calc_cone, get_base64_image
 
 def test_governance_calculation():
     dates = pd.date_range("2020-01-01", periods=100)
-    # Create a DataFrame for 'Close' prices
+
+    # We'll create a DataFrame for 'Close' prices
     closes = pd.DataFrame(index=dates)
     closes["HYG"] = np.random.rand(100) * 100
     closes["IEF"] = np.random.rand(100) * 100
@@ -71,15 +77,15 @@ def test_governance_calculation():
     closes["SPY"] = np.random.rand(100) * 400
     closes["DX-Y.NYB"] = np.random.rand(100) * 100
 
-    # Combine into a DataFrame structure that calc_governance expects.
-    # calc_governance expects `data['Close']`.
-    # So we create a mock object or a DataFrame that has a 'Close' column which returns our closes DataFrame.
-    # Or, simpler: passing a DataFrame with 'Close' as a key/column.
+    # Combine into a MultiIndex DataFrame if that's what yf.download returns,
+    # app.py: closes = full_data['Close']
+    # So full_data needs a 'Close' column which returns the closes DF.
 
-    # But yfinance download with multi-tickers usually returns a MultiIndex columns if group_by='ticker' (default) is not used?
-    # Wait, yf.download returns MultiIndex (Price, Ticker) by default in recent versions, or just Ticker columns if single price.
-    # app.py code: closes = data['Close']
-    # So `data` should be a DataFrame where `data['Close']` returns the `closes` DataFrame.
+    full_data = pd.DataFrame(closes.values, index=closes.index, columns=closes.columns)
+    # Simulate data['Close'] access
+    # We can just make full_data have 'Close' key access to return closes
+    # Or properly construct MultiIndex
+    full_data = pd.concat([closes], axis=1, keys=['Close'])
 
     # We can simulate this with a dictionary or a DataFrame with a MultiIndex.
     # Let's use a dictionary-like object since data['Close'] is what matters.
@@ -87,7 +93,7 @@ def test_governance_calculation():
 
     gov_df, status, color, reason = calc_governance(data)
 
-    assert status in ["EMERGENCY", "CAUTION", "WATCHLIST", "NORMAL OPS"]
+    assert status in ["DEFENSIVE MODE", "CAUTION", "WATCHLIST", "COMFORT ZONE"]
     assert color in ["#f93e3e", "#ffaa00", "#f1c40f", "#00d26a"]
     assert reason in ["Structural/Policy Failure", "Market Divergence", "Elevated Risk Monitors", "System Integrity Nominal"]
 
