@@ -48,7 +48,7 @@ def mock_tabs(tabs):
 sys.modules["streamlit"].tabs = MagicMock(side_effect=mock_tabs)
 
 # Import functions from app.py
-from app import calc_governance, calc_ppo, calc_cone
+from app import calc_governance, calc_ppo, calc_cone, get_base64_image
 
 def test_governance_calculation():
     dates = pd.date_range("2020-01-01", periods=100)
@@ -63,7 +63,7 @@ def test_governance_calculation():
     tuples = [('Close', col) for col in data.columns]
     data.columns = pd.MultiIndex.from_tuples(tuples)
 
-    gov_df, status, color, reason = calc_governance(full_data)
+    gov_df, status, color, reason = calc_governance(data)
 
     assert status in ["EMERGENCY", "CAUTION", "WATCHLIST", "NORMAL OPS"]
     assert color in ["#f93e3e", "#ffaa00", "#f1c40f", "#00d26a"]

@@ -205,17 +205,6 @@ div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
 </style>
 """, unsafe_allow_html=True)
 
-    # ==========================================
-    # 5. EXECUTION PHASE
-    # ==========================================
-    try:
-        tickers = ["SPY", "^DJI", "^IXIC", "HYG", "IEF", "^VIX", "RSP", "DX-Y.NYB", "GC=F", "CL=F"]
-        start = (datetime.now() - timedelta(days=1825)).strftime('%Y-%m-%d')
-        data = yf.download(tickers, start=start, progress=False)
-        return data
-    except Exception:
-        return None
-
 def get_base64_image(image_path):
     try:
         # Prevent path traversal: limit access to app directory
@@ -322,15 +311,16 @@ def calc_cone(price):
 def generate_forecast(start_date, last_price, last_std, days=30):
     future_dates = [start_date + timedelta(days=i) for i in range(1, days + 1)]
     drift = 0.0003
-    future_mean = [last_price * ((1 + drift) ** i) for i in range(1, days + 1)]
-    future_upper = []
-    future_lower = []
-    for i in range(1, days + 1):
-        time_factor = np.sqrt(i) 
-        width = (1.28 * last_std) + (last_std * 0.1 * time_factor)
-        future_upper.append(future_mean[i-1] + width)
-        future_lower.append(future_mean[i-1] - width)
-    return future_dates, future_mean, future_upper, future_lower
+    i_values = np.arange(1, days + 1)
+
+    future_mean = last_price * ((1 + drift) ** i_values)
+    time_factor = np.sqrt(i_values)
+    width = (1.28 * last_std) + (last_std * 0.1 * time_factor)
+
+    future_upper = future_mean + width
+    future_lower = future_mean - width
+
+    return future_dates, future_mean.tolist(), future_upper.tolist(), future_lower.tolist()
 
 def render_market_card(name, price, delta, pct, delta_color):
     """Generates accessible HTML for a market card."""
