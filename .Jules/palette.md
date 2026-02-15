@@ -1,3 +1,3 @@
-## 2024-05-24 - Streamlit Disabled Widget Context
-**Learning:** `st.radio` supports `help` tooltips that remain interactive even when the widget itself is `disabled=True`. This is a critical pattern for "freemium" features where you want to show the option exists but is locked.
-**Action:** Always attach a `help` parameter to disabled widgets explaining *why* it is disabled and how to unlock it.
+## 2026-02-10 - Custom Components in Streamlit
+**Learning:** Custom HTML components injected via `st.markdown(unsafe_allow_html=True)` often lack semantic structure (like `role` or `aria-label`), making them invisible or confusing to screen readers.
+**Action:** When creating custom visual components (like cards or badges) using raw HTML in Streamlit, always include `role="group"` and `aria-label` to provide context.
