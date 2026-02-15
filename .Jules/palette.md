@@ -1,3 +1,3 @@
-## 2026-02-04 - Tooltips for Disabled States
-**Learning:** Disabled UI elements (like buttons or radio inputs) are frustrating when the reason for the disabled state is unclear.
-**Action:** Always add a `help` tooltip to disabled Streamlit widgets to explain *why* they are disabled (e.g., "Institutional access required") and how to unlock them if applicable.
+## 2026-02-10 - Custom Components in Streamlit
+**Learning:** Custom HTML components injected via `st.markdown(unsafe_allow_html=True)` often lack semantic structure (like `role` or `aria-label`), making them invisible or confusing to screen readers.
+**Action:** When creating custom visual components (like cards or badges) using raw HTML in Streamlit, always include `role="group"` and `aria-label` to provide context.
