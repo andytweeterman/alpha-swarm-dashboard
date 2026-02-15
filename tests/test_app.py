@@ -3,12 +3,12 @@ import pandas as pd
 import numpy as np
 import sys
 import os
+from unittest.mock import MagicMock, patch
 
 # Add repo root to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Mock streamlit before import
-from unittest.mock import MagicMock
 sys.modules["streamlit"] = MagicMock()
 # Mock cache_data decorator
 sys.modules["streamlit"].cache_data = lambda func: func
@@ -22,10 +22,25 @@ sys.modules["streamlit"].sidebar = MagicMock()
 sys.modules["streamlit"].toggle.return_value = False
 sys.modules["streamlit"].sidebar.toggle.return_value = False # In case I used st.sidebar.toggle
 
-# Import functions from app.py
-from app import calculate_governance_history, calculate_ppo, calculate_cone
+# Mock st.columns to return a list of mocks based on the input
+def mock_columns(spec, gap="small"):
+    if isinstance(spec, int):
+        return [MagicMock() for _ in range(spec)]
+    elif isinstance(spec, list):
+        return [MagicMock() for _ in range(len(spec))]
+    return [MagicMock()]
 
-def test_governance_calculation():
+sys.modules["streamlit"].columns.side_effect = mock_columns
+
+# Mock st.tabs
+def mock_tabs(tabs):
+    return [MagicMock() for _ in range(len(tabs))]
+sys.modules["streamlit"].tabs.side_effect = mock_tabs
+
+# Import functions from app.py
+from app import calc_governance, calc_ppo, calc_cone, load_strategist_data
+
+def test_calc_governance():
     # Create dummy data
     dates = pd.date_range("2020-01-01", periods=100)
     data = pd.DataFrame(index=dates)
@@ -42,27 +57,27 @@ def test_governance_calculation():
     df_close = data.copy()
     full_data = pd.concat([df_close], axis=1, keys=['Close'])
 
-    gov_df, status, color, reason = calculate_governance_history(full_data)
+    gov_df, status, color, reason = calc_governance(full_data)
 
     assert status in ["EMERGENCY", "CAUTION", "WATCHLIST", "NORMAL OPS"]
     assert color in ["#f93e3e", "#ffaa00", "#f1c40f", "#00d26a"]
     assert reason in ["Structural/Policy Failure", "Market Divergence", "Elevated Risk Monitors", "System Integrity Nominal"]
 
-def test_ppo_calculation():
+def test_calc_ppo():
     dates = pd.date_range("2020-01-01", periods=100)
     price = pd.Series(np.random.rand(100) * 100, index=dates)
 
-    ppo, sig, hist = calculate_ppo(price)
+    ppo, sig, hist = calc_ppo(price)
 
     assert len(ppo) == 100
     assert len(sig) == 100
     assert len(hist) == 100
 
-def test_cone_calculation():
+def test_calc_cone():
     dates = pd.date_range("2020-01-01", periods=100)
     price = pd.Series(np.random.rand(100) * 100, index=dates)
 
-    sma, std, upper, lower = calculate_cone(price)
+    sma, std, upper, lower = calc_cone(price)
 
     assert len(sma) == 100
     assert len(upper) == 100
@@ -70,3 +85,9 @@ def test_cone_calculation():
     # Check simple logic: Upper > Lower (where defined, first 20 might be NaN)
     valid = upper.dropna()
     assert (valid > lower[valid.index]).all()
+
+def test_load_strategist_data_error():
+    # Test that the function returns None when an exception occurs
+    with patch("os.listdir", side_effect=Exception("Test Error")):
+        result = load_strategist_data()
+        assert result is None
