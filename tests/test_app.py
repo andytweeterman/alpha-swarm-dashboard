@@ -71,6 +71,7 @@ def test_governance_calculation():
     assert reason in ["Structural/Policy Failure", "Market Divergence", "Elevated Risk Monitors", "System Integrity Nominal"]
 
 def test_ppo_calculation():
+    """Test PPO calculation."""
     dates = pd.date_range("2020-01-01", periods=100)
     price = pd.Series(np.random.rand(100) * 100, index=dates)
 
@@ -81,6 +82,7 @@ def test_ppo_calculation():
     assert len(hist) == 100
 
 def test_cone_calculation():
+    """Test Volatility Cone calculation."""
     dates = pd.date_range("2020-01-01", periods=100)
     price = pd.Series(np.random.rand(100) * 100, index=dates)
 
