@@ -468,7 +468,7 @@ if full_data is not None and closes is not None:
             
             c1, c2 = st.columns(2)
             with c1: view_mode = st.radio("Select View Horizon:", ["Tactical (60-Day Zoom)", "Strategic (2-Year History)"], horizontal=True)
-            with c2: st.radio("Market Scope (Premium):", ["US Market (Active)", "Global Swarm 🔒", "Sector Rotation 🔒"], index=0, horizontal=True, disabled=True)
+            with c2: st.radio("Market Scope (Premium):", ["US Market (Active)", "Global Swarm 🔒", "Sector Rotation 🔒"], index=0, horizontal=True, disabled=True, help="Institutional-grade data feeds (Global/Sector) are locked. Contact institutional@macroeffects.com for access.")
 
             if view_mode == "Tactical (60-Day Zoom)": start_filter = (datetime.now() - timedelta(days=60)).strftime('%Y-%m-%d'); show_forecast = True
             else: start_filter = (datetime.now() - timedelta(days=730)).strftime('%Y-%m-%d'); show_forecast = False
@@ -537,7 +537,7 @@ if full_data is not None and closes is not None:
         with col2:
             if '^VIX' in closes:
                 latest_vix = closes['^VIX'].iloc[-1]
-                st.metric("Risk (VIX)", f"{latest_vix:.2f}", delta_color="inverse")
+                st.metric("Risk (VIX)", f"{latest_vix:.2f}", delta_color="inverse", help="The Volatility Index (VIX) measures market expectations of near-term volatility conveyed by S&P 500 stock index option prices.")
 
         st.subheader("⏱️ Tactical Horizons")
         if 'SPY' in closes:
