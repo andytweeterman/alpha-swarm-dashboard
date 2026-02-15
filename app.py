@@ -239,15 +239,14 @@ def calc_governance(data):
     else: return df, "NORMAL OPS", "#00d26a", "System Integrity Nominal"
 
 def load_strategist_data():
-    """Ingests the Strategist's Forecast CSV (^GSPC.csv)"""
+    """Ingests the Strategist's Forecast CSV (data/strategist_forecast.csv)"""
     try:
-        # Look for the file in the current directory
-        # You can rename your uploaded file to '^GSPC.csv' to make this work automatically
-        possible_files = [f for f in os.listdir() if "GSPC" in f and f.endswith(".csv")]
-        if not possible_files:
+        # Look for the file in the data directory
+        filename = os.path.join("data", "strategist_forecast.csv")
+
+        if not os.path.exists(filename):
             return None
         
-        filename = possible_files[0] # Pick the first match
         df = pd.read_csv(filename)
         
         # Ensure we have the right columns
