@@ -127,7 +127,7 @@ def test_governance_calculation():
     # Or properly construct MultiIndex
     full_data = pd.concat([closes], axis=1, keys=['Close'])
 
-    gov_df, status, color, reason = calc_governance(data)
+    gov_df, status, color, reason = calc_governance(full_data)
 
     assert status in ["EMERGENCY", "CAUTION", "WATCHLIST", "NORMAL OPS"]
     assert color in ["#f93e3e", "#ffaa00", "#f1c40f", "#00d26a"]
