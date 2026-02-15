@@ -24,12 +24,20 @@ def mock_cache_data(*args, **kwargs):
 # Mock cache_data decorator
 sys.modules["streamlit"].cache_data = mock_cache_data
 # Mock page config so set_page_config doesn't crash if called
-sys.modules["streamlit"].set_page_config = MagicMock()
+mock_st.set_page_config = MagicMock()
 # Mock sidebar
-sys.modules["streamlit"].sidebar = MagicMock()
-# Mock toggle return value to avoid KeyError in theme_config
-sys.modules["streamlit"].toggle.return_value = False
-sys.modules["streamlit"].sidebar.toggle.return_value = False # In case I used st.sidebar.toggle
+mock_st.sidebar = MagicMock()
+# Mock toggle return value
+mock_st.toggle.return_value = False
+mock_st.sidebar.toggle.return_value = False
+# Mock session state
+mock_st.session_state = {}
+
+# Mock yfinance BEFORE importing app to avoid network calls
+sys.modules["yfinance"] = MagicMock()
+# Also mock plotly to avoid any plotting overhead if imported
+sys.modules["plotly.graph_objects"] = MagicMock()
+sys.modules["plotly.subplots"] = MagicMock()
 
 # Configure columns to return a list of mocks when called
 def mock_columns(spec, gap="small"):
@@ -52,13 +60,22 @@ from app import calc_governance, calc_ppo, calc_cone
 
 def test_governance_calculation():
     dates = pd.date_range("2020-01-01", periods=100)
-    data = pd.DataFrame(index=dates)
-    data["HYG"] = np.random.rand(100) * 100
-    data["IEF"] = np.random.rand(100) * 100
-    data["^VIX"] = np.random.rand(100) * 20
-    data["RSP"] = np.random.rand(100) * 100
-    data["SPY"] = np.random.rand(100) * 400
-    data["DX-Y.NYB"] = np.random.rand(100) * 100
+    # Create a MultiIndex DataFrame as expected by calc_governance accessing data['Close']
+    # Wait, calc_governance does: closes = data['Close']
+    # So data needs to have a 'Close' column which is a DataFrame or Series with columns like HYG, IEF, etc.
+
+    # We'll create a DataFrame for 'Close' prices
+    closes = pd.DataFrame(index=dates)
+    closes["HYG"] = np.random.rand(100) * 100
+    closes["IEF"] = np.random.rand(100) * 100
+    closes["^VIX"] = np.random.rand(100) * 20
+    closes["RSP"] = np.random.rand(100) * 100
+    closes["SPY"] = np.random.rand(100) * 400
+    closes["DX-Y.NYB"] = np.random.rand(100) * 100
+
+    # Combine into a MultiIndex DataFrame if that's what yf.download returns,
+    # but based on app.py: closes = full_data['Close']
+    # If full_data is a MultiIndex DF with top level 'Price', 'Ticker', then full_data['Close'] returns a DF with tickers as columns.
 
     tuples = [('Close', col) for col in data.columns]
     data.columns = pd.MultiIndex.from_tuples(tuples)
