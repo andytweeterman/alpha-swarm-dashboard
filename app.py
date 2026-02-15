@@ -1,25 +1,13 @@
 import streamlit as st
-import yfinance as yf
 import pandas as pd
-import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
-import os
-import base64
+import styles
+import logic
 
-# ==========================================
-# HELPER FUNCTIONS
-# ==========================================
-@st.cache_data(ttl=3600)
-def fetch_market_data():
-    try:
-        tickers = ["SPY", "^DJI", "^IXIC", "HYG", "IEF", "^VIX", "RSP", "DX-Y.NYB", "GC=F", "CL=F"]
-        start = (datetime.now() - timedelta(days=1825)).strftime('%Y-%m-%d')
-        data = yf.download(tickers, start=start, progress=False)
-        return data
-    except Exception:
-        return None
+# 1. SETUP & THEME
+theme = styles.apply_theme()
 
 def calc_governance(data):
     closes = data['Close']
@@ -368,25 +356,19 @@ full_data = None
 closes = None
 try:
     with st.spinner("Connecting to Global Swarm..."):
-        full_data = fetch_market_data()
-        strat_data = load_strategist_data()
-        
+        full_data = logic.fetch_market_data()
+        strat_data = logic.load_strategist_data()
     if full_data is not None and not full_data.empty:
         closes = full_data['Close']
-        gov_df, status, color, reason = calc_governance(full_data)
+        gov_df, status, color, reason = logic.calc_governance(full_data)
         latest_monitor = gov_df.iloc[-1]
     else:
-        status, color, reason = "DATA ERROR", "#ff0000", "Data Feed Unavailable"
-except Exception as e:
-    status, color, reason = "SYSTEM ERROR", "#ff0000", "Connection Failed"
+        status, color, reason, closes, latest_monitor = "DATA ERROR", "#ff0000", "Data Feed Unavailable", None, None
+except Exception:
+    status, color, reason, full_data, closes, latest_monitor = "SYSTEM ERROR", "#ff0000", "Connection Failed", None, None, None
 
-# ==========================================
-# 6. UI LAYOUT
-# ==========================================
-
-# HEADER (90/10 Ratio for tighter fit)
+# 3. UI LAYOUT
 c_title, c_menu = st.columns([0.90, 0.10], gap="small")
-
 with c_title:
     img_b64 = get_base64_image("shield.png")
     
@@ -426,7 +408,6 @@ with c_menu:
         st.link_button("About Us", "https://sixmonthstockmarketforecast.com/about") 
         st.link_button("Contact Analyst", "mailto:analyst@macroeffects.com")
 
-# SUBHEADER WITH SMALL PILL
 st.markdown(f"""
 <div style="margin-bottom: 20px; margin-top: 5px;">
     <span style="font-family: 'Inter'; font-weight: 600; font-size: 16px; color: var(--text-secondary);">Macro-Economic Intelligence: Global Market Command Center</span>
@@ -434,7 +415,6 @@ st.markdown(f"""
     <div class="premium-pill">PREMIUM</div>
 </div>
 """, unsafe_allow_html=True)
-
 st.divider()
 
 if full_data is not None and closes is not None:
@@ -444,109 +424,63 @@ if full_data is not None and closes is not None:
     # --- TAB 1: MARKETS ---
     with tab1:
         st.markdown('<div class="steel-sub-header"><span class="steel-text-main" style="font-size: 20px !important;">Global Asset Grid</span></div>', unsafe_allow_html=True)
-        assets = [
-            {"name": "Dow Jones", "ticker": "^DJI", "color": "#00CC00"},
-            {"name": "S&P 500", "ticker": "SPY", "color": "#00CC00"},
-            {"name": "Nasdaq", "ticker": "^IXIC", "color": "#00CC00"},
-            {"name": "VIX Index", "ticker": "^VIX", "color": "#FF5500"},
-            {"name": "Gold", "ticker": "GC=F", "color": "#FFD700"},
-            {"name": "Crude Oil", "ticker": "CL=F", "color": "#888888"}
-        ]
-        c1, c2, c3 = st.columns(3)
-        for i, col in enumerate([c1, c2, c3]):
-            asset = assets[i]
-            with col:
-                if asset['ticker'] in closes:
-                    series = closes[asset['ticker']].dropna()
-                    if not series.empty:
-                        current = series.iloc[-1]; prev = series.iloc[-2]; delta = current - prev; pct = (delta / prev) * 100
-                        st.markdown(render_market_card(asset['name'], current, delta, pct), unsafe_allow_html=True)
-                        st.plotly_chart(render_sparkline(series.tail(30), asset['color']), use_container_width=True, config={'displayModeBar': False})
-        st.markdown("---")
-        c4, c5, c6 = st.columns(3)
-        for i, col in enumerate([c4, c5, c6]):
-            asset = assets[i+3]
-            with col:
-                if asset['ticker'] in closes:
-                    series = closes[asset['ticker']].dropna()
-                    if not series.empty:
-                        current = series.iloc[-1]; prev = series.iloc[-2]; delta = current - prev; pct = (delta / prev) * 100
-                        st.markdown(render_market_card(asset['name'], current, delta, pct), unsafe_allow_html=True)
-                        st.plotly_chart(render_sparkline(series.tail(30), asset['color']), use_container_width=True, config={'displayModeBar': False})
+        assets = [{"name": "Dow Jones", "ticker": "^DJI", "color": "#00CC00"}, {"name": "S&P 500", "ticker": "SPY", "color": "#00CC00"},
+                  {"name": "Nasdaq", "ticker": "^IXIC", "color": "#00CC00"}, {"name": "VIX Index", "ticker": "^VIX", "color": "#FF5500"},
+                  {"name": "Gold", "ticker": "GC=F", "color": "#FFD700"}, {"name": "Crude Oil", "ticker": "CL=F", "color": "#888888"}]
         
-        st.divider()
+        def render_row(asset_slice):
+            for i, col in enumerate(st.columns(3)):
+                if i < len(asset_slice):
+                    asset = asset_slice[i]
+                    with col:
+                        if asset['ticker'] in closes:
+                            s = closes[asset['ticker']].dropna()
+                            if not s.empty:
+                                cur, prev = s.iloc[-1], s.iloc[-2]
+                                st.markdown(styles.render_market_card(asset['name'], cur, cur-prev, ((cur-prev)/prev)*100), unsafe_allow_html=True)
+                                st.plotly_chart(styles.render_sparkline(s.tail(30), asset['color']), use_container_width=True, config={'displayModeBar': False})
+        render_row(assets[:3]); st.markdown("---"); render_row(assets[3:])
         
-        # DEEP DIVE
-        st.markdown('<div class="steel-sub-header"><span class="steel-text-main" style="font-size: 20px !important;">Swarm Deep Dive</span></div>', unsafe_allow_html=True)
+        st.divider(); st.markdown('<div class="steel-sub-header"><span class="steel-text-main" style="font-size: 20px !important;">Swarm Deep Dive</span></div>', unsafe_allow_html=True)
         if 'SPY' in closes:
-            spy_close = closes['SPY']
-            ppo, sig, hist = calc_ppo(spy_close)
-            sma, std, upper_cone, lower_cone = calc_cone(spy_close)
-            last_date = spy_close.index[-1]; last_val = spy_close.iloc[-1]; last_dev = std.iloc[-1]
-            f_dates, f_mean, f_upper, f_lower = generate_forecast(last_date, last_val, last_dev, days=30)
+            spy = closes['SPY']
+            ppo, sig, hist = logic.calc_ppo(spy)
+            sma, std, u_cone, l_cone = logic.calc_cone(spy)
+            f_dates, f_mean, f_upper, f_lower = logic.generate_forecast(spy.index[-1], spy.iloc[-1], std.iloc[-1], days=30)
             
             c1, c2 = st.columns(2)
             with c1: view_mode = st.radio("Select View Horizon:", ["Tactical (60-Day Zoom)", "Strategic (2-Year History)"], horizontal=True)
-            with c2: st.radio("Market Scope (Premium):", ["US Market (Active)", "Global Swarm 🔒", "Sector Rotation 🔒"], index=0, horizontal=True, disabled=True, help="Institutional-grade data feeds (Global/Sector) are locked. Contact institutional@macroeffects.com for access.")
+            with c2: st.radio("Market Scope (Premium):", ["US Market (Active)", "Global Swarm 🔒", "Sector Rotation 🔒"], index=0, horizontal=True, disabled=True, help="Institutional-grade data feeds (Global/Sector) are locked.")
 
-            if view_mode == "Tactical (60-Day Zoom)": start_filter = (datetime.now() - timedelta(days=60)).strftime('%Y-%m-%d'); show_forecast = True
-            else: start_filter = (datetime.now() - timedelta(days=730)).strftime('%Y-%m-%d'); show_forecast = False
-            
-            chart_data = full_data[full_data.index >= start_filter]
-            chart_lower = lower_cone[lower_cone.index >= start_filter]
-            chart_upper = upper_cone[upper_cone.index >= start_filter]
+            start_filter = (datetime.now() - timedelta(days=60 if "Tactical" in view_mode else 730)).strftime('%Y-%m-%d')
+            c_data = full_data[full_data.index >= start_filter]
+            c_lower, c_upper = l_cone[l_cone.index >= start_filter], u_cone[u_cone.index >= start_filter]
 
             fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.03, row_heights=[0.7, 0.3])
-            fig.add_trace(go.Scatter(x=chart_data.index, y=chart_lower, line=dict(width=0), showlegend=False, hoverinfo='skip'), row=1, col=1)
-            fig.add_trace(go.Scatter(x=chart_data.index, y=chart_upper, fill='tonexty', fillcolor='rgba(0, 100, 255, 0.1)', line=dict(width=0), name="Fair Value Cone", hoverinfo='skip'), row=1, col=1)
-            fig.add_trace(go.Candlestick(x=chart_data.index, open=chart_data['Open']['SPY'], high=chart_data['High']['SPY'], low=chart_data['Low']['SPY'], close=chart_data['Close']['SPY'], name='SPY'), row=1, col=1)
+            fig.add_trace(go.Scatter(x=c_data.index, y=c_lower, line=dict(width=0), showlegend=False, hoverinfo='skip'), row=1, col=1)
+            fig.add_trace(go.Scatter(x=c_data.index, y=c_upper, fill='tonexty', fillcolor='rgba(0, 100, 255, 0.1)', line=dict(width=0), name="Fair Value Cone", hoverinfo='skip'), row=1, col=1)
+            fig.add_trace(go.Candlestick(x=c_data.index, open=c_data['Open']['SPY'], high=c_data['High']['SPY'], low=c_data['Low']['SPY'], close=c_data['Close']['SPY'], name='SPY'), row=1, col=1)
 
-            # --- STRATEGIST FORECAST INJECTION (ADDED BACK from v47) ---
-            if strat_data is not None and show_forecast:
-                # Use the last row of the strategist file
+            if "Tactical" in view_mode and strat_data is not None:
                 latest = strat_data.iloc[-1]
-                last_price = latest['Tstk_Adj']
-                
-                # Create future dates (1m, 2m, 3m, etc.)
-                base_date = latest['Date']
-                dates_fut = [base_date + timedelta(days=30*i) for i in range(1, 7)]
-                
-                # Calculate Price Targets: Last_Price * (1 + Forecast_Percent)
-                prices_fut = [last_price * (1 + latest[f'FP{i}']) for i in range(1, 7)]
-                
-                # Plot the "Mean Forecast" line (Using FP3 trend as baseline)
-                fig.add_trace(go.Scatter(x=dates_fut, y=prices_fut, name="Strategist Forecast", 
-                                         line=dict(color=ACCENT_GOLD, width=3, dash='dot'),
-                                         mode='lines+markers'), row=1, col=1)
-            # --- FALLBACK TO SYNTHETIC CONE IF NO CSV ---
-            elif show_forecast:
+                dates_fut = [latest['Date'] + timedelta(days=30*i) for i in range(1, 7)]
+                prices_fut = [latest['Tstk_Adj'] * (1 + latest[f'FP{i}']) for i in range(1, 7)]
+                fig.add_trace(go.Scatter(x=dates_fut, y=prices_fut, name="Strategist Forecast", line=dict(color=theme["ACCENT_GOLD"], width=3, dash='dot'), mode='lines+markers'), row=1, col=1)
+            elif "Tactical" in view_mode:
                 fig.add_trace(go.Scatter(x=f_dates, y=f_lower, line=dict(width=0), showlegend=False, hoverinfo='skip'), row=1, col=1)
                 fig.add_trace(go.Scatter(x=f_dates, y=f_upper, fill='tonexty', fillcolor='rgba(200, 0, 255, 0.15)', line=dict(width=0), name="Proj. Uncertainty", hoverinfo='skip'), row=1, col=1)
-                fig.add_trace(go.Scatter(x=f_dates, y=f_mean, name="Swarm Forecast", line=dict(color=CHART_FONT, width=2, dash='dot')), row=1, col=1)
-            # -------------------------------------
+                fig.add_trace(go.Scatter(x=f_dates, y=f_mean, name="Swarm Forecast", line=dict(color=theme["CHART_FONT"], width=2, dash='dot')), row=1, col=1)
 
-            subset_ppo = ppo[ppo.index >= chart_data.index[0]]; subset_sig = sig[sig.index >= chart_data.index[0]]; subset_hist = hist[hist.index >= chart_data.index[0]]
-            fig.add_trace(go.Scatter(x=chart_data.index, y=subset_ppo, name="Swarm Trend", line=dict(color='cyan', width=1)), row=2, col=1)
-            fig.add_trace(go.Scatter(x=chart_data.index, y=subset_sig, name="Signal", line=dict(color='orange', width=1)), row=2, col=1)
-            colors = ['#00ff00' if val >= 0 else '#ff0000' for val in subset_hist]
-            fig.add_trace(go.Bar(x=chart_data.index, y=subset_hist, name="Velocity", marker_color=colors), row=2, col=1)
+            sub_ppo = ppo[ppo.index >= c_data.index[0]]
+            fig.add_trace(go.Scatter(x=c_data.index, y=sub_ppo, name="Swarm Trend", line=dict(color='cyan', width=1)), row=2, col=1)
+            fig.add_trace(go.Scatter(x=c_data.index, y=sig[sig.index >= c_data.index[0]], name="Signal", line=dict(color='orange', width=1)), row=2, col=1)
+            fig.add_trace(go.Bar(x=c_data.index, y=hist[hist.index >= c_data.index[0]], name="Velocity", marker_color=['#00ff00' if v >= 0 else '#ff0000' for v in hist[hist.index >= c_data.index[0]]]), row=2, col=1)
 
-            fig.update_layout(
-                height=500, 
-                template=CHART_TEMPLATE, 
-                margin=dict(l=0, r=0, t=0, b=0), 
-                showlegend=False, 
-                plot_bgcolor='rgba(0,0,0,0)', 
-                paper_bgcolor='rgba(0,0,0,0)', 
-                font=dict(color=CHART_FONT), 
-                xaxis_rangeslider_visible=False
-            )
+            fig.update_layout(height=500, template=theme["CHART_TEMPLATE"], margin=dict(l=0, r=0, t=0, b=0), showlegend=False, plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', font=dict(color=theme["CHART_FONT"]), xaxis_rangeslider_visible=False)
             fig.update_xaxes(showgrid=False); fig.update_yaxes(showgrid=False)
             st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
-            
         st.markdown("""<div class="premium-banner">🔒 Institutional Access Required: Unlock Sector Rotation & Global Flows</div>""", unsafe_allow_html=True)
 
-    # --- TAB 2: RISK ---
     with tab2:
         st.markdown('<div class="steel-sub-header"><span class="steel-text-main" style="font-size: 20px !important;">Safety Level</span></div>', unsafe_allow_html=True)
         col1, col2 = st.columns([2, 1])
@@ -583,40 +517,17 @@ if full_data is not None and closes is not None:
             breadth_status = "NARROWING" if breadth_val < -0.025 else "HEALTHY"
             m3.metric("Market Breadth", f"{breadth_val:.2%}", delta=breadth_status, delta_color="normal" if breadth_status=="HEALTHY" else "inverse", help="Compares Equal Weight S&P to Cap Weight.")
 
-    # --- TAB 3: STRATEGIST ---
     with tab3:
         st.markdown('<div class="steel-sub-header"><span class="steel-text-main" style="font-size: 20px !important;">MacroEffects: Chief Strategist\'s View</span></div>', unsafe_allow_html=True)
-        
         try:
-            update_df = get_strategist_update()
-            if update_df is None:
-                raise Exception("No data")
-
-            update_data = dict(zip(update_df['Key'], update_df['Value']))
-            
-            up_date = update_data.get('Date', 'Current')
-            up_title = update_data.get('Title', 'Market Update')
-            raw_text = str(update_data.get('Text', 'Monitoring market conditions...'))
-            raw_text = raw_text.replace("\\n", "\n")
-            lines = [line.strip() for line in raw_text.split('\n')]
-            up_text = '\n\n'.join(lines)
-
-            with st.expander(f"Read Forecast ({up_date})", expanded=True):
-                st.markdown(f'**"{up_title}"**')
-                st.markdown(up_text)
-            st.info("💡 **Analyst Note:** This commentary is pulled live from the Chief Strategist's desk via the Alpha Swarm CMS.")
-        except Exception:
-            st.warning("Strategist feed temporarily unavailable.")
-
-else:
-    st.error("Data connection initializing or offline. Please check network.")
-
-# FOOTER
-st.markdown("""
-<div class="custom-footer">
-MACROEFFECTS | ALPHA SWARM PROTOCOL v55.1 | INSTITUTIONAL RISK GOVERNANCE<br>
-Disclaimer: This tool provides market analysis for informational purposes only. Not financial advice.<br>
-<br>
-<strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
-</div>
-""", unsafe_allow_html=True)
+            update_df = logic.get_strategist_update()
+            if update_df is not None:
+                update_data = dict(zip(update_df['Key'], update_df['Value']))
+                with st.expander(f"Read Forecast ({update_data.get('Date', 'Current')})", expanded=True):
+                    st.markdown(f'**"{update_data.get("Title", "Market Update")}"**')
+                    st.markdown(str(update_data.get('Text', '')).replace("\\n", "\n"))
+                st.info("💡 **Analyst Note:** This commentary is pulled live from the Chief Strategist's desk via the Alpha Swarm CMS.")
+            else: st.warning("Strategist feed temporarily unavailable.")
+        except Exception: st.warning("Strategist feed temporarily unavailable.")
+else: st.error("Data connection initializing or offline. Please check network.")
+st.markdown(styles.FOOTER_HTML, unsafe_allow_html=True)

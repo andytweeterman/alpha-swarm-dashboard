@@ -6,7 +6,7 @@ from unittest.mock import patch, MagicMock
 import sys
 import shutil
 
-# Mock streamlit before importing app
+# Mock streamlit before importing logic
 mock_st = MagicMock()
 sys.modules['streamlit'] = mock_st
 
@@ -33,7 +33,8 @@ sys.path.append(os.getcwd())
 # Mock yfinance to avoid network calls
 sys.modules['yfinance'] = MagicMock()
 
-import app
+# Import logic instead of app
+from logic import load_strategist_data
 
 class TestSecurityFix(unittest.TestCase):
     def setUp(self):
@@ -62,7 +63,7 @@ class TestSecurityFix(unittest.TestCase):
         if os.path.exists(self.valid_file):
             os.remove(self.valid_file)
 
-        df = app.load_strategist_data()
+        df = load_strategist_data()
 
         # Should return None because valid file is missing and malicious file should be ignored
         self.assertIsNone(df, "Should return None when only malicious file exists in root")
@@ -72,7 +73,7 @@ class TestSecurityFix(unittest.TestCase):
              f.write("Date,Tstk_Adj,FP1,FP3,FP6\n2023-01-01,999,0.1,0.2,0.3")
 
     def test_valid_file_loaded(self):
-        df = app.load_strategist_data()
+        df = load_strategist_data()
 
         self.assertIsNotNone(df, "Should load data from data/strategist_forecast.csv")
         self.assertEqual(len(df), 1)

@@ -23,7 +23,7 @@ def mock_cache_data(*args, **kwargs):
     return decorator
 
 # Mock cache_data decorator
-sys.modules["streamlit"].cache_data = mock_cache_data
+mock_st.cache_data = mock_cache_data
 # Mock page config so set_page_config doesn't crash if called
 mock_st.set_page_config = MagicMock()
 # Mock sidebar
@@ -87,7 +87,11 @@ def test_governance_calculation():
     # Or properly construct MultiIndex
     full_data = pd.concat([closes], axis=1, keys=['Close'])
 
-    gov_df, status, color, reason = calc_governance(full_data)
+    # We can simulate this with a dictionary or a DataFrame with a MultiIndex.
+    # Let's use a dictionary-like object since data['Close'] is what matters.
+    data = {'Close': closes}
+
+    gov_df, status, color, reason = calc_governance(data)
 
     assert status in ["DEFENSIVE MODE", "CAUTION", "WATCHLIST", "COMFORT ZONE"]
     assert color in ["#f93e3e", "#ffaa00", "#f1c40f", "#00d26a"]
@@ -134,15 +138,25 @@ def test_get_base64_image_security():
         assert result_rel is None, "Should reject relative path traversal"
 
         # Test 3: Valid file
-        with open("dummy_test_image.png", "wb") as f:
+        # Create a dummy image in the current directory (which is base_dir when running tests from root?
+        # No, get_base64_image uses __file__ of styles.py).
+        # styles.py is in root. Tests are in tests/.
+        # os.getcwd() is root.
+        # styles.py __file__ will be ./styles.py.
+
+        # We need to create a file in the same directory as styles.py for it to be considered "valid".
+        # Since styles.py is in root, we create it in root.
+
+        dummy_img = "dummy_test_image.png"
+        with open(dummy_img, "wb") as f:
             f.write(b"dummy image content")
 
         try:
-            result_valid = get_base64_image("dummy_test_image.png")
+            result_valid = get_base64_image(dummy_img)
             assert result_valid is not None, "Should accept valid file in base directory"
         finally:
-            if os.path.exists("dummy_test_image.png"):
-                os.remove("dummy_test_image.png")
+            if os.path.exists(dummy_img):
+                os.remove(dummy_img)
 
     finally:
         if os.path.exists(tmp_path):
