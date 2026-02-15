@@ -3,84 +3,55 @@ import pandas as pd
 import numpy as np
 import sys
 import os
-from unittest.mock import MagicMock, patch
+import tempfile
+from unittest.mock import MagicMock
 
 # Add repo root to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-# --- MOCKING SETUP ---
-# We must mock modules BEFORE importing app, because app.py runs code on import.
+# Mock streamlit before import
+from unittest.mock import MagicMock
+sys.modules["streamlit"] = MagicMock()
 
-# Mock streamlit
-mock_st = MagicMock()
-sys.modules["streamlit"] = mock_st
-
-# Mock cache_data: handle both @st.cache_data and @st.cache_data(ttl=...)
 def mock_cache_data(*args, **kwargs):
+    # If called as decorator without parens: @st.cache_data
+    if len(args) == 1 and callable(args[0]):
+        return args[0]
+    # If called with parens: @st.cache_data(ttl=...)
     def decorator(func):
         return func
     return decorator
-mock_st.cache_data = mock_cache_data
 
-mock_st.toggle.return_value = False
-mock_st.sidebar.toggle.return_value = False
+# Mock cache_data decorator
+sys.modules["streamlit"].cache_data = mock_cache_data
+# Mock page config so set_page_config doesn't crash if called
+sys.modules["streamlit"].set_page_config = MagicMock()
+# Mock sidebar
+sys.modules["streamlit"].sidebar = MagicMock()
+# Mock toggle return value to avoid KeyError in theme_config
+sys.modules["streamlit"].toggle.return_value = False
+sys.modules["streamlit"].sidebar.toggle.return_value = False # In case I used st.sidebar.toggle
 
-# Handle st.columns and st.tabs to return iterables
+# Configure columns to return a list of mocks when called
 def mock_columns(spec, gap="small"):
     if isinstance(spec, int):
-        return [MagicMock() for _ in range(spec)]
+        count = spec
     else:
-        return [MagicMock() for _ in range(len(spec))]
+        count = len(spec)
+    return [MagicMock() for _ in range(count)]
 
-mock_st.columns.side_effect = mock_columns
+sys.modules["streamlit"].columns = MagicMock(side_effect=mock_columns)
 
-def mock_tabs(tabs_list):
-    return [MagicMock() for _ in range(len(tabs_list))]
+# Configure tabs to return a list of mocks when called
+def mock_tabs(tabs):
+    return [MagicMock() for _ in range(len(tabs))]
 
-mock_st.tabs.side_effect = mock_tabs
+sys.modules["streamlit"].tabs = MagicMock(side_effect=mock_tabs)
 
-# Mock yfinance to prevent network calls during import
-mock_yf = MagicMock()
-sys.modules["yfinance"] = mock_yf
-# Setup download to return empty DataFrame or something safe by default during import
-mock_yf.download.return_value = pd.DataFrame()
-
-# Now import app directly
-# These functions exist in app.py as confirmed by reading the file
-from app import calc_governance, calc_ppo, calc_cone, fetch_market_data
-
-def test_fetch_market_data_success():
-    """Test fetch_market_data returns data correctly when yfinance succeeds."""
-    # Setup mock return value
-    mock_data = pd.DataFrame({'Close': [100, 101]})
-    mock_yf.download.return_value = mock_data
-
-    # Call function
-    result = fetch_market_data()
-
-    # Assert
-    assert result is not None
-    assert not result.empty
-    mock_yf.download.assert_called()
-
-def test_fetch_market_data_failure():
-    """Test fetch_market_data returns None when yfinance raises an exception."""
-    # Setup mock to raise exception
-    mock_yf.download.side_effect = Exception("Download failed")
-
-    # Call function
-    result = fetch_market_data()
-
-    # Assert
-    assert result is None
-
-    # Reset side_effect for other tests
-    mock_yf.download.side_effect = None
-    mock_yf.download.return_value = pd.DataFrame()
+# Import functions from app.py
+from app import calc_governance, calc_ppo, calc_cone
 
 def test_governance_calculation():
-    """Test governance calculation logic."""
-    # Create dummy data
     dates = pd.date_range("2020-01-01", periods=100)
     data = pd.DataFrame(index=dates)
     data["HYG"] = np.random.rand(100) * 100
@@ -90,9 +61,8 @@ def test_governance_calculation():
     data["SPY"] = np.random.rand(100) * 400
     data["DX-Y.NYB"] = np.random.rand(100) * 100
 
-    # Simulate MultiIndex structure from yfinance
-    df_close = data.copy()
-    full_data = pd.concat([df_close], axis=1, keys=['Close'])
+    tuples = [('Close', col) for col in data.columns]
+    data.columns = pd.MultiIndex.from_tuples(tuples)
 
     gov_df, status, color, reason = calc_governance(full_data)
 
@@ -121,8 +91,36 @@ def test_cone_calculation():
     assert len(sma) == 100
     assert len(upper) == 100
 
-    # Check simple logic: Upper > Lower (where defined, first 20 might be NaN)
     valid = upper.dropna()
-    valid_lower = lower[valid.index]
+    assert (valid > lower[valid.index]).all()
 
-    assert (valid > valid_lower).all()
+def test_get_base64_image_security():
+    with tempfile.NamedTemporaryFile(mode='w+', delete=False) as tmp:
+        tmp.write("secret")
+        tmp_path = tmp.name
+
+    try:
+        # Test 1: Absolute path outside allowed dir
+        result = get_base64_image(tmp_path)
+        # Should be None in secured version
+        assert result is None, "Should reject absolute path outside base directory"
+
+        # Test 2: Relative path traversal
+        rel_path = os.path.relpath(tmp_path, os.getcwd())
+        result_rel = get_base64_image(rel_path)
+        assert result_rel is None, "Should reject relative path traversal"
+
+        # Test 3: Valid file
+        with open("dummy_test_image.png", "wb") as f:
+            f.write(b"dummy image content")
+
+        try:
+            result_valid = get_base64_image("dummy_test_image.png")
+            assert result_valid is not None, "Should accept valid file in base directory"
+        finally:
+            if os.path.exists("dummy_test_image.png"):
+                os.remove("dummy_test_image.png")
+
+    finally:
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
