@@ -9,20 +9,29 @@ import os
 import base64
 
 # ==========================================
-# 1. PAGE SETUP
+# HELPER FUNCTIONS
 # ==========================================
-st.set_page_config(page_title="MacroEffects | Global Command", page_icon="M", layout="wide")
+@st.cache_data(ttl=3600)
+def fetch_market_data():
+    try:
+        tickers = ["SPY", "^DJI", "^IXIC", "HYG", "IEF", "^VIX", "RSP", "DX-Y.NYB", "GC=F", "CL=F"]
+        start = (datetime.now() - timedelta(days=1825)).strftime('%Y-%m-%d')
+        data = yf.download(tickers, start=start, progress=False)
+        return data
+    except Exception:
+        return None
 
-# INITIALIZE SESSION STATE
-if "dark_mode" not in st.session_state:
-    st.session_state["dark_mode"] = False
+def calc_governance(data):
+    closes = data['Close']
+    df = pd.DataFrame(index=closes.index)
+    df['Credit_Ratio'] = closes["HYG"] / closes["IEF"]
+    df['Credit_Delta'] = df['Credit_Ratio'].pct_change(10)
+    df['VIX'] = closes["^VIX"]
+    df['Breadth_Ratio'] = closes["RSP"] / closes["SPY"]
+    df['Breadth_Delta'] = df['Breadth_Ratio'].pct_change(20)
+    df['DXY_Delta'] = closes["DX-Y.NYB"].pct_change(5)
 
-# SAFE DEFAULTS
-full_data = None
-closes = None
-latest_monitor = None
-status = "SYSTEM BOOT"
-color = "#888888"
+    CREDIT_TRIG = -0.015; VIX_PANIC = 24.0; BREADTH_TRIG = -0.025; DXY_SPIKE = 0.02
 
 # ==========================================
 # 2. THEME ENGINE
@@ -196,11 +205,9 @@ div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
 </style>
 """, unsafe_allow_html=True)
 
-# ==========================================
-# 4. HELPER FUNCTIONS
-# ==========================================
-@st.cache_data(ttl=3600)
-def fetch_market_data():
+    # ==========================================
+    # 5. EXECUTION PHASE
+    # ==========================================
     try:
         tickers = ["SPY", "^DJI", "^IXIC", "HYG", "IEF", "^VIX", "RSP", "DX-Y.NYB", "GC=F", "CL=F"]
         start = (datetime.now() - timedelta(days=1825)).strftime('%Y-%m-%d')
@@ -211,7 +218,19 @@ def fetch_market_data():
 
 def get_base64_image(image_path):
     try:
-        with open(image_path, "rb") as img_file:
+        # Prevent path traversal: limit access to app directory
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        filepath = os.path.abspath(os.path.join(base_dir, image_path))
+
+        # Check if the resolved path starts with the base directory
+        if os.path.commonpath([base_dir, filepath]) != base_dir:
+            return None
+
+        # Ensure it's a valid file
+        if not os.path.isfile(filepath):
+            return None
+
+        with open(filepath, "rb") as img_file:
             return base64.b64encode(img_file.read()).decode()
     except Exception:
         return None
@@ -238,6 +257,7 @@ def calc_governance(data):
     elif latest['Level_4']: return df, "WATCHLIST", "#f1c40f", "Elevated Risk Monitors"
     else: return df, "NORMAL OPS", "#00d26a", "System Integrity Nominal"
 
+@st.cache_data(ttl=3600)
 def load_strategist_data():
     """Ingests the Strategist's Forecast CSV (^GSPC.csv)"""
     try:
