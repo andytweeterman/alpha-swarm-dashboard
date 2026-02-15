@@ -9,46 +9,47 @@ from unittest.mock import MagicMock
 # Add repo root to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-# --- MOCK STREAMLIT ---
-mock_st = MagicMock()
-sys.modules["streamlit"] = mock_st
+# Mock streamlit before import
+from unittest.mock import MagicMock
+sys.modules["streamlit"] = MagicMock()
+
+def mock_cache_data(*args, **kwargs):
+    # If called as decorator without parens: @st.cache_data
+    if len(args) == 1 and callable(args[0]):
+        return args[0]
+    # If called with parens: @st.cache_data(ttl=...)
+    def decorator(func):
+        return func
+    return decorator
 
 # Mock cache_data decorator
-def mock_cache_data(*args, **kwargs):
-    def decorator(f):
-        return f
-    return decorator
-mock_st.cache_data = mock_cache_data
+sys.modules["streamlit"].cache_data = mock_cache_data
+# Mock page config so set_page_config doesn't crash if called
+sys.modules["streamlit"].set_page_config = MagicMock()
+# Mock sidebar
+sys.modules["streamlit"].sidebar = MagicMock()
+# Mock toggle return value to avoid KeyError in theme_config
+sys.modules["streamlit"].toggle.return_value = False
+sys.modules["streamlit"].sidebar.toggle.return_value = False # In case I used st.sidebar.toggle
 
-# Mock st.spinner context manager
-mock_st.spinner.return_value.__enter__.return_value = None
-mock_st.spinner.return_value.__exit__.return_value = None
-
-# Mock st.columns
+# Configure columns to return a list of mocks when called
 def mock_columns(spec, gap="small"):
     if isinstance(spec, int):
-        return [MagicMock() for _ in range(spec)]
-    elif isinstance(spec, (list, tuple)):
-        return [MagicMock() for _ in range(len(spec))]
-    return [MagicMock(), MagicMock()]
-mock_st.columns.side_effect = mock_columns
+        count = spec
+    else:
+        count = len(spec)
+    return [MagicMock() for _ in range(count)]
 
-# Mock st.tabs
+sys.modules["streamlit"].columns = MagicMock(side_effect=mock_columns)
+
+# Configure tabs to return a list of mocks when called
 def mock_tabs(tabs):
     return [MagicMock() for _ in range(len(tabs))]
-mock_st.tabs.side_effect = mock_tabs
 
-# Mock st.sidebar
-mock_st.sidebar = MagicMock()
+sys.modules["streamlit"].tabs = MagicMock(side_effect=mock_tabs)
 
-# Mock st.session_state
-mock_st.session_state = {}
-
-# Mock set_page_config
-mock_st.set_page_config = MagicMock()
-
-# --- IMPORT APP ---
-from app import calc_governance, calc_ppo, calc_cone, get_base64_image
+# Import functions from app.py
+from app import calc_governance, calc_ppo, calc_cone
 
 def test_governance_calculation():
     dates = pd.date_range("2020-01-01", periods=100)
@@ -63,7 +64,7 @@ def test_governance_calculation():
     tuples = [('Close', col) for col in data.columns]
     data.columns = pd.MultiIndex.from_tuples(tuples)
 
-    gov_df, status, color, reason = calc_governance(data)
+    gov_df, status, color, reason = calc_governance(full_data)
 
     assert status in ["EMERGENCY", "CAUTION", "WATCHLIST", "NORMAL OPS"]
     assert color in ["#f93e3e", "#ffaa00", "#f1c40f", "#00d26a"]

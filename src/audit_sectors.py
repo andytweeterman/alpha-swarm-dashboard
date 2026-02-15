@@ -1,6 +1,6 @@
 import yfinance as yf
 import pandas as pd
-import time
+import concurrent.futures
 
 # --- INPUT: DAD'S LIST (Add more here) ---
 # For now, I put in a mix of common ETFs and Stocks to test.
@@ -19,28 +19,38 @@ print("-" * 50)
 sector_counts = {}
 missing_data = []
 
-for ticker in tickers:
+def fetch_sector_info(ticker):
+    """Fetches sector info for a single ticker."""
     try:
         # Fetch info from Yahoo
         info = yf.Ticker(ticker).info
         
         # Get Sector (or 'ETF' if it's a fund)
         sector = info.get('sector', 'Unknown/ETF')
-        
-        # Count it
-        if sector in sector_counts:
-            sector_counts[sector] += 1
-        else:
-            sector_counts[sector] = 1
-            
-        print(f"✅ {ticker}: {sector}")
-        
+        return ticker, sector, None
     except Exception as e:
-        print(f"❌ {ticker}: Failed ({e})")
-        missing_data.append(ticker)
+        return ticker, None, e
+
+# Use ThreadPoolExecutor for concurrent requests
+with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+    # Submit all tasks
+    future_to_ticker = {executor.submit(fetch_sector_info, ticker): ticker for ticker in tickers}
     
-    # Sleep to be polite to Yahoo API
-    time.sleep(0.2)
+    # Process as they complete
+    for future in concurrent.futures.as_completed(future_to_ticker):
+        ticker, sector, error = future.result()
+
+        if error:
+            print(f"❌ {ticker}: Failed ({error})")
+            missing_data.append(ticker)
+        else:
+            # Count it
+            if sector in sector_counts:
+                sector_counts[sector] += 1
+            else:
+                sector_counts[sector] = 1
+
+            print(f"✅ {ticker}: {sector}")
 
 print("-" * 50)
 print("📊 FINAL SECTOR BREAKDOWN")
