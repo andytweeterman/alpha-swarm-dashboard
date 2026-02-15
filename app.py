@@ -260,6 +260,29 @@ def load_strategist_data():
     except Exception as e:
         return None
 
+def get_strategist_update():
+    """Fetches the Strategist's Update from Env Var or Local File"""
+    try:
+        # Priority 1: Environment Variable
+        sheet_url = os.environ.get("STRATEGIST_SHEET_URL")
+
+        # Priority 2: Streamlit Secrets (if available)
+        if not sheet_url:
+            try:
+                if "STRATEGIST_SHEET_URL" in st.secrets:
+                    sheet_url = st.secrets["STRATEGIST_SHEET_URL"]
+            except Exception:
+                pass
+
+        # If we have a URL and it's not a placeholder
+        if sheet_url and "INSERT_YOUR" not in sheet_url:
+            return pd.read_csv(sheet_url)
+
+        # Priority 3: Local Fallback
+        return pd.read_csv("data/update.csv")
+    except Exception:
+        return None
+
 def calc_ppo(price):
     ema12 = price.ewm(span=12, adjust=False).mean()
     ema26 = price.ewm(span=26, adjust=False).mean()
@@ -526,11 +549,10 @@ if full_data is not None and closes is not None:
         st.markdown('<div class="steel-sub-header"><span class="steel-text-main" style="font-size: 20px !important;">MacroEffects: Chief Strategist\'s View</span></div>', unsafe_allow_html=True)
         
         try:
-            SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT4ik-SBHr_ER_SyMHgwVAds3UaxRtPTA426qU_26TuHkHlyb5h6zl8_H9E-_Kw5FUO3W1mBU8CKiZP/pub?gid=0&single=true&output=csv" 
-            if "INSERT_YOUR" in SHEET_URL:
-                update_df = pd.read_csv("data/update.csv")
-            else:
-                update_df = pd.read_csv(SHEET_URL)
+            update_df = get_strategist_update()
+            if update_df is None:
+                raise Exception("No data")
+
             update_data = dict(zip(update_df['Key'], update_df['Value']))
             
             up_date = update_data.get('Date', 'Current')
