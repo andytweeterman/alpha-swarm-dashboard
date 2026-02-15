@@ -7,7 +7,6 @@ import styles
 import logic
 
 # 1. PAGE SETUP (MUST BE FIRST)
-# Fixed: Browser Title & Wide Layout
 st.set_page_config(
     page_title="MacroEffects | Outthink the Market", 
     page_icon="M", 
@@ -38,7 +37,6 @@ except Exception as e:
     status, color, reason = "SYSTEM ERROR", "#ff0000", "Connection Failed"
 
 # 4. HEADER UI
-# Fixed: Tagline updated to "Outthink the Market"
 c_title, c_menu = st.columns([0.90, 0.10], gap="small")
 with c_title:
     img_b64 = styles.get_base64_image("shield.png")
@@ -56,7 +54,6 @@ with c_title:
 with c_menu:
     with st.popover("☰", use_container_width=True):
         st.caption("Settings & Links")
-        # Dark Mode Toggle Logic
         is_dark = st.toggle("Dark Mode", value=st.session_state.get("dark_mode", False))
         if is_dark != st.session_state.get("dark_mode", False):
             st.session_state["dark_mode"] = is_dark
@@ -93,10 +90,9 @@ if full_data is not None and closes is not None:
             {"name": "Crude Oil", "ticker": "CL=F", "color": "#888888"}
         ]
         
-        # Market Grid Renderer
         cols = st.columns(3)
         for i, asset in enumerate(assets):
-            with cols[i % 3]: # distribute across 3 columns
+            with cols[i % 3]:
                 if asset['ticker'] in closes:
                     s = closes[asset['ticker']].dropna()
                     if not s.empty:
@@ -110,49 +106,43 @@ if full_data is not None and closes is not None:
         st.markdown('<div class="steel-sub-header"><span class="steel-text-main" style="font-size: 20px !important;">Swarm Deep Dive</span></div>', unsafe_allow_html=True)
         if 'SPY' in closes:
             spy = closes['SPY']
+            # FIXED: logic.calc_ppo
             ppo, sig, hist = logic.calc_ppo(spy)
+            # FIXED: logic.calc_cone
             sma, std, u_cone, l_cone = logic.calc_cone(spy)
-            # Default Forecast Generation
+            # FIXED: logic.generate_forecast
             f_dates, f_mean, f_upper, f_lower = logic.generate_forecast(spy.index[-1], spy.iloc[-1], std.iloc[-1], days=30)
             
             c1, c2 = st.columns(2)
             with c1: view_mode = st.radio("Select View Horizon:", ["Tactical (60-Day Zoom)", "Strategic (2-Year History)"], horizontal=True)
             with c2: st.caption("🔒 Global Swarm & Sector Rotation locked for Premium Users.")
 
-            # Filter Data based on view
             days_back = 60 if "Tactical" in view_mode else 730
             start_filter = (datetime.now() - timedelta(days=days_back)).strftime('%Y-%m-%d')
             c_data = full_data[full_data.index >= start_filter]
             
-            # Plotting
             fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.03, row_heights=[0.7, 0.3])
             
-            # Cone & Candles
             fig.add_trace(go.Scatter(x=c_data.index, y=l_cone[l_cone.index >= start_filter], line=dict(width=0), showlegend=False, hoverinfo='skip'), row=1, col=1)
             fig.add_trace(go.Scatter(x=c_data.index, y=u_cone[u_cone.index >= start_filter], fill='tonexty', fillcolor='rgba(0, 100, 255, 0.1)', line=dict(width=0), name="Fair Value Cone", hoverinfo='skip'), row=1, col=1)
             fig.add_trace(go.Candlestick(x=c_data.index, open=c_data['Open']['SPY'], high=c_data['High']['SPY'], low=c_data['Low']['SPY'], close=c_data['Close']['SPY'], name='SPY'), row=1, col=1)
 
-            # Forecast Injection
             if "Tactical" in view_mode:
                 if strat_data is not None:
-                    # Real Strategist Data
                     latest = strat_data.iloc[-1]
                     dates_fut = [latest['Date'] + timedelta(days=30*i) for i in range(1, 7)]
                     prices_fut = [latest['Tstk_Adj'] * (1 + latest[f'FP{i}']) for i in range(1, 7)]
                     fig.add_trace(go.Scatter(x=dates_fut, y=prices_fut, name="Strategist Forecast", line=dict(color=theme["ACCENT_GOLD"], width=3, dash='dot'), mode='lines+markers'), row=1, col=1)
                 else:
-                    # Synthetic Fallback
                     fig.add_trace(go.Scatter(x=f_dates, y=f_lower, line=dict(width=0), showlegend=False, hoverinfo='skip'), row=1, col=1)
                     fig.add_trace(go.Scatter(x=f_dates, y=f_upper, fill='tonexty', fillcolor='rgba(200, 0, 255, 0.15)', line=dict(width=0), name="Uncertainty", hoverinfo='skip'), row=1, col=1)
                     fig.add_trace(go.Scatter(x=f_dates, y=f_mean, name="Swarm Forecast", line=dict(color=theme["CHART_FONT"], width=2, dash='dot')), row=1, col=1)
 
-            # PPO/Velocity Subplot
             sub_ppo = ppo[ppo.index >= c_data.index[0]]
             fig.add_trace(go.Scatter(x=c_data.index, y=sub_ppo, name="Swarm Trend", line=dict(color='cyan', width=1)), row=2, col=1)
             fig.add_trace(go.Scatter(x=c_data.index, y=sig[sig.index >= c_data.index[0]], name="Signal", line=dict(color='orange', width=1)), row=2, col=1)
             fig.add_trace(go.Bar(x=c_data.index, y=hist[hist.index >= c_data.index[0]], name="Velocity", marker_color=['#00ff00' if v >= 0 else '#ff0000' for v in hist[hist.index >= c_data.index[0]]]), row=2, col=1)
 
-            # Layout Polish
             fig.update_layout(height=500, template=theme["CHART_TEMPLATE"], margin=dict(l=0, r=0, t=0, b=0), showlegend=False, plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', font=dict(color=theme["CHART_FONT"]), xaxis_rangeslider_visible=False)
             fig.update_xaxes(showgrid=False); fig.update_yaxes(showgrid=False)
             st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
@@ -171,8 +161,9 @@ if full_data is not None and closes is not None:
 
         st.subheader("⏱️ Tactical Horizons")
         if 'SPY' in closes:
-            latest_hist = calc_ppo(closes['SPY'])[2].iloc[-1]
-            latest_ppo = calc_ppo(closes['SPY'])[0].iloc[-1]
+            # FIXED: logic.calc_ppo
+            latest_hist = logic.calc_ppo(closes['SPY'])[2].iloc[-1]
+            latest_ppo = logic.calc_ppo(closes['SPY'])[0].iloc[-1]
             h1, h2, h3 = st.columns(3)
             with h1: st.info("**1 WEEK (Momentum)**"); st.markdown("🟢 **RISING**" if latest_hist > 0 else "🔴 **WEAKENING**")
             with h2: st.info("**1 MONTH (Trend)**"); st.markdown("🟢 **BULLISH**" if latest_ppo > 0 else "🔴 **BEARISH**")
