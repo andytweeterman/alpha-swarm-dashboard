@@ -62,8 +62,9 @@ sys.modules["streamlit"].tabs = MagicMock(side_effect=mock_tabs)
 mock_st.spinner.return_value.__enter__ = MagicMock()
 mock_st.spinner.return_value.__exit__ = MagicMock()
 
-# Import functions from app.py
-from app import calc_governance, calc_ppo, calc_cone, get_base64_image
+# Import functions from logic.py and styles.py
+from logic import calc_governance, calc_ppo, calc_cone
+from styles import get_base64_image
 
 def test_governance_calculation():
     dates = pd.date_range("2020-01-01", periods=100)

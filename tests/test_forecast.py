@@ -42,7 +42,7 @@ sys.modules["streamlit"].cache_data = mock_cache_data
 # Ensure fetch_market_data returns None or raises exception so we don't proceed to UI logic
 sys.modules["yfinance"].download.side_effect = Exception("Mocked error")
 
-from app import generate_forecast
+from logic import generate_forecast
 
 class TestForecast(unittest.TestCase):
     def test_forecast_basic(self):
