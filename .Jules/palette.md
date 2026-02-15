@@ -1,3 +1,3 @@
-## 2026-02-24 - Custom HTML Components via Markdown
-**Learning:** The application extensively uses `st.markdown(unsafe_allow_html=True)` to create custom components (e.g., Market Cards, Pills). These components lack semantic structure and ARIA labels by default, making them inaccessible to screen readers.
-**Action:** When modifying or creating such components, always wrap them in semantic containers (e.g., `role="group"`) and add `aria-label` attributes to ensure content is perceivable and navigable.
+## 2026-02-10 - Custom Components in Streamlit
+**Learning:** Custom HTML components injected via `st.markdown(unsafe_allow_html=True)` often lack semantic structure (like `role` or `aria-label`), making them invisible or confusing to screen readers.
+**Action:** When creating custom visual components (like cards or badges) using raw HTML in Streamlit, always include `role="group"` and `aria-label` to provide context.
