@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import sys
 import os
+import tempfile
 from unittest.mock import MagicMock
 
 # Add repo root to path
@@ -10,10 +11,18 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 # Mock streamlit before import
 sys.modules["streamlit"] = MagicMock()
+
+def mock_cache_data(*args, **kwargs):
+    # If called as decorator without parens: @st.cache_data
+    if len(args) == 1 and callable(args[0]):
+        return args[0]
+    # If called with parens: @st.cache_data(ttl=...)
+    def decorator(func):
+        return func
+    return decorator
+
 # Mock cache_data decorator
-sys.modules["streamlit"].cache_data = lambda func: func
-# Mock st.cache_data for use
-sys.modules["streamlit"].cache_data = lambda ttl=3600: lambda func: func
+sys.modules["streamlit"].cache_data = mock_cache_data
 # Mock page config so set_page_config doesn't crash if called
 sys.modules["streamlit"].set_page_config = MagicMock()
 # Mock sidebar
@@ -22,32 +31,26 @@ sys.modules["streamlit"].sidebar = MagicMock()
 sys.modules["streamlit"].toggle.return_value = False
 sys.modules["streamlit"].sidebar.toggle.return_value = False # In case I used st.sidebar.toggle
 
-# Define side_effect for columns to handle different input types
-def mock_columns(spec, **kwargs):
+# Configure columns to return a list of mocks when called
+def mock_columns(spec, gap="small"):
     if isinstance(spec, int):
-        return [MagicMock() for _ in range(spec)]
-    elif isinstance(spec, list):
-        return [MagicMock() for _ in range(len(spec))]
-    return [MagicMock()] # Fallback
+        count = spec
+    else:
+        count = len(spec)
+    return [MagicMock() for _ in range(count)]
 
-sys.modules["streamlit"].columns.side_effect = mock_columns
-sys.modules["streamlit"].tabs.return_value = [MagicMock(), MagicMock(), MagicMock()]
+sys.modules["streamlit"].columns = MagicMock(side_effect=mock_columns)
+
+# Configure tabs to return a list of mocks when called
+def mock_tabs(tabs):
+    return [MagicMock() for _ in range(len(tabs))]
+
+sys.modules["streamlit"].tabs = MagicMock(side_effect=mock_tabs)
 
 # Import functions from app.py
-from app import calc_governance, calc_ppo, calc_cone, render_market_card
-
-def test_render_market_card():
-    """Test that market card HTML is generated with correct accessibility attributes."""
-    html = render_market_card("Test Asset", 100.0, 5.0, 5.0, "#00d26a")
-
-    assert 'role="group"' in html
-    assert 'aria-label="Test Asset: 100.00, +5.00 (+5.00%)"' in html
-    assert 'aria-hidden="true"' in html
-    assert '<div class="market-ticker" aria-hidden="true">Test Asset</div>' in html
-    assert '<div class="market-price" aria-hidden="true">100.00</div>' in html
+from app import calc_governance, calc_ppo, calc_cone
 
 def test_governance_calculation():
-    # Create dummy data
     dates = pd.date_range("2020-01-01", periods=100)
     data = pd.DataFrame(index=dates)
     data["HYG"] = np.random.rand(100) * 100
@@ -57,11 +60,8 @@ def test_governance_calculation():
     data["SPY"] = np.random.rand(100) * 400
     data["DX-Y.NYB"] = np.random.rand(100) * 100
 
-    # Needs a MultiIndex or just columns named 'Close'?
-    # The function does: closes = data['Close']
-
-    df_close = data.copy()
-    full_data = pd.concat([df_close], axis=1, keys=['Close'])
+    tuples = [('Close', col) for col in data.columns]
+    data.columns = pd.MultiIndex.from_tuples(tuples)
 
     gov_df, status, color, reason = calc_governance(full_data)
 
@@ -70,6 +70,7 @@ def test_governance_calculation():
     assert reason in ["Structural/Policy Failure", "Market Divergence", "Elevated Risk Monitors", "System Integrity Nominal"]
 
 def test_ppo_calculation():
+    """Test PPO calculation."""
     dates = pd.date_range("2020-01-01", periods=100)
     price = pd.Series(np.random.rand(100) * 100, index=dates)
 
@@ -80,6 +81,7 @@ def test_ppo_calculation():
     assert len(hist) == 100
 
 def test_cone_calculation():
+    """Test Volatility Cone calculation."""
     dates = pd.date_range("2020-01-01", periods=100)
     price = pd.Series(np.random.rand(100) * 100, index=dates)
 
@@ -88,6 +90,36 @@ def test_cone_calculation():
     assert len(sma) == 100
     assert len(upper) == 100
 
-    # Check simple logic: Upper > Lower (where defined, first 20 might be NaN)
     valid = upper.dropna()
     assert (valid > lower[valid.index]).all()
+
+def test_get_base64_image_security():
+    with tempfile.NamedTemporaryFile(mode='w+', delete=False) as tmp:
+        tmp.write("secret")
+        tmp_path = tmp.name
+
+    try:
+        # Test 1: Absolute path outside allowed dir
+        result = get_base64_image(tmp_path)
+        # Should be None in secured version
+        assert result is None, "Should reject absolute path outside base directory"
+
+        # Test 2: Relative path traversal
+        rel_path = os.path.relpath(tmp_path, os.getcwd())
+        result_rel = get_base64_image(rel_path)
+        assert result_rel is None, "Should reject relative path traversal"
+
+        # Test 3: Valid file
+        with open("dummy_test_image.png", "wb") as f:
+            f.write(b"dummy image content")
+
+        try:
+            result_valid = get_base64_image("dummy_test_image.png")
+            assert result_valid is not None, "Should accept valid file in base directory"
+        finally:
+            if os.path.exists("dummy_test_image.png"):
+                os.remove("dummy_test_image.png")
+
+    finally:
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)

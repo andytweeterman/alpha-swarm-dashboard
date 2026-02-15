@@ -1,3 +1,3 @@
-## 2026-02-04 - Accessible Streamlit Custom Components
-**Learning:** Custom UI components built with `st.markdown` (like cards or badges) are completely invisible to screen readers as semantic groups. They often read as disparate text elements.
-**Action:** Always wrap custom HTML components in a container with `role="group"` and an `aria-label` that summarizes the content, and use `aria-hidden="true"` on the individual decorative children to reduce noise.
+## 2026-02-10 - Custom Components in Streamlit
+**Learning:** Custom HTML components injected via `st.markdown(unsafe_allow_html=True)` often lack semantic structure (like `role` or `aria-label`), making them invisible or confusing to screen readers.
+**Action:** When creating custom visual components (like cards or badges) using raw HTML in Streamlit, always include `role="group"` and `aria-label` to provide context.

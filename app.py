@@ -9,20 +9,29 @@ import os
 import base64
 
 # ==========================================
-# 1. PAGE SETUP
+# HELPER FUNCTIONS
 # ==========================================
-st.set_page_config(page_title="MacroEffects | Global Command", page_icon="M", layout="wide")
+@st.cache_data(ttl=3600)
+def fetch_market_data():
+    try:
+        tickers = ["SPY", "^DJI", "^IXIC", "HYG", "IEF", "^VIX", "RSP", "DX-Y.NYB", "GC=F", "CL=F"]
+        start = (datetime.now() - timedelta(days=1825)).strftime('%Y-%m-%d')
+        data = yf.download(tickers, start=start, progress=False)
+        return data
+    except Exception:
+        return None
 
-# INITIALIZE SESSION STATE
-if "dark_mode" not in st.session_state:
-    st.session_state["dark_mode"] = False
+def calc_governance(data):
+    closes = data['Close']
+    df = pd.DataFrame(index=closes.index)
+    df['Credit_Ratio'] = closes["HYG"] / closes["IEF"]
+    df['Credit_Delta'] = df['Credit_Ratio'].pct_change(10)
+    df['VIX'] = closes["^VIX"]
+    df['Breadth_Ratio'] = closes["RSP"] / closes["SPY"]
+    df['Breadth_Delta'] = df['Breadth_Ratio'].pct_change(20)
+    df['DXY_Delta'] = closes["DX-Y.NYB"].pct_change(5)
 
-# SAFE DEFAULTS
-full_data = None
-closes = None
-latest_monitor = None
-status = "SYSTEM BOOT"
-color = "#888888"
+    CREDIT_TRIG = -0.015; VIX_PANIC = 24.0; BREADTH_TRIG = -0.025; DXY_SPIKE = 0.02
 
 # ==========================================
 # 2. THEME ENGINE
@@ -196,11 +205,9 @@ div[data-testid="stHorizontalBlock"] {{ gap: 0rem !important; }}
 </style>
 """, unsafe_allow_html=True)
 
-# ==========================================
-# 4. HELPER FUNCTIONS
-# ==========================================
-@st.cache_data(ttl=3600)
-def fetch_market_data():
+    # ==========================================
+    # 5. EXECUTION PHASE
+    # ==========================================
     try:
         tickers = ["SPY", "^DJI", "^IXIC", "HYG", "IEF", "^VIX", "RSP", "DX-Y.NYB", "GC=F", "CL=F"]
         start = (datetime.now() - timedelta(days=1825)).strftime('%Y-%m-%d')
@@ -211,7 +218,19 @@ def fetch_market_data():
 
 def get_base64_image(image_path):
     try:
-        with open(image_path, "rb") as img_file:
+        # Prevent path traversal: limit access to app directory
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        filepath = os.path.abspath(os.path.join(base_dir, image_path))
+
+        # Check if the resolved path starts with the base directory
+        if os.path.commonpath([base_dir, filepath]) != base_dir:
+            return None
+
+        # Ensure it's a valid file
+        if not os.path.isfile(filepath):
+            return None
+
+        with open(filepath, "rb") as img_file:
             return base64.b64encode(img_file.read()).decode()
     except Exception:
         return None
@@ -238,6 +257,7 @@ def calc_governance(data):
     elif latest['Level_4']: return df, "WATCHLIST", "#f1c40f", "Elevated Risk Monitors"
     else: return df, "NORMAL OPS", "#00d26a", "System Integrity Nominal"
 
+@st.cache_data(ttl=3600)
 def load_strategist_data():
     """Ingests the Strategist's Forecast CSV (^GSPC.csv)"""
     try:
@@ -258,6 +278,29 @@ def load_strategist_data():
         df['Date'] = pd.to_datetime(df['Date'])
         return df
     except Exception as e:
+        return None
+
+def get_strategist_update():
+    """Fetches the Strategist's Update from Env Var or Local File"""
+    try:
+        # Priority 1: Environment Variable
+        sheet_url = os.environ.get("STRATEGIST_SHEET_URL")
+
+        # Priority 2: Streamlit Secrets (if available)
+        if not sheet_url:
+            try:
+                if "STRATEGIST_SHEET_URL" in st.secrets:
+                    sheet_url = st.secrets["STRATEGIST_SHEET_URL"]
+            except Exception:
+                pass
+
+        # If we have a URL and it's not a placeholder
+        if sheet_url and "INSERT_YOUR" not in sheet_url:
+            return pd.read_csv(sheet_url)
+
+        # Priority 3: Local Fallback
+        return pd.read_csv("data/update.csv")
+    except Exception:
         return None
 
 def calc_ppo(price):
@@ -310,6 +353,16 @@ def render_sparkline(data, line_color):
     )
     return fig
 
+def render_market_card(name, price, delta, pct):
+    delta_color = "#00d26a" if delta >= 0 else "#f93e3e"
+    return f"""
+<div class="market-card" role="group" aria-label="{name} Market Data">
+<div class="market-ticker">{name}</div>
+<div class="market-price">{price:,.2f}</div>
+<div class="market-delta" style="color: {delta_color};">{delta:+.2f} ({pct:+.2f}%)</div>
+</div>
+""".strip()
+
 # ==========================================
 # 5. EXECUTION PHASE
 # ==========================================
@@ -341,7 +394,7 @@ with c_title:
     if img_b64:
         header_html = f"""
 <div class="header-bar">
-<img src="data:image/png;base64,{img_b64}" alt="MacroEffects Shield" style="height: 50px; width: auto; flex-shrink: 0; object-fit: contain;">
+<img src="data:image/png;base64,{img_b64}" alt="MacroEffects Shield Logo" style="height: 50px; width: auto; flex-shrink: 0; object-fit: contain;">
 <div class="header-text-col">
 <span class="steel-text-main">MacroEffects</span>
 <span class="steel-text-sub">AI Inference & Risk Intelligence</span>
@@ -407,8 +460,7 @@ if full_data is not None and closes is not None:
                     series = closes[asset['ticker']].dropna()
                     if not series.empty:
                         current = series.iloc[-1]; prev = series.iloc[-2]; delta = current - prev; pct = (delta / prev) * 100
-                        delta_color = "#00d26a" if delta >= 0 else "#f93e3e"
-                        st.markdown(render_market_card(asset['name'], current, delta, pct, delta_color), unsafe_allow_html=True)
+                        st.markdown(render_market_card(asset['name'], current, delta, pct), unsafe_allow_html=True)
                         st.plotly_chart(render_sparkline(series.tail(30), asset['color']), use_container_width=True, config={'displayModeBar': False})
         st.markdown("---")
         c4, c5, c6 = st.columns(3)
@@ -419,8 +471,7 @@ if full_data is not None and closes is not None:
                     series = closes[asset['ticker']].dropna()
                     if not series.empty:
                         current = series.iloc[-1]; prev = series.iloc[-2]; delta = current - prev; pct = (delta / prev) * 100
-                        delta_color = "#00d26a" if delta >= 0 else "#f93e3e"
-                        st.markdown(render_market_card(asset['name'], current, delta, pct, delta_color), unsafe_allow_html=True)
+                        st.markdown(render_market_card(asset['name'], current, delta, pct), unsafe_allow_html=True)
                         st.plotly_chart(render_sparkline(series.tail(30), asset['color']), use_container_width=True, config={'displayModeBar': False})
         
         st.divider()
@@ -436,7 +487,7 @@ if full_data is not None and closes is not None:
             
             c1, c2 = st.columns(2)
             with c1: view_mode = st.radio("Select View Horizon:", ["Tactical (60-Day Zoom)", "Strategic (2-Year History)"], horizontal=True)
-            with c2: st.radio("Market Scope (Premium):", ["US Market (Active)", "Global Swarm 🔒", "Sector Rotation 🔒"], index=0, horizontal=True, disabled=True)
+            with c2: st.radio("Market Scope (Premium):", ["US Market (Active)", "Global Swarm 🔒", "Sector Rotation 🔒"], index=0, horizontal=True, disabled=True, help="Institutional-grade data feeds (Global/Sector) are locked. Contact institutional@macroeffects.com for access.")
 
             if view_mode == "Tactical (60-Day Zoom)": start_filter = (datetime.now() - timedelta(days=60)).strftime('%Y-%m-%d'); show_forecast = True
             else: start_filter = (datetime.now() - timedelta(days=730)).strftime('%Y-%m-%d'); show_forecast = False
@@ -505,7 +556,7 @@ if full_data is not None and closes is not None:
         with col2:
             if '^VIX' in closes:
                 latest_vix = closes['^VIX'].iloc[-1]
-                st.metric("Risk (VIX)", f"{latest_vix:.2f}", delta_color="inverse")
+                st.metric("Risk (VIX)", f"{latest_vix:.2f}", delta_color="inverse", help="The Volatility Index (VIX) measures market expectations of near-term volatility conveyed by S&P 500 stock index option prices.")
 
         st.subheader("⏱️ Tactical Horizons")
         if 'SPY' in closes:
@@ -537,11 +588,10 @@ if full_data is not None and closes is not None:
         st.markdown('<div class="steel-sub-header"><span class="steel-text-main" style="font-size: 20px !important;">MacroEffects: Chief Strategist\'s View</span></div>', unsafe_allow_html=True)
         
         try:
-            SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT4ik-SBHr_ER_SyMHgwVAds3UaxRtPTA426qU_26TuHkHlyb5h6zl8_H9E-_Kw5FUO3W1mBU8CKiZP/pub?gid=0&single=true&output=csv" 
-            if "INSERT_YOUR" in SHEET_URL:
-                update_df = pd.read_csv("data/update.csv")
-            else:
-                update_df = pd.read_csv(SHEET_URL)
+            update_df = get_strategist_update()
+            if update_df is None:
+                raise Exception("No data")
+
             update_data = dict(zip(update_df['Key'], update_df['Value']))
             
             up_date = update_data.get('Date', 'Current')
