@@ -238,6 +238,7 @@ def calc_governance(data):
     elif latest['Level_4']: return df, "WATCHLIST", "#f1c40f", "Elevated Risk Monitors"
     else: return df, "NORMAL OPS", "#00d26a", "System Integrity Nominal"
 
+@st.cache_data(ttl=3600)
 def load_strategist_data():
     """Ingests the Strategist's Forecast CSV (^GSPC.csv)"""
     try:
