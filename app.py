@@ -211,7 +211,19 @@ def fetch_market_data():
 
 def get_base64_image(image_path):
     try:
-        with open(image_path, "rb") as img_file:
+        # Prevent path traversal: limit access to app directory
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        filepath = os.path.abspath(os.path.join(base_dir, image_path))
+
+        # Check if the resolved path starts with the base directory
+        if os.path.commonpath([base_dir, filepath]) != base_dir:
+            return None
+
+        # Ensure it's a valid file
+        if not os.path.isfile(filepath):
+            return None
+
+        with open(filepath, "rb") as img_file:
             return base64.b64encode(img_file.read()).decode()
     except Exception:
         return None
