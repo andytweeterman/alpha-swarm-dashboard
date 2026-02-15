@@ -42,23 +42,7 @@ mock_yf.download.return_value = None
 sys.modules["plotly.graph_objects"] = MagicMock()
 sys.modules["plotly.subplots"] = MagicMock()
 
-# Configure columns to return a list of mocks when called
-def mock_columns(spec, gap="small"):
-    if isinstance(spec, int):
-        count = spec
-    else:
-        count = len(spec)
-    return [MagicMock() for _ in range(count)]
-
-sys.modules["streamlit"].columns = MagicMock(side_effect=mock_columns)
-
-# Configure tabs to return a list of mocks when called
-def mock_tabs(tabs):
-    return [MagicMock() for _ in range(len(tabs))]
-
-sys.modules["streamlit"].tabs = MagicMock(side_effect=mock_tabs)
-
-# Mock st.columns to return a list of mocks based on the input
+# Mock st.columns to return a list of mocks based on input
 def mock_columns(spec, gap="small"):
     if isinstance(spec, int):
         return [MagicMock() for _ in range(spec)]
@@ -66,40 +50,17 @@ def mock_columns(spec, gap="small"):
         return [MagicMock() for _ in range(len(spec))]
     return [MagicMock()]
 
-sys.modules["streamlit"].columns.side_effect = mock_columns
+sys.modules["streamlit"].columns = MagicMock(side_effect=mock_columns)
 
 # Mock st.tabs
 def mock_tabs(tabs):
     return [MagicMock() for _ in range(len(tabs))]
-sys.modules["streamlit"].tabs.side_effect = mock_tabs
 
-# Mock columns to return a list of mocks
-def mock_columns(spec, gap="small"):
-    if isinstance(spec, int):
-        return [MagicMock() for _ in range(spec)]
-    elif isinstance(spec, list):
-        return [MagicMock() for _ in range(len(spec))]
-    return [MagicMock(), MagicMock()]
+sys.modules["streamlit"].tabs = MagicMock(side_effect=mock_tabs)
 
-sys.modules["streamlit"].columns.side_effect = mock_columns
-
-# Mock tabs
-def mock_tabs(tabs):
-    return [MagicMock() for _ in range(len(tabs))]
-
-sys.modules["streamlit"].tabs.side_effect = mock_tabs
-
-
-# Mock st.columns to return a list of mocks based on input
-def mock_columns(spec, gap="small"):
-    if isinstance(spec, int):
-        return [MagicMock() for _ in range(spec)]
-    elif isinstance(spec, list):
-        return [MagicMock() for _ in range(len(spec))]
-    return [MagicMock()] # Fallback
-
-sys.modules["streamlit"].columns = MagicMock(side_effect=mock_columns)
-sys.modules["streamlit"].tabs = MagicMock(side_effect=mock_columns) # tabs works similarly
+# Mock st.spinner as context manager before importing app
+mock_st.spinner.return_value.__enter__ = MagicMock()
+mock_st.spinner.return_value.__exit__ = MagicMock()
 
 # Import functions from app.py
 from app import calc_governance, calc_ppo, calc_cone, get_base64_image
@@ -128,7 +89,7 @@ def test_governance_calculation():
 
     gov_df, status, color, reason = calc_governance(full_data)
 
-    assert status in ["EMERGENCY", "CAUTION", "WATCHLIST", "NORMAL OPS"]
+    assert status in ["DEFENSIVE MODE", "CAUTION", "WATCHLIST", "COMFORT ZONE"]
     assert color in ["#f93e3e", "#ffaa00", "#f1c40f", "#00d26a"]
     assert reason in ["Structural/Policy Failure", "Market Divergence", "Elevated Risk Monitors", "System Integrity Nominal"]
 

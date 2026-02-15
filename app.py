@@ -245,10 +245,10 @@ def calc_governance(data):
     df['Level_4'] = (df['Breadth_Delta'] < BREADTH_TRIG) | (df['VIX'] > VIX_PANIC)
     
     latest = df.iloc[-1]
-    if latest['Level_7']: return df, "EMERGENCY", "#f93e3e", "Structural/Policy Failure"
+    if latest['Level_7']: return df, "DEFENSIVE MODE", "#f93e3e", "Structural/Policy Failure"
     elif latest['Level_5']: return df, "CAUTION", "#ffaa00", "Market Divergence"
     elif latest['Level_4']: return df, "WATCHLIST", "#f1c40f", "Elevated Risk Monitors"
-    else: return df, "NORMAL OPS", "#00d26a", "System Integrity Nominal"
+    else: return df, "COMFORT ZONE", "#00d26a", "System Integrity Nominal"
 
 @st.cache_data(ttl=3600)
 def load_strategist_data():
@@ -397,7 +397,7 @@ with c_title:
 <img src="data:image/png;base64,{img_b64}" alt="MacroEffects Shield Logo" style="height: 50px; width: auto; flex-shrink: 0; object-fit: contain;">
 <div class="header-text-col">
 <span class="steel-text-main">MacroEffects</span>
-<span class="steel-text-sub">AI Inference & Risk Intelligence</span>
+<span class="steel-text-sub">AI Inference & Risk Aware</span>
 </div>
 </div>
 """.strip()
@@ -406,7 +406,7 @@ with c_title:
 <div class="header-bar">
 <div class="header-text-col">
 <span class="steel-text-main">MacroEffects</span>
-<span class="steel-text-sub">AI Inference & Risk Intelligence</span>
+<span class="steel-text-sub">AI Inference & Risk Aware</span>
 </div>
 </div>
 """.strip()
@@ -439,7 +439,7 @@ st.divider()
 
 if full_data is not None and closes is not None:
     
-    tab1, tab2, tab3 = st.tabs(["Markets", "Risk", "Strategist"])
+    tab1, tab2, tab3 = st.tabs(["Markets", "Safety & Stress Tests", "Strategist"])
 
     # --- TAB 1: MARKETS ---
     with tab1:
@@ -548,7 +548,7 @@ if full_data is not None and closes is not None:
 
     # --- TAB 2: RISK ---
     with tab2:
-        st.markdown('<div class="steel-sub-header"><span class="steel-text-main" style="font-size: 20px !important;">Risk Governance & Compliance</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="steel-sub-header"><span class="steel-text-main" style="font-size: 20px !important;">Safety Level</span></div>', unsafe_allow_html=True)
         col1, col2 = st.columns([2, 1])
         with col1:
             st.markdown(f'<div class="gov-pill" style="background: linear-gradient(135deg, {color}, {color}88); border: 1px solid {color};">{status}</div>', unsafe_allow_html=True)
@@ -556,7 +556,7 @@ if full_data is not None and closes is not None:
         with col2:
             if '^VIX' in closes:
                 latest_vix = closes['^VIX'].iloc[-1]
-                st.metric("Risk (VIX)", f"{latest_vix:.2f}", delta_color="inverse", help="The Volatility Index (VIX) measures market expectations of near-term volatility conveyed by S&P 500 stock index option prices.")
+                st.metric("Risk (VIX)", f"{latest_vix:.2f}", delta_color="inverse", help="Monitors Market Calmness.")
 
         st.subheader("⏱️ Tactical Horizons")
         if 'SPY' in closes:
@@ -565,7 +565,7 @@ if full_data is not None and closes is not None:
             h1, h2, h3 = st.columns(3)
             with h1: st.info("**1 WEEK (Momentum)**"); st.markdown("🟢 **RISING**" if latest_hist > 0 else "🔴 **WEAKENING**")
             with h2: st.info("**1 MONTH (Trend)**"); st.markdown("🟢 **BULLISH**" if latest_ppo > 0 else "🔴 **BEARISH**")
-            with h3: st.info("**6 MONTH (Structural)**"); st.markdown("🟢 **SAFE**" if status == "NORMAL OPS" else f"🔴 **{status}**")
+            with h3: st.info("**6 MONTH (Structural)**"); st.markdown("🟢 **SAFE**" if status == "COMFORT ZONE" else f"🔴 **{status}**")
 
         st.divider()
         st.subheader("📡 Active Monitor Feed (Live Logic)")
@@ -573,7 +573,7 @@ if full_data is not None and closes is not None:
             m1, m2, m3 = st.columns(3)
             credit_val = latest_monitor['Credit_Delta']
             credit_status = "STRESS" if credit_val < -0.015 else "NOMINAL"
-            m1.metric("Credit Spreads", f"{credit_val:.2%}", delta="STABLE" if credit_status=="NOMINAL" else "WIDENING", delta_color="normal" if credit_status=="NOMINAL" else "inverse", help="Tracks High Yield bonds vs Treasuries.")
+            m1.metric("Credit Spreads", f"{credit_val:.2%}", delta="STABLE" if credit_status=="NOMINAL" else "WIDENING", delta_color="normal" if credit_status=="NOMINAL" else "inverse", help="Monitors Credit Market Stability.")
 
             dxy_val = latest_monitor['DXY_Delta']
             dxy_status = "SPIKE" if dxy_val > 0.02 else "STABLE"
