@@ -81,6 +81,26 @@ def apply_theme():
     }}
     button[data-baseweb="tab"][aria-selected="true"] p {{ color: #FFFFFF !important; }}
 
+    /* --- MENU BUTTON STYLING (Restored in v56.3) --- */
+    [data-testid="stPopover"] button {{
+        border: 1px solid #333333;
+        background: #000000;
+        color: #C6A87C; 
+        font-size: 28px !important;
+        font-weight: bold;
+        height: 70px; 
+        width: 100%;
+        margin-top: 0px;
+        border-radius: 0 8px 8px 0; 
+        border-left: 1px solid #333333;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+    }}
+    [data-testid="stPopover"] button:hover {{ border-color: #C6A87C; color: #FFFFFF; }}
+
     /* --- TEXT ENFORCERS --- */
     .stMarkdown p, .stMarkdown span, .stMarkdown li {{ color: var(--text-primary) !important; }}
     h3 {{ color: var(--text-secondary) !important; font-weight: 600 !important; }}
