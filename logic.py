@@ -16,27 +16,23 @@ def fetch_market_data():
         if data is None or data.empty:
             return None
 
-        # --- THE FIX (v56.6) ---
-        # We forward-fill the data HERE so the entire app gets clean data.
-        # This copies Friday's VIX/SPY price into the "Sunday" row created by Futures.
+        # Fix the "Sunday Gap" by carrying forward Friday's data
         data = data.ffill()
         
         return data
-    except Exception as e:
+    except Exception:
         return None
 
 def calc_governance(data):
-    """Calculates the 'Traffic Light' safety status."""
+    """Calculates the 'Traffic Light' safety status with smoothed logic."""
     try:
-        # Data is already ffill() from fetch_market_data, but we do a safe check
         closes = data['Close']
         df = pd.DataFrame(index=closes.index)
         
-        # Calculate Metrics
+        # --- CALCULATE METRICS ---
         df['Credit_Ratio'] = closes["HYG"] / closes["IEF"]
         df['Credit_Delta'] = df['Credit_Ratio'].pct_change(10)
         
-        # Safe VIX access
         if "^VIX" in closes.columns:
             df['VIX'] = closes["^VIX"]
         else:
@@ -44,39 +40,59 @@ def calc_governance(data):
 
         df['Breadth_Ratio'] = closes["RSP"] / closes["SPY"]
         df['Breadth_Delta'] = df['Breadth_Ratio'].pct_change(20)
-        
         df['DXY_Delta'] = closes["DX-Y.NYB"].pct_change(5)
         
-        # Define Triggers
-        CREDIT_TRIG = -0.015
-        VIX_PANIC = 24.0
+        # --- DEFINE TRIGGERS ---
+        CREDIT_TRIG = -0.015  # -1.5% widening
+        VIX_PANIC = 25.0      # Increased from 24 to 25 for stability
         BREADTH_TRIG = -0.025
         DXY_SPIKE = 0.02
         
-        # Safe Logic Checks (fillna(False) protects against any remaining edge cases)
-        df['Level_7'] = ((df['Credit_Delta'] < CREDIT_TRIG) | (df['DXY_Delta'] > DXY_SPIKE)).fillna(False)
-        df['Level_5'] = ((df['VIX'] > VIX_PANIC) & (df['Breadth_Delta'] < BREADTH_TRIG)).fillna(False)
-        df['Level_4'] = ((df['Breadth_Delta'] < BREADTH_TRIG) | (df['VIX'] > VIX_PANIC)).fillna(False)
+        # --- LOGIC GATES ---
+        # 1. Structural Stress (Credit or Dollar)
+        stress_signal = ((df['Credit_Delta'] < CREDIT_TRIG) | (df['DXY_Delta'] > DXY_SPIKE)).fillna(False)
+        
+        # 2. VIX Panic
+        vix_signal = (df['VIX'] > VIX_PANIC).fillna(False)
+        
+        # 3. Breadth Breakdown
+        breadth_signal = (df['Breadth_Delta'] < BREADTH_TRIG).fillna(False)
         
         if not df.empty:
             latest = df.iloc[-1]
+            l_stress = stress_signal.iloc[-1]
+            l_vix = vix_signal.iloc[-1]
+            l_breadth = breadth_signal.iloc[-1]
         else:
             return df, "SYSTEM BOOT", "#888888", "Initializing..."
 
-        # Determine Status
-        if latest['Level_7']: 
-            return df, "DEFENSIVE MODE", "#f93e3e", "Structural/Policy Failure"
-        elif latest['Level_5']: 
-            return df, "CAUTION", "#ffaa00", "Market Divergence"
-        elif latest['Level_4']: 
-            return df, "WATCHLIST", "#f1c40f", "Elevated Risk Monitors"
+        # --- DETERMINE STATUS (The Tuned Logic) ---
+        
+        # RED: Requires Stress + VIX Panic (The Confirmation Rule)
+        if l_stress and l_vix:
+             return df, "DEFENSIVE MODE", "#f93e3e", "Structural Failure Confirmed"
+             
+        # OR RED: If VIX is simply massive (>30)
+        elif latest['VIX'] > 30:
+             return df, "DEFENSIVE MODE", "#f93e3e", "Extreme Volatility"
+
+        # YELLOW: Stress Detected (but VIX < 25) OR Breadth Warning
+        elif l_stress:
+             return df, "CAUTION", "#ffaa00", "Credit/Currency Stress"
+        elif l_vix:
+             return df, "CAUTION", "#ffaa00", "Elevated Volatility"
+        elif l_breadth:
+             return df, "WATCHLIST", "#f1c40f", "Market Breadth Narrowing"
+             
+        # GREEN: All Clear
         else: 
             return df, "COMFORT ZONE", "#00d26a", "System Integrity Nominal"
             
-    except Exception as e:
+    except Exception:
         safe_df = pd.DataFrame()
         return safe_df, "DATA ERROR", "#888888", "Feed Disconnected"
 
+# --- STANDARD MATH FUNCTIONS ---
 def calc_ppo(price):
     if isinstance(price, pd.DataFrame): price = price.iloc[:, 0]
     ema12 = price.ewm(span=12, adjust=False).mean()
