@@ -7,7 +7,7 @@ import streamlit as st
 
 @st.cache_data(ttl=3600)
 def fetch_market_data():
-    """Fetches data from Yahoo Finance with error handling."""
+    """Fetches data from Yahoo Finance and cleans it immediately."""
     try:
         tickers = ["SPY", "^DJI", "^IXIC", "HYG", "IEF", "^VIX", "RSP", "DX-Y.NYB", "GC=F", "CL=F"]
         start = (datetime.now() - timedelta(days=1825)).strftime('%Y-%m-%d')
@@ -15,70 +15,55 @@ def fetch_market_data():
         
         if data is None or data.empty:
             return None
-            
+
+        # --- THE FIX (v56.6) ---
+        # We forward-fill the data HERE so the entire app gets clean data.
+        # This copies Friday's VIX/SPY price into the "Sunday" row created by Futures.
+        data = data.ffill()
+        
         return data
     except Exception as e:
         return None
 
 def calc_governance(data):
-    """
-    Calculates the 'Traffic Light' safety status.
-    v56.5 Patch: "Smart Slicer" to handle Sunday/Holiday partial data.
-    """
+    """Calculates the 'Traffic Light' safety status."""
     try:
-        # 1. EXTRACT AND CLEAN
+        # Data is already ffill() from fetch_market_data, but we do a safe check
         closes = data['Close']
-        
-        # Forward fill to patch small gaps (weekends/holidays)
-        closes = closes.ffill()
-
-        # 2. THE SUNDAY FIX (CRITICAL STEP)
-        # We drop any row where the KEY ASSETS (SPY, VIX) are still NaN.
-        # This prevents the system from reading a partial "Sunday Futures" row.
-        if 'SPY' in closes.columns and '^VIX' in closes.columns:
-            closes = closes.dropna(subset=['SPY', '^VIX'])
-        
-        # If we deleted everything (unlikely), fallback to original
-        if closes.empty:
-            closes = data['Close'].ffill()
-
         df = pd.DataFrame(index=closes.index)
         
-        # 3. CALCULATE METRICS
-        # Use .get() or direct access, now safe because we dropped bad rows
-        try:
-            df['Credit_Ratio'] = closes["HYG"] / closes["IEF"]
-            df['Credit_Delta'] = df['Credit_Ratio'].pct_change(10)
-            
+        # Calculate Metrics
+        df['Credit_Ratio'] = closes["HYG"] / closes["IEF"]
+        df['Credit_Delta'] = df['Credit_Ratio'].pct_change(10)
+        
+        # Safe VIX access
+        if "^VIX" in closes.columns:
             df['VIX'] = closes["^VIX"]
-            
-            df['Breadth_Ratio'] = closes["RSP"] / closes["SPY"]
-            df['Breadth_Delta'] = df['Breadth_Ratio'].pct_change(20)
-            
-            df['DXY_Delta'] = closes["DX-Y.NYB"].pct_change(5)
-        except Exception:
-            # If a ticker is totally missing (e.g. symbol changed), return safe mode
-            return df, "DATA ERROR", "#888888", "Ticker Missing"
+        else:
+            df['VIX'] = 0.0
 
-        # 4. DEFINE TRIGGERS
+        df['Breadth_Ratio'] = closes["RSP"] / closes["SPY"]
+        df['Breadth_Delta'] = df['Breadth_Ratio'].pct_change(20)
+        
+        df['DXY_Delta'] = closes["DX-Y.NYB"].pct_change(5)
+        
+        # Define Triggers
         CREDIT_TRIG = -0.015
         VIX_PANIC = 24.0
         BREADTH_TRIG = -0.025
         DXY_SPIKE = 0.02
         
-        # 5. SAFE LOGIC CHECKS
-        # We use fillna(False) so any remaining NaNs count as "Safe"
+        # Safe Logic Checks (fillna(False) protects against any remaining edge cases)
         df['Level_7'] = ((df['Credit_Delta'] < CREDIT_TRIG) | (df['DXY_Delta'] > DXY_SPIKE)).fillna(False)
         df['Level_5'] = ((df['VIX'] > VIX_PANIC) & (df['Breadth_Delta'] < BREADTH_TRIG)).fillna(False)
         df['Level_4'] = ((df['Breadth_Delta'] < BREADTH_TRIG) | (df['VIX'] > VIX_PANIC)).fillna(False)
         
-        # Get the LAST VALID ROW
         if not df.empty:
             latest = df.iloc[-1]
         else:
             return df, "SYSTEM BOOT", "#888888", "Initializing..."
 
-        # 6. DETERMINE STATUS
+        # Determine Status
         if latest['Level_7']: 
             return df, "DEFENSIVE MODE", "#f93e3e", "Structural/Policy Failure"
         elif latest['Level_5']: 
@@ -90,7 +75,7 @@ def calc_governance(data):
             
     except Exception as e:
         safe_df = pd.DataFrame()
-        return safe_df, "DATA ERROR", "#888888", "Calculation Failed"
+        return safe_df, "DATA ERROR", "#888888", "Feed Disconnected"
 
 def calc_ppo(price):
     if isinstance(price, pd.DataFrame): price = price.iloc[:, 0]
@@ -132,7 +117,6 @@ def load_strategist_data():
             filename = os.path.join("data", "strategist_forecast.csv")
             if not os.path.exists(filename): return None
             df = pd.read_csv(filename)
-        
         required_cols = ['Date', 'Tstk_Adj', 'FP1', 'FP3', 'FP6']
         if not all(col in df.columns for col in required_cols): return None
         df['Date'] = pd.to_datetime(df['Date'])
