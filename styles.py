@@ -194,6 +194,40 @@ def apply_theme():
     
     return theme
 
+# --- ACCESSIBILITY HELPERS ---
+def relative_luminance(hex_color):
+    """Calculates the relative luminance of a hex color."""
+    hex_color = hex_color.lstrip('#')
+    r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+
+    def linearize(c):
+        c = c / 255.0
+        return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+
+    R = linearize(r)
+    G = linearize(g)
+    B = linearize(b)
+
+    return 0.2126 * R + 0.7152 * G + 0.0722 * B
+
+def get_contrast_ratio(hex1, hex2):
+    """Calculates contrast ratio between two hex colors."""
+    l1 = relative_luminance(hex1)
+    l2 = relative_luminance(hex2)
+    if l1 < l2:
+        l1, l2 = l2, l1
+    return (l1 + 0.05) / (l2 + 0.05)
+
+def get_best_text_color(hex_bg):
+    """Returns #000000 or #FFFFFF depending on which has better contrast."""
+    white = "#FFFFFF"
+    black = "#000000"
+
+    c_white = get_contrast_ratio(hex_bg, white)
+    c_black = get_contrast_ratio(hex_bg, black)
+
+    return white if c_white > c_black else black
+
 def render_market_card(name, price, delta, pct):
     delta_color_var = "var(--delta-up)" if delta >= 0 else "var(--delta-down)"
     direction = "up" if delta >= 0 else "down"
