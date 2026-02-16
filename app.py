@@ -64,10 +64,11 @@ with c_menu:
         st.link_button("About Us", "https://sixmonthstockmarketforecast.com/about") 
 
 # 5. STATUS BAR
+text_color = styles.get_best_text_color(color)
 st.markdown(f"""
 <div style="margin-bottom: 20px; margin-top: 5px;">
     <span style="font-family: 'Inter'; font-weight: 600; font-size: 16px; color: var(--text-secondary);">Macro-Economic Intelligence: Global Market Command Center</span>
-    <div class="gov-pill" style="background: linear-gradient(135deg, {color}, {color}88); border: 1px solid {color};">{status}</div>
+    <div class="gov-pill" role="status" aria-label="Current Status: {status}" style="background: linear-gradient(135deg, {color}, {color}88); border: 1px solid {color}; color: {text_color};">{status}</div>
     <div class="premium-pill">PREMIUM</div>
 </div>
 """, unsafe_allow_html=True)
@@ -153,7 +154,8 @@ if full_data is not None and closes is not None:
         st.markdown('<div class="steel-sub-header"><span class="steel-text-main" style="font-size: 20px !important;">Safety Level</span></div>', unsafe_allow_html=True)
         col1, col2 = st.columns([2, 1])
         with col1:
-            st.markdown(f'<div class="gov-pill" style="background: linear-gradient(135deg, {color}, {color}88); border: 1px solid {color};">{status}</div>', unsafe_allow_html=True)
+            text_color = styles.get_best_text_color(color)
+            st.markdown(f'<div class="gov-pill" role="status" aria-label="Current Status: {status}" style="background: linear-gradient(135deg, {color}, {color}88); border: 1px solid {color}; color: {text_color};">{status}</div>', unsafe_allow_html=True)
             st.caption(f"Reason: {reason}")
         with col2:
             if '^VIX' in closes:
