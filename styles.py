@@ -19,6 +19,33 @@ def get_base64_image(image_path):
     except Exception:
         return None
 
+def relative_luminance(hex_color):
+    """Calculates the relative luminance of a hex color."""
+    hex_color = hex_color.lstrip('#')
+    r, g, b = tuple(int(hex_color[i:i+2], 16) / 255.0 for i in (0, 2, 4))
+
+    def adjust(c):
+        return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+
+    return 0.2126 * adjust(r) + 0.7152 * adjust(g) + 0.0722 * adjust(b)
+
+def get_contrast_ratio(hex1, hex2):
+    """Calculates the contrast ratio between two hex colors."""
+    lum1 = relative_luminance(hex1)
+    lum2 = relative_luminance(hex2)
+    lighter = max(lum1, lum2)
+    darker = min(lum1, lum2)
+    return (lighter + 0.05) / (darker + 0.05)
+
+def get_best_text_color(hex_bg_color):
+    """Returns either '#000000' or '#FFFFFF' for best contrast against the background."""
+    try:
+        white_contrast = get_contrast_ratio(hex_bg_color, "#FFFFFF")
+        black_contrast = get_contrast_ratio(hex_bg_color, "#000000")
+        return "#FFFFFF" if white_contrast > black_contrast else "#000000"
+    except Exception:
+        return "#FFFFFF"
+
 def apply_theme():
     # Ensure session state is initialized
     if "dark_mode" not in st.session_state:
