@@ -41,8 +41,8 @@ c_title, c_menu = st.columns([0.90, 0.10], gap="small")
 with c_title:
     img_b64 = styles.get_base64_image("shield.png")
     header_html = f"""
-    <div class="header-bar">
-    {'<img src="data:image/png;base64,' + img_b64 + '" style="height: 50px; width: auto; flex-shrink: 0; object-fit: contain;">' if img_b64 else ''}
+    <div class="header-bar" role="banner" aria-label="MacroEffects Dashboard Header">
+    {'<img src="data:image/png;base64,' + img_b64 + '" alt="MacroEffects Shield Logo" style="height: 50px; width: auto; flex-shrink: 0; object-fit: contain;">' if img_b64 else ''}
     <div class="header-text-col">
     <span class="steel-text-main">MacroEffects</span>
     <span class="steel-text-sub">Outthink the Market</span>
@@ -65,10 +65,10 @@ with c_menu:
 
 # 5. STATUS BAR
 st.markdown(f"""
-<div style="margin-bottom: 20px; margin-top: 5px;">
+<div style="margin-bottom: 20px; margin-top: 5px;" role="status" aria-label="System Status">
     <span style="font-family: 'Inter'; font-weight: 600; font-size: 16px; color: var(--text-secondary);">Macro-Economic Intelligence: Global Market Command Center</span>
-    <div class="gov-pill" style="background: linear-gradient(135deg, {color}, {color}88); border: 1px solid {color};">{status}</div>
-    <div class="premium-pill">PREMIUM</div>
+    <div class="gov-pill" style="background: linear-gradient(135deg, {color}, {color}88); border: 1px solid {color};" aria-label="Status: {status}">{status}</div>
+    <div class="premium-pill" aria-label="Account Status: Premium">PREMIUM</div>
 </div>
 """, unsafe_allow_html=True)
 st.divider()
