@@ -2,6 +2,7 @@ import streamlit as st
 import plotly.graph_objects as go
 import os
 import base64
+import html
 
 def get_base64_image(image_path):
     try:
@@ -195,15 +196,16 @@ def apply_theme():
     return theme
 
 def render_market_card(name, price, delta, pct):
+    safe_name = html.escape(name)
     delta_color_var = "var(--delta-up)" if delta >= 0 else "var(--delta-down)"
     direction = "up" if delta >= 0 else "down"
 
     # Accessible label: "S&P 500: 4,500.00, up 10.00 (0.25%)"
-    aria_label = f"{name}: {price:,.2f}, {direction} {abs(delta):.2f} ({pct:+.2f}%)"
+    aria_label = f"{safe_name}: {price:,.2f}, {direction} {abs(delta):.2f} ({pct:+.2f}%)"
 
     return f"""
     <div class="market-card" role="group" aria-label="{aria_label}">
-        <div class="market-ticker" aria-hidden="true">{name}</div>
+        <div class="market-ticker" aria-hidden="true">{safe_name}</div>
         <div class="market-price" aria-hidden="true">{price:,.2f}</div>
         <div class="market-delta" style="color: {delta_color_var};" aria-hidden="true">{delta:+.2f} ({pct:+.2f}%)</div>
     </div>
