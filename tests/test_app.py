@@ -39,6 +39,7 @@ mock_yf = MagicMock()
 sys.modules["yfinance"] = mock_yf
 mock_yf.download.return_value = None
 # Also mock plotly to avoid any plotting overhead if imported
+sys.modules["plotly"] = MagicMock()
 sys.modules["plotly.graph_objects"] = MagicMock()
 sys.modules["plotly.subplots"] = MagicMock()
 
@@ -96,7 +97,16 @@ def test_governance_calculation():
 
     assert status in ["DEFENSIVE MODE", "CAUTION", "WATCHLIST", "COMFORT ZONE"]
     assert color in ["#f93e3e", "#ffaa00", "#f1c40f", "#00d26a"]
-    assert reason in ["Structural/Policy Failure", "Market Divergence", "Elevated Risk Monitors", "System Integrity Nominal"]
+    assert reason in [
+        "Structural Failure Confirmed",
+        "Extreme Volatility",
+        "Credit/Currency Stress",
+        "Elevated Volatility",
+        "Market Breadth Narrowing",
+        "System Integrity Nominal",
+        "Initializing...",
+        "Feed Disconnected"
+    ]
 
 def test_ppo_calculation():
     """Test PPO calculation."""
