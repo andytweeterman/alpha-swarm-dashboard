@@ -98,7 +98,7 @@ if full_data is not None and closes is not None:
                     if not s.empty:
                         cur, prev = s.iloc[-1], s.iloc[-2]
                         st.markdown(styles.render_market_card(asset['name'], cur, cur-prev, ((cur-prev)/prev)*100), unsafe_allow_html=True)
-                        st.plotly_chart(styles.render_sparkline(s.tail(30), asset['color']), use_container_width=True, config={'displayModeBar': False})
+                        st.markdown(styles.render_sparkline_svg(s.tail(30), asset['color']), unsafe_allow_html=True)
         
         st.divider()
         
