@@ -209,11 +209,44 @@ def render_market_card(name, price, delta, pct):
     </div>
     """
 
-def render_sparkline(data, line_color):
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=data.index, y=data, mode='lines', line=dict(color=line_color, width=2), hoverinfo='skip'))
-    fig.update_layout(height=40, margin=dict(l=0,r=0,t=0,b=0), xaxis=dict(visible=False), yaxis=dict(visible=False), plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)')
-    return fig
+def render_sparkline_svg(data, line_color):
+    if data.empty:
+        return ""
+
+    # Normalize data
+    y_min = data.min()
+    y_max = data.max()
+    y_range = y_max - y_min if y_max != y_min else 1.0
+
+    # SVG ViewBox dimensions
+    width_viewbox = 300
+    height_viewbox = 40
+    padding = 2
+    avail_height = height_viewbox - 2 * padding
+
+    points = []
+    # Use index 0..N-1 for x to keep it simple and avoid date handling in SVG
+    x_step = width_viewbox / (len(data) - 1) if len(data) > 1 else 0
+
+    values = data.values
+    for i, val in enumerate(values):
+        x = i * x_step
+        # In SVG, y=0 is top. We want high values at top.
+        normalized_val = (val - y_min) / y_range
+        y = padding + (1.0 - normalized_val) * avail_height
+        points.append(f"{x:.1f},{y:.1f}")
+
+    polyline_points = " ".join(points)
+
+    # preserveAspectRatio="none" allows the SVG to stretch to fill the container width/height
+    # vector-effect="non-scaling-stroke" keeps the line width constant when resized
+    svg = f"""
+    <svg width="100%" height="40" viewBox="0 0 {width_viewbox} {height_viewbox}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style="background-color: transparent; min-width: 50px; display: block;">
+        <polyline points="{polyline_points}" fill="none" stroke="{line_color}" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+    """
+    return svg
+
 
 FOOTER_HTML = """
 <div style="font-family: 'Fira Code', monospace; font-size: 10px; color: #888; text-align: center; margin-top: 50px; border-top: 1px solid #30363d; padding-top: 20px; text-transform: uppercase;">
