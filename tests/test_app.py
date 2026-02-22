@@ -82,21 +82,21 @@ def test_governance_calculation():
     # app.py: closes = full_data['Close']
     # So full_data needs a 'Close' column which returns the closes DF.
 
-    full_data = pd.DataFrame(closes.values, index=closes.index, columns=closes.columns)
-    # Simulate data['Close'] access
-    # We can just make full_data have 'Close' key access to return closes
-    # Or properly construct MultiIndex
+    # Properly construct MultiIndex DataFrame to simulate yfinance structure
     full_data = pd.concat([closes], axis=1, keys=['Close'])
 
-    # We can simulate this with a dictionary or a DataFrame with a MultiIndex.
-    # Let's use a dictionary-like object since data['Close'] is what matters.
-    data = {'Close': closes}
-
-    gov_df, status, color, reason = calc_governance(data)
+    gov_df, status, color, reason = calc_governance(full_data)
 
     assert status in ["DEFENSIVE MODE", "CAUTION", "WATCHLIST", "COMFORT ZONE"]
     assert color in ["#f93e3e", "#ffaa00", "#f1c40f", "#00d26a"]
-    assert reason in ["Structural/Policy Failure", "Market Divergence", "Elevated Risk Monitors", "System Integrity Nominal"]
+    assert reason in [
+        "Structural Failure Confirmed",
+        "Extreme Volatility",
+        "Credit/Currency Stress",
+        "Elevated Volatility",
+        "Market Breadth Narrowing",
+        "System Integrity Nominal"
+    ]
 
 def test_ppo_calculation():
     """Test PPO calculation."""
