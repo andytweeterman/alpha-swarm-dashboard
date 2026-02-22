@@ -4,6 +4,8 @@ import yfinance as yf
 from datetime import datetime, timedelta
 import os
 import streamlit as st
+import requests
+import io
 
 @st.cache_data(ttl=3600)
 def fetch_market_data():
@@ -145,7 +147,29 @@ def get_strategist_update():
         if not sheet_url and "STRATEGIST_SHEET_URL" in st.secrets:
             sheet_url = st.secrets["STRATEGIST_SHEET_URL"]
         if sheet_url and "INSERT_YOUR" not in sheet_url:
-            return pd.read_csv(sheet_url)
+            try:
+                # Securely fetch with timeout and size limits
+                with requests.get(sheet_url, timeout=10, stream=True) as response:
+                    if response.status_code == 200:
+                        # Check header first if available
+                        content_length = response.headers.get("Content-Length")
+                        if content_length and int(content_length) > 5 * 1024 * 1024:
+                            return None
+
+                        # Stream content to enforce limit
+                        content = io.BytesIO()
+                        downloaded = 0
+                        for chunk in response.iter_content(chunk_size=8192):
+                            downloaded += len(chunk)
+                            if downloaded > 5 * 1024 * 1024:
+                                return None
+                            content.write(chunk)
+
+                        content.seek(0)
+                        return pd.read_csv(content)
+            except Exception:
+                pass # Fallback to local
+
         local_path = os.path.join("data", "update.csv")
         if os.path.exists(local_path): return pd.read_csv(local_path)
         return None
