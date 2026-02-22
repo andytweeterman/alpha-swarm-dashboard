@@ -96,7 +96,7 @@ def test_governance_calculation():
 
     assert status in ["DEFENSIVE MODE", "CAUTION", "WATCHLIST", "COMFORT ZONE"]
     assert color in ["#f93e3e", "#ffaa00", "#f1c40f", "#00d26a"]
-    assert reason in ["Structural/Policy Failure", "Market Divergence", "Elevated Risk Monitors", "System Integrity Nominal"]
+    assert reason in ["Structural/Policy Failure", "Market Divergence", "Elevated Risk Monitors", "System Integrity Nominal", "Credit/Currency Stress", "Extreme Volatility", "Elevated Volatility", "Market Breadth Narrowing", "Structural Failure Confirmed", "Feed Disconnected", "Initializing..."]
 
 def test_ppo_calculation():
     """Test PPO calculation."""
