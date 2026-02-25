@@ -20,7 +20,7 @@ theme = styles.apply_theme()
 # 3. DATA LOADING
 full_data = None
 closes = None
-status, color, reason = "SYSTEM BOOT", "#888888", "Initializing..."
+status, color, reason, text_color = "SYSTEM BOOT", "#888888", "Initializing...", "#ffffff"
 
 try:
     with st.spinner("Connecting to Global Swarm..."):
@@ -30,11 +30,12 @@ try:
     if full_data is not None and not full_data.empty:
         closes = full_data['Close']
         gov_df, status, color, reason = logic.calc_governance(full_data)
+        text_color = styles.get_best_text_color(color)
         latest_monitor = gov_df.iloc[-1]
     else:
-        status, color, reason = "DATA ERROR", "#ff0000", "Data Feed Unavailable"
+        status, color, reason, text_color = "DATA ERROR", "#ff0000", "Data Feed Unavailable", "#ffffff"
 except Exception as e:
-    status, color, reason = "SYSTEM ERROR", "#ff0000", "Connection Failed"
+    status, color, reason, text_color = "SYSTEM ERROR", "#ff0000", "Connection Failed", "#ffffff"
 
 # 4. HEADER UI
 c_title, c_menu = st.columns([0.90, 0.10], gap="small")
@@ -42,7 +43,7 @@ with c_title:
     img_b64 = styles.get_base64_image("shield.png")
     header_html = f"""
     <div class="header-bar">
-    {'<img src="data:image/png;base64,' + img_b64 + '" style="height: 50px; width: auto; flex-shrink: 0; object-fit: contain;">' if img_b64 else ''}
+    {'<img src="data:image/png;base64,' + img_b64 + '" alt="MacroEffects Shield Logo" style="height: 50px; width: auto; flex-shrink: 0; object-fit: contain;">' if img_b64 else ''}
     <div class="header-text-col">
     <span class="steel-text-main">MacroEffects</span>
     <span class="steel-text-sub">Outthink the Market</span>
@@ -67,7 +68,7 @@ with c_menu:
 st.markdown(f"""
 <div style="margin-bottom: 20px; margin-top: 5px;">
     <span style="font-family: 'Inter'; font-weight: 600; font-size: 16px; color: var(--text-secondary);">Macro-Economic Intelligence: Global Market Command Center</span>
-    <div class="gov-pill" style="background: linear-gradient(135deg, {color}, {color}88); border: 1px solid {color};">{status}</div>
+    <div class="gov-pill" style="background: linear-gradient(135deg, {color}, {color}88); border: 1px solid {color}; color: {text_color};">{status}</div>
     <div class="premium-pill">PREMIUM</div>
 </div>
 """, unsafe_allow_html=True)
@@ -153,7 +154,7 @@ if full_data is not None and closes is not None:
         st.markdown('<div class="steel-sub-header"><span class="steel-text-main" style="font-size: 20px !important;">Safety Level</span></div>', unsafe_allow_html=True)
         col1, col2 = st.columns([2, 1])
         with col1:
-            st.markdown(f'<div class="gov-pill" style="background: linear-gradient(135deg, {color}, {color}88); border: 1px solid {color};">{status}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="gov-pill" style="background: linear-gradient(135deg, {color}, {color}88); border: 1px solid {color}; color: {text_color};">{status}</div>', unsafe_allow_html=True)
             st.caption(f"Reason: {reason}")
         with col2:
             if '^VIX' in closes:

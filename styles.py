@@ -222,3 +222,41 @@ Disclaimer: This tool provides market analysis for informational purposes only. 
 <strong>Institutional Access:</strong> <a href="mailto:institutional@macroeffects.com" style="color: inherit; text-decoration: none; font-weight: bold;">institutional@macroeffects.com</a>
 </div>
 """
+def relative_luminance(color_hex):
+    """Calculates relative luminance of a hex color."""
+    color_hex = color_hex.lstrip('#')
+    # Handle both 3-digit and 6-digit hex codes
+    if len(color_hex) == 3:
+        color_hex = ''.join([c*2 for c in color_hex])
+
+    try:
+        rgb = tuple(int(color_hex[i:i+2], 16) for i in (0, 2, 4))
+    except ValueError:
+        return 0.5 # Fallback to mid-grey luminance on error
+
+    rgb_norm = []
+    for c in rgb:
+        c = c / 255.0
+        if c <= 0.03928:
+            c = c / 12.92
+        else:
+            c = ((c + 0.055) / 1.055) ** 2.4
+        rgb_norm.append(c)
+
+    return 0.2126 * rgb_norm[0] + 0.7152 * rgb_norm[1] + 0.0722 * rgb_norm[2]
+
+def get_best_text_color(bg_hex):
+    """Returns white or black text color based on background luminance."""
+    try:
+        lum = relative_luminance(bg_hex)
+    except Exception:
+        return "#ffffff" # Fallback to white
+
+    # L_white = 1.0, L_black = 0.0
+    # Contrast with white: (1.0 + 0.05) / (lum + 0.05)
+    # Contrast with black: (lum + 0.05) / (0.0 + 0.05)
+
+    contrast_white = 1.05 / (lum + 0.05)
+    contrast_black = (lum + 0.05) / 0.05
+
+    return "#000000" if contrast_black > contrast_white else "#ffffff"
