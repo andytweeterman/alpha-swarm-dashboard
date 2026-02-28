@@ -13,9 +13,6 @@ tickers = [
     "SPY", "QQQ", "IWM"                 # Broad Market
 ]
 
-print(f"🔍 Auditing {len(tickers)} tickers for GICS Sector coverage...")
-print("-" * 50)
-
 sector_counts = {}
 missing_data = []
 
@@ -31,35 +28,39 @@ def fetch_sector_info(ticker):
     except Exception as e:
         return ticker, None, e
 
-# Use ThreadPoolExecutor for concurrent requests
-with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-    # Submit all tasks
-    future_to_ticker = {executor.submit(fetch_sector_info, ticker): ticker for ticker in tickers}
+if __name__ == '__main__':
+    print(f"🔍 Auditing {len(tickers)} tickers for GICS Sector coverage...")
+    print("-" * 50)
     
-    # Process as they complete
-    for future in concurrent.futures.as_completed(future_to_ticker):
-        ticker, sector, error = future.result()
+    # Use ThreadPoolExecutor for concurrent requests
+    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        # Submit all tasks
+        future_to_ticker = {executor.submit(fetch_sector_info, ticker): ticker for ticker in tickers}
 
-        if error:
-            print(f"❌ {ticker}: Failed ({error})")
-            missing_data.append(ticker)
-        else:
-            # Count it
-            if sector in sector_counts:
-                sector_counts[sector] += 1
+        # Process as they complete
+        for future in concurrent.futures.as_completed(future_to_ticker):
+            ticker, sector, error = future.result()
+
+            if error:
+                print(f"❌ {ticker}: Failed ({error})")
+                missing_data.append(ticker)
             else:
-                sector_counts[sector] = 1
+                # Count it
+                if sector in sector_counts:
+                    sector_counts[sector] += 1
+                else:
+                    sector_counts[sector] = 1
 
-            print(f"✅ {ticker}: {sector}")
+                print(f"✅ {ticker}: {sector}")
 
-print("-" * 50)
-print("📊 FINAL SECTOR BREAKDOWN")
-print("-" * 50)
+    print("-" * 50)
+    print("📊 FINAL SECTOR BREAKDOWN")
+    print("-" * 50)
 
-# Convert to DataFrame for nice display
-df = pd.DataFrame(list(sector_counts.items()), columns=['Sector', 'Count'])
-df = df.sort_values('Count', ascending=False)
-print(df.to_string(index=False))
+    # Convert to DataFrame for nice display
+    df = pd.DataFrame(list(sector_counts.items()), columns=['Sector', 'Count'])
+    df = df.sort_values('Count', ascending=False)
+    print(df.to_string(index=False))
 
-if missing_data:
-    print(f"\n⚠️ Could not identify: {missing_data}")
+    if missing_data:
+        print(f"\n⚠️ Could not identify: {missing_data}")
