@@ -119,12 +119,19 @@ if full_data is not None and closes is not None:
 
             days_back = 60 if "Tactical" in view_mode else 730
             start_filter = (datetime.now() - timedelta(days=days_back)).strftime('%Y-%m-%d')
-            c_data = full_data[full_data.index >= start_filter]
+
+            mask = full_data.index >= start_filter
+            c_data = full_data[mask]
+            sub_l_cone = l_cone[mask]
+            sub_u_cone = u_cone[mask]
+            sub_ppo = ppo[mask]
+            sub_sig = sig[mask]
+            sub_hist = hist[mask]
             
             fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.03, row_heights=[0.7, 0.3])
             
-            fig.add_trace(go.Scatter(x=c_data.index, y=l_cone[l_cone.index >= start_filter], line=dict(width=0), showlegend=False, hoverinfo='skip'), row=1, col=1)
-            fig.add_trace(go.Scatter(x=c_data.index, y=u_cone[u_cone.index >= start_filter], fill='tonexty', fillcolor='rgba(0, 100, 255, 0.1)', line=dict(width=0), name="Fair Value Cone", hoverinfo='skip'), row=1, col=1)
+            fig.add_trace(go.Scatter(x=c_data.index, y=sub_l_cone, line=dict(width=0), showlegend=False, hoverinfo='skip'), row=1, col=1)
+            fig.add_trace(go.Scatter(x=c_data.index, y=sub_u_cone, fill='tonexty', fillcolor='rgba(0, 100, 255, 0.1)', line=dict(width=0), name="Fair Value Cone", hoverinfo='skip'), row=1, col=1)
             fig.add_trace(go.Candlestick(x=c_data.index, open=c_data['Open']['SPY'], high=c_data['High']['SPY'], low=c_data['Low']['SPY'], close=c_data['Close']['SPY'], name='SPY'), row=1, col=1)
 
             if "Tactical" in view_mode:
@@ -138,10 +145,9 @@ if full_data is not None and closes is not None:
                     fig.add_trace(go.Scatter(x=f_dates, y=f_upper, fill='tonexty', fillcolor='rgba(200, 0, 255, 0.15)', line=dict(width=0), name="Uncertainty", hoverinfo='skip'), row=1, col=1)
                     fig.add_trace(go.Scatter(x=f_dates, y=f_mean, name="Swarm Forecast", line=dict(color=theme["CHART_FONT"], width=2, dash='dot')), row=1, col=1)
 
-            sub_ppo = ppo[ppo.index >= c_data.index[0]]
             fig.add_trace(go.Scatter(x=c_data.index, y=sub_ppo, name="Swarm Trend", line=dict(color='cyan', width=1)), row=2, col=1)
-            fig.add_trace(go.Scatter(x=c_data.index, y=sig[sig.index >= c_data.index[0]], name="Signal", line=dict(color='orange', width=1)), row=2, col=1)
-            fig.add_trace(go.Bar(x=c_data.index, y=hist[hist.index >= c_data.index[0]], name="Velocity", marker_color=['#00ff00' if v >= 0 else '#ff0000' for v in hist[hist.index >= c_data.index[0]]]), row=2, col=1)
+            fig.add_trace(go.Scatter(x=c_data.index, y=sub_sig, name="Signal", line=dict(color='orange', width=1)), row=2, col=1)
+            fig.add_trace(go.Bar(x=c_data.index, y=sub_hist, name="Velocity", marker_color=['#00ff00' if v >= 0 else '#ff0000' for v in sub_hist]), row=2, col=1)
 
             fig.update_layout(height=500, template=theme["CHART_TEMPLATE"], margin=dict(l=0, r=0, t=0, b=0), showlegend=False, plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', font=dict(color=theme["CHART_FONT"]), xaxis_rangeslider_visible=False)
             fig.update_xaxes(showgrid=False); fig.update_yaxes(showgrid=False)
