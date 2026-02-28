@@ -69,10 +69,10 @@ def apply_theme():
 
     /* FIX FOR PC LAYOUT: Maximize Screen Usage */
     .block-container {{
-        padding-top: 2rem !important;
-        padding-bottom: 2rem !important;
-        padding-left: 2rem !important;
-        padding-right: 2rem !important;
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
         max-width: 100% !important;
     }}
 
