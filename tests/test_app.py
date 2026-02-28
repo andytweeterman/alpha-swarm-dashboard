@@ -96,7 +96,25 @@ def test_governance_calculation():
 
     assert status in ["DEFENSIVE MODE", "CAUTION", "WATCHLIST", "COMFORT ZONE"]
     assert color in ["#f93e3e", "#ffaa00", "#f1c40f", "#00d26a"]
-    assert reason in ["Structural/Policy Failure", "Market Divergence", "Elevated Risk Monitors", "System Integrity Nominal"]
+    assert reason in [
+        "Structural Failure Confirmed",
+        "Extreme Volatility",
+        "Credit/Currency Stress",
+        "Elevated Volatility",
+        "Market Breadth Narrowing",
+        "System Integrity Nominal"
+    ]
+
+def test_governance_calculation_error_path():
+    """Test governance calculation with invalid data that triggers the error path."""
+    invalid_data = None
+
+    gov_df, status, color, reason = calc_governance(invalid_data)
+
+    assert gov_df.empty, "DataFrame should be empty on error"
+    assert status == "DATA ERROR"
+    assert color == "#888888"
+    assert reason == "Feed Disconnected"
 
 def test_ppo_calculation():
     """Test PPO calculation."""
