@@ -120,11 +120,11 @@ plt.tight_layout()
 # --- FIX: FORCE SAVE TO SCRIPT DIRECTORY ---
 script_dir = os.path.dirname(os.path.abspath(__file__))
 filename = "Alpha_Swarm_Level3_Chart.png"
-full_path = os.path.join(script_dir, filename)
 
-plt.savefig(full_path)
+
+plt.savefig(os.path.join(script_dir, filename))
 print(f"\n[SUCCESS] Chart generated successfully.")
-print(f"IMAGE SAVED AT: {full_path}")
+print(f"IMAGE SAVED AT: {os.path.join(script_dir, filename)}")
 
 # --- FIX: KEEP WINDOW OPEN ---
 input("\nPRESS ENTER TO EXIT...")

@@ -119,7 +119,7 @@ try:
             transform=ax.transAxes, color=status_color, fontsize=11, fontweight='bold', zorder=11)
 
     # ==========================================
-    # 4. SAVE TO DESKTOP
+    # 4. SAVE
     # ==========================================
     ax.set_title("ALPHA SWARM: S&P 500 PROJECTION (Module V5 - High Volatility)", fontsize=16, color='white', fontweight='bold', pad=20)
     ax.grid(True, color='gray', alpha=0.2)
@@ -127,14 +127,14 @@ try:
     fig.patch.set_facecolor('black')
     plt.tight_layout()
 
-    desktop = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
+    script_dir = os.path.dirname(os.path.abspath(__file__))
     filename = "Alpha_Swarm_Chart_V5.png"
-    full_path = os.path.join(desktop, filename)
+    full_path = os.path.join(script_dir, filename)
 
-    print(f"Saving file to Desktop: {full_path}...")
+    print(f"Saving file to: {full_path}...")
     plt.savefig(full_path)
     print(f"\n[SUCCESS] Image saved successfully!")
-    print(f"CHECK YOUR DESKTOP FOR: {filename}")
+    print(f"FILE SAVED AS: {filename}")
 
 except Exception as e:
     print(f"\nERROR: {e}")

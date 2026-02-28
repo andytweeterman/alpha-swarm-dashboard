@@ -81,8 +81,8 @@ ax.text(x3 + width/2, strip_y + 0.02, "▼", color='#ff0000', fontsize=16, ha='c
 # ==========================================
 # 4. SAVE
 # ==========================================
-desktop = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
-save_path = os.path.join(desktop, "Dashboard_Concept.png")
+script_dir = os.path.dirname(os.path.abspath(__file__))
+save_path = os.path.join(script_dir, "Dashboard_Concept.png")
 plt.savefig(save_path)
 
 print(f"[SUCCESS] Mockup saved to: {save_path}")
