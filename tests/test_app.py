@@ -39,6 +39,7 @@ mock_yf = MagicMock()
 sys.modules["yfinance"] = mock_yf
 mock_yf.download.return_value = None
 # Also mock plotly to avoid any plotting overhead if imported
+sys.modules["plotly"] = MagicMock()
 sys.modules["plotly.graph_objects"] = MagicMock()
 sys.modules["plotly.subplots"] = MagicMock()
 
