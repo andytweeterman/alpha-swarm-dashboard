@@ -78,7 +78,7 @@ df['Gov_Level_At_Close'] = df.apply(determine_level, axis=1)
 # 5. THE "SAFE" SIGNAL (LAGGED)
 # ==========================================
 # CRITICAL FIX: To trade at the OPEN of Day T, we must use the signal from Day T-1.
-# We shift the column down by 1 row.
+# We shift the column down by 1 row to ensure no look-ahead bias.
 df['Signal_For_Next_Open'] = df['Gov_Level_At_Close'].shift(1)
 
 # Fill the first day (NaN) with Normal Ops (3)
