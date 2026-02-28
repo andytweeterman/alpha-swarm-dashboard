@@ -145,7 +145,10 @@ def get_strategist_update():
         if not sheet_url and "STRATEGIST_SHEET_URL" in st.secrets:
             sheet_url = st.secrets["STRATEGIST_SHEET_URL"]
         if sheet_url and "INSERT_YOUR" not in sheet_url:
-            return pd.read_csv(sheet_url)
+            if sheet_url.startswith("http://") or sheet_url.startswith("https://"):
+                return pd.read_csv(sheet_url)
+            else:
+                return None
         local_path = os.path.join("data", "update.csv")
         if os.path.exists(local_path): return pd.read_csv(local_path)
         return None
