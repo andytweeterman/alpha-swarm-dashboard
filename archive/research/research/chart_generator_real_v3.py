@@ -162,13 +162,13 @@ try:
     ax.set_ylim(y_min, y_max)
 
     # Save
-    desktop = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
+    script_dir = os.path.dirname(os.path.abspath(__file__))
     filename = "Alpha_Swarm_REAL_DATA.png"
-    save_path = os.path.join(desktop, filename)
+    save_path = os.path.join(script_dir, filename)
     
     plt.savefig(save_path)
     print(f"\n[SUCCESS] Chart generated with OVERLAY.")
-    print(f"Saved to Desktop: {save_path}")
+    print(f"Saved to: {save_path}")
 
 except Exception as e:
     print(f"\n[ERROR] {e}")
