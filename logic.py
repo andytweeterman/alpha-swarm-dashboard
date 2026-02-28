@@ -17,7 +17,7 @@ def fetch_market_data():
             return None
 
         # Fix the "Sunday Gap" by carrying forward Friday's data
-        data = data.ffill()
+        data = data.resample('D').ffill()
         
         return data
     except Exception:
