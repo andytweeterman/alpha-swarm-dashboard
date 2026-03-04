@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
+import html
 import styles
 import logic
 
@@ -42,7 +43,7 @@ with c_title:
     img_b64 = styles.get_base64_image("shield.png")
     header_html = f"""
     <div class="header-bar">
-    {'<img src="data:image/png;base64,' + img_b64 + '" style="height: 50px; width: auto; flex-shrink: 0; object-fit: contain;">' if img_b64 else ''}
+    {'<img src="data:image/png;base64,' + img_b64 + '" alt="MacroEffects Logo" style="height: 50px; width: auto; flex-shrink: 0; object-fit: contain;">' if img_b64 else ''}
     <div class="header-text-col">
     <span class="steel-text-main">MacroEffects</span>
     <span class="steel-text-sub">Outthink the Market</span>
@@ -67,8 +68,8 @@ with c_menu:
 st.markdown(f"""
 <div style="margin-bottom: 20px; margin-top: 5px;">
     <span style="font-family: 'Inter'; font-weight: 600; font-size: 16px; color: var(--text-secondary);">Macro-Economic Intelligence: Global Market Command Center</span>
-    <div class="gov-pill" style="background: linear-gradient(135deg, {color}, {color}88); border: 1px solid {color};">{status}</div>
-    <div class="premium-pill">PREMIUM</div>
+    <div class="gov-pill" role="status" aria-label="Market Status: {html.escape(status)}" style="background: linear-gradient(135deg, {color}, {color}88); border: 1px solid {color};">{status}</div>
+    <div class="premium-pill" role="status" aria-label="Premium Feature">PREMIUM</div>
 </div>
 """, unsafe_allow_html=True)
 st.divider()
@@ -153,7 +154,7 @@ if full_data is not None and closes is not None:
         st.markdown('<div class="steel-sub-header"><span class="steel-text-main" style="font-size: 20px !important;">Safety Level</span></div>', unsafe_allow_html=True)
         col1, col2 = st.columns([2, 1])
         with col1:
-            st.markdown(f'<div class="gov-pill" style="background: linear-gradient(135deg, {color}, {color}88); border: 1px solid {color};">{status}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="gov-pill" role="status" aria-label="Market Status: {html.escape(status)}" style="background: linear-gradient(135deg, {color}, {color}88); border: 1px solid {color};">{status}</div>', unsafe_allow_html=True)
             st.caption(f"Reason: {reason}")
         with col2:
             if '^VIX' in closes:
