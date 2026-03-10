@@ -4,22 +4,17 @@ import numpy as np
 from datetime import datetime, timedelta
 import os
 
-def analyze_vix():
-    print("Starting VIX Threshold Analysis...")
-
-    # 1. Fetch data
-    end_date = datetime.now()
-    start_date = end_date - timedelta(days=365*10 + 100) # Extra buffer
-
+def fetch_data(start_date, end_date):
     print(f"Fetching data from {start_date.date()} to {end_date.date()}...")
-
     tickers = ["^VIX", "^GSPC"]
     try:
         data = yf.download(tickers, start=start_date, end=end_date, progress=False)
+        return data
     except Exception as e:
         print(f"Error downloading data: {e}")
-        return
+        return None
 
+def process_vix_signals(data):
     # Handle MultiIndex columns
     # yfinance returns MultiIndex columns: (Price, Ticker)
     # We want 'Close' price for both
@@ -33,7 +28,7 @@ def analyze_vix():
     if "^VIX" not in closes.columns or "^GSPC" not in closes.columns:
         print("Error: Could not find ^VIX or ^GSPC in downloaded data.")
         print(f"Columns found: {closes.columns}")
-        return
+        return []
 
     vix = closes["^VIX"]
     sp500 = closes["^GSPC"]
@@ -126,8 +121,9 @@ def analyze_vix():
         except Exception as e:
             print(f"Error processing {date}: {e}")
 
-    # 3. Generate Report
+    return results
 
+def generate_report_content(results):
     md_content = "# VIX Threshold Analysis: Crossing 24\n\n"
     md_content += "## Overview\n"
     md_content += "This research note analyzes historical market data (last 10 years) to evaluate the significance of the VIX crossing above 24. "
@@ -176,6 +172,25 @@ def analyze_vix():
              md_content += "The signal is mixed, with significant volatility following the event."
     else:
         md_content += "No events found in the specified period."
+
+    return md_content
+
+def analyze_vix():
+    print("Starting VIX Threshold Analysis...")
+
+    # 1. Fetch data
+    end_date = datetime.now()
+    start_date = end_date - timedelta(days=365*10 + 100) # Extra buffer
+
+    data = fetch_data(start_date, end_date)
+    if data is None:
+        return
+
+    # 2. Process Signals
+    results = process_vix_signals(data)
+
+    # 3. Generate Report
+    md_content = generate_report_content(results)
 
     output_path = "docs/VIX_Threshold_Analysis.md"
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
