@@ -9,6 +9,14 @@ tickers = [
     "XLK", "AAPL", "MSFT", "NVDA",      # Tech
     "XLU", "NEE", "DUK", "SO",          # Utilities
     "XLV", "JNJ", "PFE", "MRK",         # Healthcare
+    "XLF", "JPM", "BAC",                # Financials
+    "XLY", "AMZN", "TSLA",              # Consumer Discretionary
+    "XLP", "PG", "KO",                  # Consumer Staples
+    "XLI", "CAT", "GE",                 # Industrials
+    "XLB", "LIN",                       # Materials
+    "XLRE", "PLD",                      # Real Estate
+    "XLC", "GOOGL", "META",             # Communication Services
+    "GLD", "NEM",                       # Gold
     "URA", "CCJ", "DNN",                # Uranium (for his reviewer!)
     "SPY", "QQQ", "IWM"                 # Broad Market
 ]
