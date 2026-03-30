@@ -8,7 +8,7 @@ def get_base64_image(image_path):
         # Enforce path security
         base_dir = os.path.dirname(os.path.abspath(__file__))
         requested_path = os.path.abspath(os.path.join(base_dir, image_path))
-        if not requested_path.startswith(base_dir):
+        if os.path.commonpath([base_dir, requested_path]) != base_dir:
             return None
 
         if not os.path.exists(requested_path):
